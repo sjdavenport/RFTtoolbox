@@ -47,7 +47,7 @@ function Rmap = MkRadImg(Dim,c)
 %In paricular for vectors starting from 1 up to an integer,
 % x(i,j,k) = i, y(i,j,k) = j and z(i,j,k) = k. So x,y, and z are just
 % indexing the coordinates. Doing this instead of for loops probably means 
-%that things are done much faster.
+% that things are done much faster.
  if length(Dim) == 2
     [x, y] = ndgrid(1:Dim(1),1:Dim(2));
     Rmap = sqrt((x-c(1)).^2 + (y-c(2)).^2);

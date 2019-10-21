@@ -25,9 +25,11 @@ else
     sigma2 = sigma2_or_FWHM;
 end
 
-val = exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
+% val = exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
 deriv = (-x/sigma2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
 deriv2 = (-1/sigma2 + x.^2/sigma2^2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
+
+val = exp(-sum(x.^2,2)/(2*sigma2))/sqrt(2*pi*sigma2);
 
 end
 

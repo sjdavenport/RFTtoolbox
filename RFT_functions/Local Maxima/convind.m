@@ -1,5 +1,5 @@
 function out = convind( ind, conv2what, size_of_array)
-% CONVIND( ind, size_of_array ) switches between vector indexing and 
+% CONVIND( ind, conv2what, size_of_array ) switches between vector indexing and 
 % coordinate indexing. 
 % For a size vector x = size [x_1, ..., x_n] and an array A of size x we can 
 % convert A to a vector of length x_1*...*x_n via A(:). Similarly for any
@@ -15,7 +15,7 @@ function out = convind( ind, conv2what, size_of_array)
 %           greater than one it corresponds to the coordinate vector.
 % conv2what       0/1/2, converts the indices to fsleyes indices if 1 and
 %                 to aligned anatomical coordinates (for use in papers) if 
-%                 set to 2. No change to the coordinates (the default) is
+%                 set to 2. Just returns the coordinates (the default) is
 %                 affected if set to 0. 
 % size_of_array   A numeric vector. This corresponds to [x_1, ..., x_n] in 
 %                 the above description. This is defaulted to [91,109,91]

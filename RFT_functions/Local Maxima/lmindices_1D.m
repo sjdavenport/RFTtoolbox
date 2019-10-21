@@ -1,15 +1,13 @@
-function local_maxima = lmindices_1D(Y, top, mask)
-% lmindices_1D(Y, top, mask)
+function lmInd = lmindices_1D(Y, top, mask)
+% lmindices_1D(Y, top, mask) find the local maxima in a 1D random lattice 
+% field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Y      a 1 dimensional array of real values
 % top    the top number of local maxima of which to report
 %--------------------------------------------------------------------------
 % OUTPUT
-% number_of_clusters    The number of connected components above the
-%                       threshold thresh
-% occurences
-% sizes
+% local_maxima      the indicies of the top local maxima of Y
 %--------------------------------------------------------------------------
 % EXAMPLES
 % Y = [1,2,1, 2, 4, 3]
@@ -25,6 +23,7 @@ end
 if nargin < 3
     mask = ones(1,length(Y));
 end
+mask = zero2nan(mask);
 
 Y = Y.*mask;
 Y(isnan(Y)) = min(Y(~isnan(Y))) - 1;
@@ -35,9 +34,12 @@ dYneg = (dY < 0);
 
 indices = [1, dYpos].*[dYneg, 1] > 0;
 local_maxima = find(indices);
-[~, Yindices] = sort(Y(indices), 'descend');
+% [~, Yindices] = sort(Y(indices), 'descend');
 
-top = min(top, length(local_maxima));
-local_maxima = sort(local_maxima(Yindices(1:top)));
+[~, sorted_lm_indices] = sort(Y(indices), 'descend');
+top = min(top, length(sorted_lm_indices));
+lmInd = indices(sorted_lm_indices(1:top));
+% top = min(top, length(local_maxima));
+% local_maxima = sort(local_maxima(Yindices(1:top)));
 
 end
