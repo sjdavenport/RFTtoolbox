@@ -11,10 +11,10 @@ function [val, deriv, deriv2] = GkerMV( x, sigma2_or_FWHM, use_fwhm )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% Gker([1.5,2]', 3)
+% GkerMV([1.5,2]', 3)
 % 
-% Gker([1.5,2], 3)
-% Gker([1.5,2; 0, 1], 3)
+% GkerMV([1.5,2], 3)
+% GkerMV([1.5,2; 0, 1], 3)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel J. Davenport
 % Don't change this! Too much depends on it! LOL
