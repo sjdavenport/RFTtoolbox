@@ -19,7 +19,7 @@ function [number_of_clusters, occurences, sizes, index_locations] = numOfConComp
 % EXAMPLES
 % thresh = 1;
 % sims = randn(10,10)
-% [number_of_clusters, occurences, sizes] = numOfConComps(sims, thresh);
+% [number_of_clusters, occurences, sizes, index_locations] = numOfConComps(sims, thresh);
 % sims > thresh
 % sizes
 %--------------------------------------------------------------------------

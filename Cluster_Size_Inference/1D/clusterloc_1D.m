@@ -53,11 +53,11 @@ end_locs = find(diff_above_u == -1)';
 
 edges = [0,0];
 if above_u(1) == 1
-    start_locs = [1,start_locs];
+    start_locs = [1,start_locs']';
     edges(1) = 1;
 end
 if above_u(end) == 1
-    end_locs = [end_locs, length(data)];
+    end_locs = [end_locs', length(data)]';
     edges(2) = 1;
 end
 

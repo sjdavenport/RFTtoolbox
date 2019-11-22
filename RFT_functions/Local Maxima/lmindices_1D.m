@@ -34,12 +34,13 @@ dYneg = (dY < 0);
 
 indices = [1, dYpos].*[dYneg, 1] > 0;
 local_maxima = find(indices);
-% [~, Yindices] = sort(Y(indices), 'descend');
+[~, Yindices] = sort(Y(indices), 'descend');
 
-[~, sorted_lm_indices] = sort(Y(indices), 'descend');
-top = min(top, length(sorted_lm_indices));
-lmInd = indices(sorted_lm_indices(1:top));
-% top = min(top, length(local_maxima));
-% local_maxima = sort(local_maxima(Yindices(1:top)));
+top = min(top, length(local_maxima));
+lmInd = sort(local_maxima(Yindices(1:top)));
+
+% [~, sorted_lm_indices] = sort(Y(indices), 'descend');
+% top = min(top, length(sorted_lm_indices));
+% lmInd = sorted_lm_indices(1:top);
 
 end
