@@ -26,7 +26,7 @@ function [ indices, npeaks ] = lmindices( map, top, mask )
 %
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
-% max_index = lmindices(a, 1, 'all') %need to use 'all' here as (16,100,40)
+% max_index = lmindices_dep(a, 1, 'all') %need to use 'all' here as (16,100,40)
 % % doesn't lie within the MNI mask of the brain.
 % a(max_index)
 % 

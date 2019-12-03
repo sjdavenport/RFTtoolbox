@@ -14,11 +14,9 @@ function [lmarrayindices, lmInd] = lmindices(Y, top, CC, mask)
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
 % max_index = lmindices(a)
-% a(max_index)
 % 
 % a(10,50,35) = 3;
-% top_2_lms = lmindices(a, 2);
-% a(top_2_lms(2))
+% top_2_lms = lmindices(a, 2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel J. Davenport
 dimY = size(Y);
@@ -33,12 +31,24 @@ if nargin < 3
         CC = 6;
     end
 end
+
+if nD == 2
+    if dimY(1) == 1 
+        nD = 1;
+    elseif dimY(2) == 1
+        nD = 1;
+        Y = Y';
+    else 
+        nD = 2;
+    end
+end
+
 if nargin < 4
     mask = ones(size(Y));
 end
 
 if nD == 1
-    lmInd = lmindices_1D(Y, top, CC, mask);
+    lmInd = lmindices_1D(Y, top, mask);
     lmarrayindices = lmInd; %arrayindices == indices in 1D!
 elseif nD == 2
     [lmarrayindices, lmInd] = lmindices_2D(Y, top, CC, mask);

@@ -16,6 +16,9 @@ function lmInd = lmindices_1D(Y, top, mask)
 % a = lmindices_1D(Y,2)
 %--------------------------------------------------------------------------
 % AUTHORS: Sam Davenport 
+if size(Y, 2) == 1
+    Y = Y';
+end
 
 if nargin < 2
     top = 1;

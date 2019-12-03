@@ -1,4 +1,11 @@
 function field = applyconvfield(tval, xvalues_at_voxels, Kernel, data_mean)
+if isnumeric(Kernel)
+    if Kernel < 1
+        warning('Are you sure the FWHM and increm have been written the right way around?')
+    end
+    Kernel = @(x) Gker(x,Kernel);
+end
+
 if size(tval, 2) == 1
     tval = tval';
 end
