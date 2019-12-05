@@ -16,7 +16,7 @@ function deriv = GkerMVderiv( x, sigma2_or_FWHM, use_fwhm )
 % 
 % deriv = GkerMVderiv([1,2]', 3)
 % h = 0.00001;
-% valplushx = GkerMV([1+h,2]', 3); h = 0.00001;
+% valplushx = GkerMV([1+h,2]', 3); h = 0.00001; 
 % valplushx
 % valplushy = GkerMV([1,2+h]', 3); h = 0.00001;
 % (valplushx - val)/h

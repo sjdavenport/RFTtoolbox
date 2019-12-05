@@ -1,4 +1,9 @@
 function field = applyconvfield(tval, xvalues_at_voxels, Kernel, data_mean)
+%varx = @(x) applyconvfield(x, xvalues_at_voxels, FWHM, ones(1,100));
+% varx_deriv = @(x) applyconvfield(x, xvalues_at_voxels, @(x)Gkerderiv(x, FWHM), ones(1,100));
+%(varx(10+h) - varx(10))/h
+% varx_deriv(10)
+
 if isnumeric(Kernel)
     if Kernel < 1
         warning('Are you sure the FWHM and increm have been written the right way around?')
