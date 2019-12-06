@@ -1,5 +1,5 @@
 function [val, deriv, deriv2] = GkerMV( x, sigma2_or_FWHM, use_fwhm )
-% GKER( x, sigma2_or_FWHM, use_fwhm ) calculates the Gaussian Kernel given
+% GKERMV( x, sigma2_or_FWHM, use_fwhm ) calculates the Gaussian Kernel given
 % multivariate data and the FWHM of the kernel.
 %--------------------------------------------------------------------------
 % ARGUMENTS

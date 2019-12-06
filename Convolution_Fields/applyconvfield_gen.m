@@ -1,4 +1,4 @@
-function field_vals = applyconvfield_gen(tval, Y, Kernel, xvals_vecs)
+function [field_vals, ss] = applyconvfield_gen(tval, Y, Kernel, xvals_vecs, scale_var)
 % APPLYCONVFIELD_GEN(tval, Y, Kernel, xvals_vecs)
 % calculates the locations of peaks in a random field using Newton Raphson.
 %--------------------------------------------------------------------------
@@ -45,16 +45,18 @@ function field_vals = applyconvfield_gen(tval, Y, Kernel, xvals_vecs)
 % AUTHOR: Samuel J. Davenport
 Ydim = size(Y);
 if Ydim(1) == 1
-    Ydim = Ydim(2);
-elseif Ydim(2) == 1
-    Ydim = Ydim(1);
+    Ydim = Ydim(2:end);
+    Y = reshape(Y, Ydim);
 end
 D = length(Ydim);
 
 if isnumeric(Kernel)
-    Kernel = @(x) GkerMV(x,Kernel );
+    Kernel = @(x) GkerMV(x,Kernel);
 end
 
+if nargin < 5
+    scale_var = 0;
+end
 if nargin < 4
     xvals_vecs = {1:Ydim(1)}; %The other dimensions are taken case of below.
 end
@@ -89,13 +91,18 @@ end
 
 outputdim = length(Kernel(tval(:,1)));
 field_vals = zeros(outputdim, size(tval, 2));
+ss = zeros(1, size(tval, 2));
 for I = 1:size(tval, 2)
 %     field_vals(I) = sum(Y(:).*Kernel(tval(I, :) - xvalues_at_voxels));
 %     field_vals(I) = sum(Y(:)'*Kernel(tval(I, :) - xvalues_at_voxels));
 
 %Matrix version of this:
-    Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels');
+    Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
     field_vals(:,I) = Kernel_eval*Y(:);
+    ss(I) = sum(Kernel_eval(:).^2);
+    if scale_var
+        field_vals(:,I) = field_vals(:,I)/sqrt(ss(I));
+    end
 end
 
 % Note can use something similar to MkRadImg to figure out which voxels are

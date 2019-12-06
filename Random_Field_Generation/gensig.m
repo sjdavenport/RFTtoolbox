@@ -37,6 +37,11 @@ function Sig = gensig( Mag, Rad, Smo, Dim, centre_locs )
 % %2D signal
 % Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % surf(Sig)
+%
+% Sig = gensig(1, 10, 8, [90,90]);
+% surf(Sig)
+% lat_data = randn([90,90,nsubj]) + Sig;
+% surf(lat_data)
 %--------------------------------------------------------------------------
 % SEE ALSO
 % SimDemo

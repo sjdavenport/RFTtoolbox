@@ -35,14 +35,16 @@ function data = noisegen( Dim, nSubj, FWHM, shape_of_array )
 % global stdsize
 % noise = noisegen(stdsize, 20, 6, 1);
 % noise_mean = mean(noise,1);
+%
+% %Resulting variance is 1:
+% noise = noisegen([95,95],100, 4, 1);
+% [~, ~, std_est] = mvtstat( noise );
+% mean(std_est)
 %--------------------------------------------------------------------------
 % Authors:
-% Sam Davenport and Thomas Nichols
+% Samuel Davenport and Thomas E. Nichols
 if nargin < 2
     nSubj  = 20; 
-end
-if nargin < 3
-    FWHM = 6;
 end
 if nargin < 4
     shape_of_array = 0;
