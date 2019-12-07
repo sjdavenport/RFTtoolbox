@@ -40,7 +40,7 @@ val = exp(-sum(x.^2,1)/(2*sigma2))/(sqrt(2*pi*sigma2)^D); %Only this it is Multi
 size(x)
 size(val)
 size(Sigmainv)
-deriv = -(Sigmainv*x).*repmat(valD,1);
+deriv = -(Sigmainv*x).*repmat(val,D,1);
 % deriv = -(Sigmainv*x).*val; %Without the kernel constant. For 2016
 % compatability
 
