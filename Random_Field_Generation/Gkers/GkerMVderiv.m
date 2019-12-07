@@ -37,9 +37,6 @@ D = size(x, 1);
 
 Sigmainv = (1/sigma2)*eye(D);
 val = exp(-sum(x.^2,1)/(2*sigma2))/(sqrt(2*pi*sigma2)^D); %Only this it is Multivariate!
-size(x)
-size(val)
-size(Sigmainv)
 deriv = -(Sigmainv*x).*repmat(val,D,1);
 % deriv = -(Sigmainv*x).*val; %Without the kernel constant. For 2016
 % compatability
