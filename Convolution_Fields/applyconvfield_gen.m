@@ -98,7 +98,7 @@ for I = 1:size(tval, 2)
 
 %Matrix version of this:
     size(repmat(tval(:,I),D))
-    Kernel_eval = Kernel(repmat(tval(:,I),D, 1) - repmat(xvalues_at_voxels',1, size(tval, 2)); %this is the Ith tval! %Need to do this for 2016 and prior compatibility.
+    Kernel_eval = Kernel(repmat(tval(:,I),D, 1) - repmat(xvalues_at_voxels',1, size(tval, 2))); %this is the Ith tval! %Need to do this for 2016 and prior compatibility.
 %     Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
     field_vals(:,I) = Kernel_eval*Y(:);
     ss(I) = sum(Kernel_eval(:).^2);
