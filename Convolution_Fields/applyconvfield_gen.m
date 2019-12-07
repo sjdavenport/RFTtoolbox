@@ -97,6 +97,8 @@ for I = 1:size(tval, 2)
 %     field_vals(I) = sum(Y(:)'*Kernel(tval(I, :) - xvalues_at_voxels));
 
 %Matrix version of this:
+    size(xvalues_at_voxels)
+    tval(:,I) 
     Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
     field_vals(:,I) = Kernel_eval*Y(:);
     ss(I) = sum(Kernel_eval(:).^2);
