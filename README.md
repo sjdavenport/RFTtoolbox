@@ -7,6 +7,8 @@ However if you do please cite us.
 * [Introduction](#introduction)
 * [Folder Structure](#folderstruct)
     * [Cluster_Size_Inference](#CLInf)
+    * [Convolution_Fields](#Convfields)
+    * [Peak_Inference](#PI)
     * [Random_Field_Generation](#RFfunctions)
     * [RFT_functions](#siggen)
     * [SPM_Functions](#power)
@@ -27,6 +29,14 @@ using LKCS and to generate convolution fields as well as other functionalities.
 
 A collection of functions to perform cluster size inference using random 
 field theory. Many more functions will be added to this folder.
+
+### Convolution Fields <a name="Convfields"></a>
+
+Functions to generate and infer on convolution fields. 
+
+### Peak Inference <a name="PI"></a>
+
+A collection of functions to perform peak inference on random fields. 
 
 ### Random Field Generation <a name="RFfunctions"></a>
 

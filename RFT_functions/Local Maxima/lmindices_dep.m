@@ -1,4 +1,4 @@
-function [ indices, npeaks ] = lmindices( map, top, mask )
+function [ indices, npeaks ] = lmindices_dep( map, top, mask )
 % LMINDICES( map, top, mask ) finds the indices of the top local maxima of
 % a given map. It uses a connectivity criterion of 18.
 %--------------------------------------------------------------------------

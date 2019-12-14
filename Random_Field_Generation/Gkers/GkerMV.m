@@ -29,6 +29,15 @@ function val = GkerMV( x, sigma2_or_FWHM, use_fwhm )
 %
 % [val, deriv, deriv2] = GkerMV([1,2]', 3)
 % [val, deriv, deriv2] = GkerMV([1,3;2,4], 3)
+%
+% % Recover sigma2
+% x = [0,0]';
+% D = length(x);
+% 1/GkerMV(x,4,0)^(2/D)/(2*pi)
+% % Recover FWHM
+% FWHM = 3;
+% sigma2 = 1/GkerMV(x,FWHM)^(2/D)/(2*pi);
+% sigma2FWHM(sigma2^(1/2))
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel J. Davenport
 % Don't change this! Too much depends on it! LOL

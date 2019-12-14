@@ -1,13 +1,13 @@
-function [T, mu, sigma, d] = tcfield( tval, data, xvalues_at_voxels, Kernel )
+function [T, mu, sigma, d] = tcfield_1D( tval, data, xvalues_at_voxels, Kernel )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 1D-t
 % convolution field given a 1D lattice with xvalues given by xvalues_at_voxels
 % a vector data with the values of the lattice field at the specified
 % xvalues and smoothing kernel: Kernel. This function should be used to
-% evaluate a given point in t-cfield.
+% evaluate a given point in t-cfield. If the whole field on a fine lattice
+% is desired we would recommend using inter_conv1D for speed.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% tval      a D (number of dimensions) by nvalues matrix. Where each column
-%           is a point at which to evaluate the t-convolution field.
+% tval      a vector values at which to evaluate the field
 % data      an nsubj by nvox matrix with each row giving the values that 
 %           each lattice field (i.e. pre-smoothing) takes at the lattice points.
 % xvalues_at_voxels     the x-coordinate of the lattice points. Default is
@@ -47,7 +47,7 @@ if size(data,2) ~= length(xvalues_at_voxels)
 end
 
 for I = 1:nsubj
-    Xcfields_at_tval(I, :) = applyconvfield(tval, xvalues_at_voxels, Kernel, data(I,:));
+    Xcfields_at_tval(I, :) = applyconvfield_1D(tval, xvalues_at_voxels, Kernel, data(I,:));
 end
 
 [T,mu,sigma,d] = mvtstat(Xcfields_at_tval);
