@@ -1,4 +1,4 @@
-function [lmarrayindices, lmInd] = lmindices(Y, top, CC, mask)
+function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
 % lmindices(Y, top, CC, mask) find the local maxima in an N-dimensional
 % array
 %--------------------------------------------------------------------------
@@ -24,7 +24,12 @@ nD = length(dimY);
 if nargin < 2
     top = 1;
 end
+warning('if there is an issue here may have mask and CC the wrong way around')
 if nargin < 3
+    mask = ones(size(Y));
+end
+
+if nargin < 4
     if nD == 2
         CC = 4;
     elseif nD == 3
@@ -41,10 +46,6 @@ if nD == 2
     else 
         nD = 2;
     end
-end
-
-if nargin < 4
-    mask = ones(size(Y));
 end
 
 if nD == 1

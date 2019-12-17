@@ -1,4 +1,4 @@
-function data = noisegen( Dim, nSubj, FWHM, shape_of_array )
+function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array )
 % NOISEGEN( Dim, nSubj, FWHM, shape_of_array ) generates an array of N(0,1) 
 % noise smoothes this with a gaussian kernel with a certain FWHM and scales 
 % so that the resulting field has variance 1. By default this array is Dim 

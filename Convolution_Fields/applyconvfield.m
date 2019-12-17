@@ -1,6 +1,6 @@
-function [field_vals] = applyconvfield(tval, Y, Kernel, truncation, xvals_vecs)
+function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_vecs)
 % APPLYCONVFIELD(tval, Y, Kernel, xvals_vecs, truncation)
-% calculates the locations of peaks in a random field using Newton Raphson.
+% calculates the convolution field at a point.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % tval      the t values (an ndim=D by nvalues matrix) at which to evaluate 
@@ -72,6 +72,10 @@ if nargin < 4
 %     scale_var = 0;
 end
 
+if ~isequal(size(truncation),[1,1])
+    error('Truncation must be a number')
+end
+
 if isnumeric(Kernel)
 %     sigma = FWHM2sigma(Kernel);
     if truncation == -1
@@ -120,6 +124,8 @@ end
  
 outputdim = length(Kernel(tval(:,1)));
 field_vals = zeros(outputdim, size(tval, 2));
+ss = zeros(1, size(tval, 2));
+
 for I = 1:size(tval, 2)
     if truncation > 0
         lower = floor(tval(:,I) - truncation);
@@ -146,6 +152,7 @@ for I = 1:size(tval, 2)
     end
     Kernel_eval = Kernel(repmat(tval(:,I),1, length(Ytemp(:))) - xvalues_at_voxels'); %this is the Ith tval! %Need to do this for 2016 and prior compatibility.    
 %     Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
+    ss(I) = sum(Kernel_eval(:).^2);
     field_vals(:,I) = Kernel_eval*Ytemp(:);
 end 
 
