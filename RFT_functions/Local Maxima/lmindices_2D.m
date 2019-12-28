@@ -11,9 +11,10 @@ function [lmarrayindices, lmInd] = lmindices_2D(Y, top, CC, mask)
 % indices
 %--------------------------------------------------------------------------
 % EXAMPLES
-%
+% Y = [1,1,1;1,2,1;1,1,1;1,2,1;1,1,1];
+% lmindices_2D(Y,2)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
+% AUTHOR: Samuel Davenport
 if nargin < 2
     top = 1;
 end

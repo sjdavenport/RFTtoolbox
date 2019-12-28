@@ -35,6 +35,18 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % Y = [1,2,3,4];
 % tval = 2; FWHM = 3;
 % applyconvfield(tval, Y, FWHM)
+%
+% %1D Comparison with SPM smoothing:
+% nvox = 100;
+% xvals_vecs = 1:nvox;
+% nsubj = 50;
+% lat_field = normrnd(0,1,nsubj,nvox);
+% field_at_voxels = applyconvfield(1:nvox, mean(lat_data'), FWHM, truncation, xvals_vecs);
+% [~, ss] = applyconvfield(evalloc, lat_data(:,1)', FWHM, truncation, xvals_vecs);
+% plot(field_at_voxels/sqrt(ss))
+% hold on
+% [smoothfield, ss_spm] = spm_conv_mod(mean(lat_data,2), FWHM);
+% plot(smoothfield'/sqrt(ss_spm));
 % 
 % 2D:
 % Y = [1,2;3,4];
@@ -60,7 +72,7 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % sigma = FWHM2sigma(FWHM); truncation = round(4*sigma);
 % applyconvfield([50,40,60]', noise, FWHM, truncation)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
+% AUTHOR: Samuel Davenport
 Ydim = size(Y);
 if Ydim(1) == 1
     Ydim = Ydim(2:end);

@@ -1,5 +1,5 @@
 function peak_locs = find_peak_locs(lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask)
-% FIND_PEAK_LOCS( lat_data, Kprime, xvals_vecs, top, peak_est_locs, Kprime2 )
+% FIND_PEAK_LOCS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -22,10 +22,6 @@ function peak_locs = find_peak_locs(lat_data, Kprime, xvals_vecs, peak_est_locs,
 %               voxels is 1. If only one xval_vec direction is set the
 %               others are taken to range up from 1 with increment given by
 %               the set direction.
-% top           the number of peak locations to return. I.e if top = 2 
-%               then the locations of the largest two peaks are returned.
-%               This number must be greater than the number of peaks 
-%               specified by peak_est_locs. 
 % peak_est_locs a D by npeaks matrix giving the initial estimates of the 
 %               location of the peaks. If this is instead an integer: top  
 %               then the top number of maxima are considered and initial 
@@ -36,28 +32,30 @@ function peak_locs = find_peak_locs(lat_data, Kprime, xvals_vecs, peak_est_locs,
 %               if the initial Kernel is Gaussian it is taken to be the 2nd
 %               derivative of the corresponding Gaussian kernel. Otherwise
 %               it is estimated from Kprime.
+% truncation
+% mask
 %--------------------------------------------------------------------------
 % OUTPUT
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 1D
+% % 1D
 % Y = [1,2,1];
 % find_peak_locs(Y, 3, 1:3, 1)
 %
-% 2D
+% % 2D
 % Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
 % find_peak_locs(Y, 3, 1:4, [2,2]')
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport.
+% AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
-if Ldim(1) == 1
-    Ldim = Ldim(2:end);
-    lat_data = reshape(lat_data, Ldim);
-end
 D = length(Ldim);
-if D == 1
-    error('Not implemented here for 1D, consider using true_peak_locs')
+if Ldim(1) == 1
+    D = D - 1;
+    Ldim = Ldim(2:end);
+    if D > 1
+        lat_data = reshape(lat_data, Ldim);
+    end
 end
 if nargin < 6
     truncation = 0;
@@ -119,11 +117,15 @@ end
 
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
+
 if isequal(size(peak_est_locs), [1,1])
     top = peak_est_locs;
     if strcmp(Ktype, 'G')
         if D < 3
-            smoothed_data = spm_conv(lat_data, FWHM);
+            xvalues_at_voxels = xvals2voxels(xvals_vecs);
+            smoothed_data = applyconvfield(xvalues_at_voxels', lat_data, FWHM, truncation, xvals_vecs);
+            %Using the above no longer need the Ktype condition
+%             smoothed_data = spm_conv(lat_data, FWHM);
         elseif D == 3
             smoothed_data = zeros(size(lat_data));
             spm_smooth(lat_data, smoothed_data, FWHM);
@@ -134,10 +136,17 @@ if isequal(size(peak_est_locs), [1,1])
     else
         max_indices = lmindices(lat_data, top, mask)'; %In 3D may need to use spm_smooth for this bit!
     end
+    if D == 1
+        max_indices = max_indices';
+    end
+    top = length(max_indices);  
     peak_est_locs = zeros(D, top);
     for I = 1:D
         peak_est_locs(I, :) = xvals_vecs{I}(max_indices(I,:));
     end
+end
+if D == 1 && isnan(peak_est_locs(1))
+    peak_est_locs = peak_est_locs(2:end);
 end
 npeaks = size(peak_est_locs, 2);
 

@@ -1,14 +1,15 @@
-function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
+ function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
 % lmindices(Y, top, CC, mask) find the local maxima in an N-dimensional
 % array
 %--------------------------------------------------------------------------
-% Y      an N dimensional array of real values
+% Y      a D dimensional array of real values
 % top    the top number of local maxima of which to report
 % CC     the connectivity criterion
 % mask   a 0/1 mask.
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% lmarrayindices    an npeaks by D array of the peak locations
+% lmInd 
 %--------------------------------------------------------------------------
 % EXAMPLES
 % a = zeros([91,109,91]);
@@ -17,6 +18,9 @@ function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
 % 
 % a(10,50,35) = 3;
 % top_2_lms = lmindices(a, 2)
+%
+% Y = [1,1,1;1,2,1;1,1,1;1,2,1;1,1,1];
+% lmindices_2D(Y,2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel J. Davenport
 dimY = size(Y);
@@ -58,6 +62,13 @@ elseif nD == 3
 else
     error('N > 3 is not supported yet')
 end
+
+% Need to add code to remove the edges here!
+% if edges == 0
+%     for I = 1:size(lmarrayindices, 1)
+%         if 
+%     end
+% end
 
 end
 

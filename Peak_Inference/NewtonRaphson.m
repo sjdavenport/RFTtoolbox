@@ -115,6 +115,7 @@ else
         end
         h = -pinv(gradmate)*f(x_estimate); %could change to: h_d = -f(x_estimate)/deriv_at_xest(d);
         x_estimate = x_estimate + h;
+%         x_estimate = x_estimate + sign(h)*min(abs(h), upperhbound)
         
         difference = sum(abs(f(x_estimate))); %abs(f(new_x)) + abs(new_x - x_estimate)
         
