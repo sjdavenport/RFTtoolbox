@@ -1,5 +1,5 @@
  function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
-% lmindices(Y, top, CC, mask) find the local maxima in an N-dimensional
+%   find the local maxima in an N-dimensional
 % array
 %--------------------------------------------------------------------------
 % Y      a D dimensional array of real values

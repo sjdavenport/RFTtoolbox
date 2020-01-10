@@ -27,7 +27,9 @@ function peak_locs = find_peak_locs(lat_data, Kprime, xvals_vecs, peak_est_locs,
 %               then the top number of maxima are considered and initial 
 %               locations are estimated from the underlying data. If this 
 %               is not specified then it is set to 1, i.e. only considering
-%               the maximum.
+%               the maximum. If D = 1 and you wish to specify multiple
+%               peaks rather than a number of peaks then you need to begin
+%               your input as [NaN, peakestloc1, peakestloc2, ...].
 % Kprime2       the 2nd derivative of the kernel. If this is not set then
 %               if the initial Kernel is Gaussian it is taken to be the 2nd
 %               derivative of the corresponding Gaussian kernel. Otherwise
@@ -50,6 +52,10 @@ function peak_locs = find_peak_locs(lat_data, Kprime, xvals_vecs, peak_est_locs,
 % AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
 D = length(Ldim);
+if Ldim(2) == 1
+    lat_data = lat_data';
+    Ldim = Ldim';
+end
 if Ldim(1) == 1
     D = D - 1;
     Ldim = Ldim(2:end);
@@ -118,7 +124,7 @@ end
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
 
-if isequal(size(peak_est_locs), [1,1])
+if isequal(size(peak_est_locs), [1,1]) && peak_est_locs(1) < 5 && floor(peak_est_locs(1)) == peak_est_locs(1)
     top = peak_est_locs;
     if strcmp(Ktype, 'G')
         if D < 3
@@ -145,7 +151,7 @@ if isequal(size(peak_est_locs), [1,1])
         peak_est_locs(I, :) = xvals_vecs{I}(max_indices(I,:));
     end
 end
-if D == 1 && isnan(peak_est_locs(1))
+if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
     peak_est_locs = peak_est_locs(2:end);
 end
 npeaks = size(peak_est_locs, 2);
@@ -154,7 +160,20 @@ peak_locs = zeros(D, npeaks);
 for peakI = 1:npeaks
 %     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
 %     field_deriv(peak_est_locs(:, peakI))
-    peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2);
+    tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+    notconverged = 1;
+    while notconverged > 0 %This loop is to deal with situations where things don't converge on the first initialization.
+        try
+            peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI) + (notconverged-1)*0.1, field_deriv2, tol);
+%             peak_locs(peakI) = NewtonRaphson(fderiv, peak_est_locs(peakI) + (notconverged-1)*0.1, fderiv2, tol);
+            notconverged = 0;
+        catch
+            notconverged = notconverged + 1;
+            if notconverged > 10
+                error('notconverged has not converged')
+            end
+        end
+    end
 end
 
 end

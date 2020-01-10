@@ -1,4 +1,4 @@
-function [T, mu, sigma, d] = tcfield( tval, data, xvalues_at_voxels, Kernel )
+function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, data, xvals_vecs, Kernel )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 1D-t
 % convolution field given a 1D lattice with xvalues given by xvalues_at_voxels
 % a vector data with the values of the lattice field at the specified
@@ -8,7 +8,7 @@ function [T, mu, sigma, d] = tcfield( tval, data, xvalues_at_voxels, Kernel )
 % ARGUMENTS
 % tval      a D (number of dimensions) by nvalues matrix. Where each column
 %           is a point at which to evaluate the t-convolution field.
-% data      an nsubj by nvox matrix with each row giving the values that 
+% data      a D by nsubj matrix with each row giving the values that 
 %           each lattice field (i.e. pre-smoothing) takes at the lattice points.
 % xvalues_at_voxels     the x-coordinate of the lattice points. Default is
 %                       to take xvalues_at_voxels = 1:length(data). I.e. to
@@ -35,22 +35,43 @@ if isnumeric(Kernel)
     if Kernel < 1
         warning('Are you sure the FWHM and increm have been written the right way around?')
     end
+%     FWHM = Kernel;
+%     truncation = round(10*FWHM2sigma(FWHM));
     Kernel = @(x) Gker(x,Kernel);
+else
+    truncation = 0;
 end
+truncation = 0;
 
-nsubj = size(data,1);
+Ldim = size(data);
+D = length(Ldim) - 1;
+
+nsubj = size(data,D+1);
 nevals = length(tval);
 Xcfields_at_tval = zeros(nsubj, nevals);
 
-if size(data,2) ~= length(xvalues_at_voxels)
-    error('The dimensions of data and xvalues_at_voxels do not match up')
-end
+% if size(data,1) ~= length(xvalues_at_voxels)
+%     error('The dimensions of data and xvalues_at_voxels do not match up')
+% end
 
-for I = 1:nsubj
-    Xcfields_at_tval(I, :) = applyconvfield(tval, xvalues_at_voxels, Kernel, data(I,:));
+if D == 1
+    for I = 1:nsubj
+        Xcfields_at_tval(I, :) = applyconvfield(tval, data(:,I)', Kernel, truncation, xvals_vecs);
+    end
+elseif D == 2
+    for I = 1:nsubj
+        Xcfields_at_tval(I, :) = applyconvfield(tval, squeeze(data(:,:,I)), Kernel, truncation, xvals_vecs);
+    end
+elseif D == 3
+    for I = 1:nsubj
+        Xcfields_at_tval(I, :) = applyconvfield(tval, squeeze(data(:,:,:,I)), Kernel, truncation, xvals_vecs);
+    end
+else
+    error('adsg')
 end
 
 [T,mu,sigma,d] = mvtstat(Xcfields_at_tval);
 
 end
+
 

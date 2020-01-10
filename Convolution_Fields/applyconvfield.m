@@ -37,16 +37,22 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % applyconvfield(tval, Y, FWHM)
 %
 % %1D Comparison with SPM smoothing:
+% truncation = 4;
 % nvox = 100;
 % xvals_vecs = 1:nvox;
 % nsubj = 50;
-% lat_field = normrnd(0,1,nsubj,nvox);
-% field_at_voxels = applyconvfield(1:nvox, mean(lat_data'), FWHM, truncation, xvals_vecs);
-% [~, ss] = applyconvfield(evalloc, lat_data(:,1)', FWHM, truncation, xvals_vecs);
+% lat_field = normrnd(0,1,nsubj,nvox)';
+% field_at_voxels = applyconvfield(1:nvox, mean(lat_field,2)', FWHM, truncation, xvals_vecs);
+% [~, ss] = applyconvfield(nvox/2, lat_field(:,1)', FWHM, truncation, xvals_vecs);
 % plot(field_at_voxels/sqrt(ss))
 % hold on
-% [smoothfield, ss_spm] = spm_conv_mod(mean(lat_data,2), FWHM);
+% [smoothfield, ss_spm] = spm_conv_mod(mean(lat_field,2), FWHM);
 % plot(smoothfield'/sqrt(ss_spm));
+%
+%
+% %Note need to get things to work with xvalues_at_voxels =
+% MEG_data.freq_vect; i.e fractional values
+% atm Ytemp = Y(xvalues_at_voxels); assumes integers values
 % 
 % 2D:
 % Y = [1,2;3,4];
@@ -131,7 +137,7 @@ if D > 3
 end
 
 if size(tval, 1) ~= D
-    error('The size of the point to evaluate must match the number of dimensions. I.e. the columns of the matrix must be the same as the number of dimensions, if there is only one data point it mustbe a row vector!')
+    error('The size of the point to evaluate must match the number of dimensions. I.e. the columns of the matrix must be the same as the number of dimensions, if there is only one data point it must be a row vector!')
 end
  
 outputdim = length(Kernel(tval(:,1)));
