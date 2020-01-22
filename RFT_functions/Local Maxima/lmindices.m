@@ -1,6 +1,5 @@
- function [lmarrayindices, lmInd] = lmindices(Y, top, mask, CC)
-%   find the local maxima in an N-dimensional
-% array
+function [lmarrayindices, lmInd, IntInd] = lmindices(Y, top, mask, CC)
+% lmindices(Y, top, mask, CC) finds the local maxima in an N-dimensional array
 %--------------------------------------------------------------------------
 % Y      a D dimensional array of real values
 % top    the top number of local maxima of which to report
@@ -53,12 +52,14 @@ if nD == 2
 end
 
 if nD == 1
-    lmInd = lmindices_1D(Y, top, mask);
+    [lmInd, IntInd] = lmindices_1D(Y, top, mask);
     lmarrayindices = lmInd; %arrayindices == indices in 1D!
 elseif nD == 2
     [lmarrayindices, lmInd] = lmindices_2D(Y, top, CC, mask);
+    IntInd = lmarrayindices;
 elseif nD == 3
     [lmarrayindices, lmInd] = lmindices_3D(Y, top, CC, mask);
+    IntInd = lmarrayindices;
 else
     error('N > 3 is not supported yet')
 end

@@ -124,12 +124,13 @@ end
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
 
-if isequal(size(peak_est_locs), [1,1]) && peak_est_locs(1) < 5 && floor(peak_est_locs(1)) == peak_est_locs(1)
+if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
     top = peak_est_locs;
     if strcmp(Ktype, 'G')
         if D < 3
             xvalues_at_voxels = xvals2voxels(xvals_vecs);
             smoothed_data = applyconvfield(xvalues_at_voxels', lat_data, FWHM, truncation, xvals_vecs);
+            smoothed_data = reshape(smoothed_data, size(mask));
             %Using the above no longer need the Ktype condition
 %             smoothed_data = spm_conv(lat_data, FWHM);
         elseif D == 3
@@ -138,9 +139,11 @@ if isequal(size(peak_est_locs), [1,1]) && peak_est_locs(1) < 5 && floor(peak_est
         else
             error('Not yet ready for 4D or larger images')
         end
-        max_indices = lmindices(smoothed_data, top, mask)'; %Note the transpose here! It's necessary for the input to other functions.
+        [~,~,max_indices] = lmindices(smoothed_data, top, mask); %Note the transpose here! It's necessary for the input to other functions.
+        max_indices = max_indices';
     else
-        max_indices = lmindices(lat_data, top, mask)'; %In 3D may need to use spm_smooth for this bit!
+        [~,~,max_indices] = lmindices(lat_data, top, mask); %In 3D may need to use spm_smooth for this bit!
+        max_indices = max_indices';
     end
     if D == 1
         max_indices = max_indices';

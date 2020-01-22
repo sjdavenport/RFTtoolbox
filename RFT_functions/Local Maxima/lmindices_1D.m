@@ -1,4 +1,4 @@
-function lmInd = lmindices_1D(Y, top, mask)
+function [ lmInd, IntInd ] = lmindices_1D(Y, top, mask)
 % lmindices_1D(Y, top, mask) find the local maxima in a 1D random lattice 
 % field.
 %--------------------------------------------------------------------------
@@ -37,10 +37,30 @@ dYneg = (dY < 0);
 
 indices = [1, dYpos].*[dYneg, 1] > 0;
 local_maxima = find(indices);
-[~, Yindices] = sort(Y(indices), 'descend');
+[~, Yindices] = sort(Y(indices), 'descend'); 
 
 top = min(top, length(local_maxima));
 lmInd = sort(local_maxima(Yindices(1:top)));
+
+potentialBInds = lmInd;
+BInd = [];
+if lmInd(1) == 1
+    BInd(1) = lmInd(1);
+    potentialBInds = potentialBInds(2:end);
+end
+if lmInd(end) == length(Y)
+    BIndend = lmInd(end);
+    potentialBInds = potentialBInds(1:end-1);
+else
+    BIndend = [];
+end
+for I = 1:length(potentialBInds)
+    if isnan(Y(potentialBInds(I)-1)*Y(potentialBInds(I)+1))
+        BInd = [BInd,potentialBInds(I)];
+    end
+end
+BInd = [BInd, BIndend];
+IntInd = setdiff(lmInd, BInd);
 
 % [~, sorted_lm_indices] = sort(Y(indices), 'descend');
 % top = min(top, length(sorted_lm_indices));
