@@ -40,12 +40,10 @@ function peak_locs = findtpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mas
 %--------------------------------------------------------------------------
 % EXAMPLES
 % % 1D
-% Y = [1,2,1];
-% findtpeaks(Y, 3, 1:3, 1)
-%
-% % 2D
-% Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
-% find_peak_locs(Y, 3, 1:4, [2,2]')
+% L = 100;
+% nsubj = 50;
+% lat_data = normrnd(0,1, nsubj, L)';
+% findtpeaks(lat_data, 3)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
@@ -59,7 +57,11 @@ D = length(Ldim);
 %     end
 % end
 if nargin < 5
-   mask = ones(Ldim); 
+    if D == 1
+        mask = ones(1,Ldim);
+    else
+        mask = ones(Ldim);
+    end
 end
 
 if isnan(sum(lat_data(:)))
@@ -112,7 +114,7 @@ end
 if isequal(size(peak_est_locs), [1,1])
     top = peak_est_locs;
     xvalues_at_voxels = xvals2voxels( xvals_vecs );
-    teval_lat = tcf(xvalues_at_voxels);
+    teval_lat = tcf(xvalues_at_voxels');
     max_indices = lmindices(teval_lat, top, mask)'; %Note the transpose here! It's necessary for the input to other functions.
     if D == 1
         max_indices = max_indices';
@@ -124,7 +126,7 @@ if isequal(size(peak_est_locs), [1,1])
     end
 end
 if D == 1 && isnan(peak_est_locs(1))
-    peak_est_locs = peak_est_locs(2:end) ;
+    peak_est_locs = peak_est_locs(2:end);
 end
 npeaks = size(peak_est_locs, 2);
 

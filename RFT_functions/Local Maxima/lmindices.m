@@ -28,9 +28,6 @@ if nargin < 2
     top = 1;
 end
 warning('if there is an issue here may have mask and CC the wrong way around')
-if nargin < 3
-    mask = ones(size(Y));
-end
 
 if nargin < 4
     if nD == 2
@@ -49,6 +46,11 @@ if nD == 2
     else 
         nD = 2;
     end
+end
+
+% Need to put this after the previous for loop as dim(Y) can change there!
+if nargin < 3
+    mask = ones(size(Y));
 end
 
 if nD == 1

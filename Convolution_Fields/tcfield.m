@@ -37,7 +37,7 @@ if isnumeric(Kernel)
     end
 %     FWHM = Kernel;
 %     truncation = round(10*FWHM2sigma(FWHM));
-    Kernel = @(x) Gker(x,Kernel);
+    Kernel = @(x) GkerMV(x,Kernel);
 else
     truncation = 0;
 end
@@ -47,7 +47,7 @@ Ldim = size(data);
 D = length(Ldim) - 1;
 
 nsubj = size(data,D+1);
-nevals = length(tval);
+nevals = size(tval,2);
 Xcfields_at_tval = zeros(nsubj, nevals);
 
 % if size(data,1) ~= length(xvalues_at_voxels)
