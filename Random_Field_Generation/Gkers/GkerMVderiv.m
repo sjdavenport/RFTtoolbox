@@ -16,9 +16,9 @@ function deriv = GkerMVderiv( x, sigma2_or_FWHM, use_fwhm )
 % 
 % deriv = GkerMVderiv([1,2]', 3)
 % h = 0.00001;
-% valplushx = GkerMV([1+h,2]', 3); h = 0.0001; 
+% valplushx = GkerMV([1+h,2]', 3);
 % valplushx
-% valplushy = GkerMV([1,2+h]', 3); h = 0.0001;
+% valplushy = GkerMV([1,2+h]', 3);
 % (valplushx - val)/h
 % (valplushy - val)/h
 %--------------------------------------------------------------------------
@@ -36,10 +36,9 @@ end
 D = size(x, 1);
 
 Sigmainv = (1/sigma2)*eye(D);
-val = exp(-sum(x.^2,1)/(2*sigma2))/(sqrt(2*pi*sigma2)^D); %Only this it is Multivariate!
+val = exp(-sum(x.^2,1)/(2*sigma2))/(sqrt(2*pi*sigma2)^D); 
 deriv = -(Sigmainv*x).*repmat(val,D,1);
-% deriv = -(Sigmainv*x).*val; %Without the kernel constant. Not used for
-% 2016 compatibility
+% deriv = -(Sigmainv*x).*val; Not used for 2016 compatibility
 
 end
 
