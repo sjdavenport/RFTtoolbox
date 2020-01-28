@@ -1,17 +1,18 @@
-function rfs = genRF( nreal, df, FWHM, Dim, asvector )
-% genRF( nreal, df, FWHM, Dim, asvector ) returns an nreal by prod(Dim) 
+function rfs = genRF( Dim, df, FWHM, nreal, asvector )
+% genRF(  Dim, df, FWHM, nreal, asvector ) returns an nreal by prod(Dim) 
 % set of random fields with degrees of freedom df (allowing generation of 
-% Gaussian, t and F fields) which have a given FWHM. 
+% Gaussian, t and F fields) which have a given FWHM. (Note if you just want
+% to generate Gaussian fields, you can also use noisegen.m.)
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% nreal   the number of realizations
+% Dim   The dimensions of each field. Default is Dim = [91,109,91].
+%       asvector determines whether an nreal by prod(Dim) or a nreal by Dim 
+%       array is returned. Default takes as_vector = 1.
 % df    If df == 1, a GRF is generated. If df = [1, n] a t field with
 %       n degrees of freedom is generated. If df = [m, n] an F field 
 %       with m and n degrees of freedom is generated.
 % FWHM  The smoothness.
-% Dim   The dimensions of each field. Default is Dim = [91,109,91].
-%       asvector determines whether an nreal by prod(Dim) or a nreal by Dim 
-%       array is returned. Default takes as_vector = 1.
+% nreal   the number of realizations
 % asvector  0/1 if 1 then an nreal by prod(Dim) array is generated. If 0
 %           then the array is nreal by Dim.
 %--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ function rfs = genRF( nreal, df, FWHM, Dim, asvector )
 % rfs = genRF(10, [1,5], 6) %Generates 10 t-fields each with 5 degrees of
 %                           %freedom and generated from FWHM 6 fields.
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
+% AUTHOR: Samuel Davenport.
 if nargin < 4
     Dim = [91,109,91];
 end

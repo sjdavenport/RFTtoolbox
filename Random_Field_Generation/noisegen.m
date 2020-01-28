@@ -41,7 +41,7 @@ function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array
 % [~, ~, std_est] = mvtstat( noise );
 % mean(std_est)
 %--------------------------------------------------------------------------
-% Authors:
+% AUTHORS:
 % Samuel Davenport and Thomas E. Nichols
 if nargin < 2
     nSubj  = 20; 

@@ -34,8 +34,7 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % sqrt(nsubj)*mu/sigmatilde
 % tstat(vox)
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
-% NEEDS TO MOVE TO THE RFTtoolbox!
+% AUTHOR: Samuel Davenport.
 if nargin < 2
     Dim = NaN;
 end
@@ -44,12 +43,6 @@ if nargin < 3
 end
 
 sD = size(data);
-% Error checking
-% if length(sD) > 2
-%     if sD(end) ~= 91
-%         warning('It''s possible that your array is of the wrong shape as it isn''t in MNI space')
-%     end
-% end
 nsubj = sD(1);
 
 xbar = mean(data);
@@ -59,7 +52,6 @@ est_var = (nsubj/(nsubj-1))*(sq_xbar - (xbar.^2)); %This is the population estim
 std_dev = sqrt(est_var);
 
 if Dim == 1
-    global stdsize %This loop is to cover things that use it, it should be deprecated soon!
     stdsize = [91,109,91];
     xbar = reshape(xbar, stdsize);
     std_dev = reshape(std_dev, stdsize);
