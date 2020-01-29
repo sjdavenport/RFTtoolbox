@@ -29,7 +29,8 @@ else
 end
 
 val = exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
-deriv = (-x/sigma2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
+deriv = (-x/sigma2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2); 
+% dxh      = -x .* h / nu( 1 )^2;
 deriv2 = (-1/sigma2 + x.^2/sigma2^2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
 
 end
