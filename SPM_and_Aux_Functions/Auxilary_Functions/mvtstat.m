@@ -2,10 +2,7 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % MVTSTAT( data, threeD, nansaszeros ) computes the multivariate t-statistic.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data          An nsubj by nvox matrix with the data. Can also take in an 
-%               nsubj by Dim matrix with the data but not fixed the output
-%               for this yet, the output is then [1, 91, 109, 91] not
-%               [91,109,91].
+% data          A D by nsubj array with the data.
 % Dim           the dimension to return.
 % nansaszeros   0/1 whether to return NaN entries as zeros. Default is 0.
 %--------------------------------------------------------------------------
@@ -13,15 +10,15 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % tstat         the one sample t-statistic at each voxel.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% noise = noisegen([91,109,91], 20, 6, 1);
+% noise = noisegen([91,109,91], 20, 6, 0);
 % tstat = mvtstat(noise);
 %
 % Dim = [100,100];
-% noise = noisegen(Dim, 20, 2, 1);
+% noise = noisegen(Dim, 20, 2, 0);
 % tstat = mvtstat(noise, Dim);
 %
 % Dim = 100;
-% noise = noisegen(Dim, 20, 2, 1);
+% noise = noisegen(Dim, 20, 2, 0);
 % tstat = mvtstat(noise);
 % 
 % nsubj = 20;
@@ -35,6 +32,7 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % tstat(vox)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
+warning('Have changed nsubj by D to D by nsubj, so may cause errors!')
 if nargin < 2
     Dim = NaN;
 end
@@ -43,10 +41,11 @@ if nargin < 3
 end
 
 sD = size(data);
-nsubj = sD(1);
+D = length(sD) - 1;
+nsubj = sD(end);
 
-xbar = mean(data);
-sq_xbar = mean(data.^2);
+xbar = mean(data, (D+1));
+sq_xbar = mean(data.^2, (D+1));
     
 est_var = (nsubj/(nsubj-1))*(sq_xbar - (xbar.^2)); %This is the population estimate!
 std_dev = sqrt(est_var);
@@ -55,7 +54,7 @@ if Dim == 1
     stdsize = [91,109,91];
     xbar = reshape(xbar, stdsize);
     std_dev = reshape(std_dev, stdsize);
-elseif isequal(prod(Dim),  prod(sD(2:end)))
+elseif isequal(prod(Dim),  prod(sD(1:end-1)))
     xbar = reshape(xbar, Dim);
     std_dev = reshape(std_dev, Dim);
 else
