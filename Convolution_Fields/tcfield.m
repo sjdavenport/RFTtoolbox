@@ -48,7 +48,7 @@ D = length(Ldim) - 1;
 
 nsubj = size(data,D+1);
 nevals = size(tval,2);
-Xcfields_at_tval = zeros(nsubj, nevals);
+Xcfields_at_tval = zeros(nevals, nsubj);
 
 % if size(data,1) ~= length(xvalues_at_voxels)
 %     error('The dimensions of data and xvalues_at_voxels do not match up')
@@ -56,15 +56,15 @@ Xcfields_at_tval = zeros(nsubj, nevals);
 
 if D == 1
     for I = 1:nsubj
-        Xcfields_at_tval(I, :) = applyconvfield(tval, data(:,I)', Kernel, truncation, xvals_vecs);
+        Xcfields_at_tval(:, I) = applyconvfield(tval, data(:,I)', Kernel, truncation, xvals_vecs);
     end
 elseif D == 2
     for I = 1:nsubj
-        Xcfields_at_tval(I, :) = applyconvfield(tval, squeeze(data(:,:,I)), Kernel, truncation, xvals_vecs);
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(data(:,:,I)), Kernel, truncation, xvals_vecs);
     end
 elseif D == 3
     for I = 1:nsubj
-        Xcfields_at_tval(I, :) = applyconvfield(tval, squeeze(data(:,:,:,I)), Kernel, truncation, xvals_vecs);
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(data(:,:,:,I)), Kernel, truncation, xvals_vecs);
     end
 else
     error('adsg')

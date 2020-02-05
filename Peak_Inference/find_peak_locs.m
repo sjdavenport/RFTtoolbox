@@ -63,6 +63,9 @@ if Ldim(1) == 1
         lat_data = reshape(lat_data, Ldim);
     end
 end
+if size(peak_est_locs, 1) ~= D
+    error('peak_est_locs is the wrong dimension!')
+end
 if nargin < 6
     truncation = 0;
 end
@@ -148,7 +151,7 @@ if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_lo
     if D == 1
         max_indices = max_indices';
     end
-    top = length(max_indices);  
+    top = size(max_indices, 2);  
     peak_est_locs = zeros(D, top);
     for I = 1:D
         peak_est_locs(I, :) = xvals_vecs{I}(max_indices(I,:));

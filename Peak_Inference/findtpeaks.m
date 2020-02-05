@@ -1,4 +1,4 @@
-function peak_locs = findtpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mask)
+function peak_locs = findtpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mask, tol)
 % FINDTPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
@@ -47,6 +47,7 @@ function peak_locs = findtpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mas
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
+nsubj = Ldim(end);
 Ldim = Ldim(1:end-1);
 D = length(Ldim);
 % if Ldim(1) == 1 %May need this if you have problems in D = 1?
@@ -82,7 +83,6 @@ if length(xvals_vecs) < D
     end
 end
 
-% nsubj = size(lat_data, 1);
 xvals_vecs_dims = zeros(1,D);
 for d = 1:D
     xvals_vecs_dims(d) = length(xvals_vecs{d});
@@ -114,12 +114,22 @@ end
 if isequal(size(peak_est_locs), [1,1])
     top = peak_est_locs;
     xvalues_at_voxels = xvals2voxels( xvals_vecs );
-    teval_lat = tcf(xvalues_at_voxels');
+    if D < 3
+        teval_lat = tcf(xvalues_at_voxels');
+    else
+        smoothed_field = zeros([Ldim, nsubj]);
+        smoothing_store = zeros(Ldim);
+        for subj = 1:nsubj
+            spm_smooth(lat_data(:,:,:,subj), smoothing_store, Kernel);
+            smoothed_field(:,:,:,subj) = smoothing_store;
+        end
+        teval_lat = mvtstat(smoothed_field, Ldim);
+    end
     max_indices = lmindices(teval_lat, top, mask)'; %Note the transpose here! It's necessary for the input to other functions.
     if D == 1
         max_indices = max_indices';
     end
-    top = length(max_indices);  
+    top = size(max_indices,2);  
     peak_est_locs = zeros(D, top);
     for I = 1:D
         peak_est_locs(I, :) = xvals_vecs{I}(max_indices(I,:));
@@ -132,7 +142,9 @@ npeaks = size(peak_est_locs, 2);
 
 peak_locs = zeros(D, npeaks);
 for peakI = 1:npeaks
-    tol = min(abs(tcf_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+    if nargin < 6
+        tol = min(abs(tcf_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+    end
     notconverged = 1;
     while notconverged > 0 %This loop is to deal with situations where things don't converge on the first initialization.
         try
@@ -141,7 +153,7 @@ for peakI = 1:npeaks
             notconverged = 0;
         catch
             notconverged = notconverged + 1;
-            if notconverged > 10
+            if notconverged > 5
                 error('notconverged has not converged')
             end
         end

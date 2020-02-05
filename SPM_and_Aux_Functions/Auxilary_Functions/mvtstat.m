@@ -32,7 +32,7 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % tstat(vox)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
-warning('Have changed nsubj by D to D by nsubj, so may cause errors!')
+% warning('Have changed nsubj by D to D by nsubj, so may cause errors!')
 if nargin < 2
     Dim = NaN;
 end

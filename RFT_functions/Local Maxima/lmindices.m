@@ -27,7 +27,6 @@ nD = length(dimY);
 if nargin < 2
     top = 1;
 end
-warning('if there is an issue here may have mask and CC the wrong way around')
 
 if nargin < 4
     if nD == 2

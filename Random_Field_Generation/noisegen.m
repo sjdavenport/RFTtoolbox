@@ -1,4 +1,4 @@
-function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array )
+function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array, rimFWHM )
 % NOISEGEN( Dim, nSubj, FWHM, shape_of_array ) generates an array of N(0,1) 
 % noise smoothes this with a gaussian kernel with a certain FWHM and scales 
 % so that the resulting field has variance 1. By default this array is Dim 
@@ -52,7 +52,9 @@ end
 
 nDim    = length(Dim); %The number of dimensions.
 
-rimFWHM = 1.7; %The number of standard deviations or something like that in either direction.
+if nargin < 5
+    rimFWHM = 1.7; %The number of standard deviations or something like that in either direction.
+end
 wDim    = Dim + 2*ceil(rimFWHM*FWHM)*ones(1,nDim);  %The increased dimension, needed to deal with the edge effect.
 
 %The Trunc variables describe the subset that corresponds to the image 

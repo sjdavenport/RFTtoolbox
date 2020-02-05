@@ -47,8 +47,18 @@ function peak_locs = findwpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mas
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
-Ldim = Ldim(1:end-1);
 D = length(Ldim);
+if Ldim(2) == 1
+    lat_data = lat_data';
+    Ldim = Ldim';
+end
+if Ldim(1) == 1
+    D = D - 1;
+    Ldim = Ldim(2:end);
+    if D > 1
+        lat_data = reshape(lat_data, Ldim);
+    end
+end
 
 if nargin < 5
     if D == 1
@@ -85,7 +95,8 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
-wcf = @(tval) applyconvfield( tval, lat_data, xvals_vecs, Kernel )./applyconvfield( tval, mask, xvals_vecs, Kernel );
+wKernel = @(x) Kernel(x).^2;
+wcf = @(tval) applyconvfield( tval, lat_data, Kernel )./applyconvfield( tval, mask, wKernel);
 h = 0.0001;
 if D == 1
     wcf_deriv = @(tval) (wcf(tval+h) - wcf(tval))/h;
@@ -109,7 +120,7 @@ if isequal(size(peak_est_locs), [1,1])
     top = peak_est_locs;
     xvalues_at_voxels = xvals2voxels( xvals_vecs );
     if D < 3
-        smoothed_data = wcf(xvalues_at_voxels);
+        smoothed_data = wcf(xvalues_at_voxels');
         smoothed_data = reshape(smoothed_data, size(mask));
         %Using the above no longer need the Ktype condition
         %             smoothed_data = spm_conv(lat_data, FWHM);
@@ -126,7 +137,7 @@ if isequal(size(peak_est_locs), [1,1])
     if D == 1
         max_indices = max_indices';
     end
-    top = length(max_indices);  
+    top = size(max_indices, 2);  
     peak_est_locs = zeros(D, top);
     for I = 1:D
         peak_est_locs(I, :) = xvals_vecs{I}(max_indices(I,:));
