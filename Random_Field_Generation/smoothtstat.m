@@ -32,10 +32,6 @@ for I = 1:nsubj
 end
 
 [ tstat, xbar ] = mvtstat(setof_smoothed_fields, Dim);
-cohensd = tstat/sqrt(nsubj);
-
-imgsave( cohensd, filename, directory
-imgsave( xbar, filename, directory
 
 end
 
