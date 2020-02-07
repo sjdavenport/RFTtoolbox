@@ -17,8 +17,6 @@ function x_estimate = NewtonRaphson( f, initial_guess, fprime, tol, max_iters )
 % EXAMPLES
 % R -> R
 % NewtonRaphson(@(x) x^2 - 612, @(x)2*x, 1)
-% NewtonRaphson(@examplefunction, @examplefunctionprime, 1)
-% NewtonRaphson(@(theta) loglikTNderiv(2,theta,1), @(theta) loglikTNderivprime(2,theta,1), 2)
 %
 % %R -> RN No point doing this one as may as well zero the first coordinate
 % %using univariate Newton Raphson.
@@ -102,7 +100,7 @@ if fprimenan
         
         iters = iters + 1;
         if iters > max_iters
-            error(strcat('The algorithm doesn''t convergence within ', num2str(max_iters), ' iterations'));
+            x_estimate = NaN*ones(1, D);
         end
     end
 else
@@ -110,7 +108,7 @@ else
         gradmate = fprime(x_estimate);
         if sum(abs(gradmate(:))) < 100*eps
             warning('The derivative has reached a zero value')
-            x_estimate = NaN;
+            x_estimate = NaN*ones(1, D);
             return
         end
         h = -pinv(gradmate)*f(x_estimate); %could change to: h_d = -f(x_estimate)/deriv_at_xest(d);
@@ -121,7 +119,8 @@ else
         
         iters = iters + 1;
         if iters > max_iters
-            error(strcat('The algorithm doesn''t convergence within ', num2str(max_iters), ' iterations'));
+            x_estimate = NaN*ones(1, D);
+%             error(strcat('The algorithm doesn''t convergence within ', num2str(max_iters), ' iterations'));
         end
     end
 end

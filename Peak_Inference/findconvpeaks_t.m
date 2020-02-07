@@ -1,4 +1,4 @@
-function peak_locs = findtpeaks(lat_data, Kernel, xvals_vecs, peak_est_locs, mask, tol)
+function peak_locs = findconvpeaks_t(lat_data, Kernel, xvals_vecs, peak_est_locs, mask, tol)
 % FINDTPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
@@ -115,7 +115,7 @@ if isequal(size(peak_est_locs), [1,1])
     top = peak_est_locs;
     xvalues_at_voxels = xvals2voxels( xvals_vecs );
     if D < 3
-        teval_lat = tcf(xvalues_at_voxels');
+        teval_lat = tcf(xvalues_at_voxels);
     else
         smoothed_field = zeros([Ldim, nsubj]);
         smoothing_store = zeros(Ldim);
@@ -145,18 +145,18 @@ for peakI = 1:npeaks
     if nargin < 6
         tol = min(abs(tcf_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
     end
-    notconverged = 1;
-    while notconverged > 0 %This loop is to deal with situations where things don't converge on the first initialization.
-        try
-            peak_locs(:, peakI) = NewtonRaphson(tcf_deriv, peak_est_locs(:, peakI) + (notconverged-1)*0.1, tcf_deriv2, tol);
-%             peak_locs(peakI) = NewtonRaphson(fderiv, peak_est_locs(peakI) + (notconverged-1)*0.1, fderiv2, tol);
-            notconverged = 0;
-        catch
-            notconverged = notconverged + 1;
-            if notconverged > 5
-                error('notconverged has not converged')
-            end
+    peak_locs(:, peakI) = findpeak( peak_est_locs(:, peakI), tcf, tcf_deriv, tcf_deriv2, 1, tol );
+    if (isnan(sum(peak_locs(:, peakI))) || norm(peak_locs(:, peakI) - peak_est_locs(:, peakI)) > 3)
+        ninter = 0.25; %Could be adjusted starting bigger and made to get smaller?
+        subset_xvals_vecs = cell(1,D);
+        for d = 1:D
+            subset_xvals_vecs{d} = (peak_est_locs(d, peakI) - 1 + ninter):ninter:(peak_est_locs(d, peakI) + 1 - ninter);
         end
+        subset_xvaluesatvoxels = xvals2voxels(subset_xvals_vecs);
+        field_around_peak = tcf(subset_xvaluesatvoxels);
+        [~,max_index] = max(field_around_peak);
+        new_est_peak_loc = subset_xvaluesatvoxels(:, max_index);
+        peak_locs(:, peakI) = NewtonRaphson(tcf_deriv, new_est_peak_loc, tcf_deriv2, tol);
     end
 end
 
