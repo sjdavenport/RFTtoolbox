@@ -13,23 +13,40 @@ function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
 % lmInd 
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %3D example
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
 % a(10,50,35) = 3;
 % lmindices_new(a,2)
+%
+% %1D example
+% lmindices_new([1,2,1])
+%
+% %2D example
+% lmindices_new([1,1,1;1,2,1;1,1,1])
+% lmindices_new([1,1,1;1,2,1;1,1,1;1,1,2], 2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 if nargin < 2
     top = 1;
 end
+Y = squeeze(Y);
+Ydim = size(Y);
+D = length(Ydim); %Note in the D = 1 case we still take D = 2 and use a 
+%connectivity criterion of 8 as this is equivalent to a connectivity criterion of 2!
+
 if nargin < 3
-    mask = ones(size(Y));
+    mask = ones(Ydim);
 end
 if nargin < 4
-    CC = 26;
+    if D == 2
+        CC = 8;
+    elseif DD == 3
+        CC = 26;
+    else
+        error('NotworkedoutD>3yet')
+    end
 end
-
-Ydim = size(Y);
 
 r = 0.1;
 [a,b,c] = ndgrid(r*(1:size(Y,1)), r*(1:size(Y,2)), r*(1:size(Y,3)));
@@ -43,8 +60,17 @@ indices = find(imregionalmax(Y, CC).*mask);
 top = min(top, length(sorted_lm_indices));
 lmInd = indices(sorted_lm_indices(1:top)); %choose the top indices and return with top first second second etcetera
 
-[lmarrayindicesx,lmarrayindicesy, lmarrayindicesz]  = ind2sub(Ydim, lmInd);
-lmarrayindices = [lmarrayindicesx, lmarrayindicesy, lmarrayindicesz];
+if D == 2
+    [lmarrayindicesx,lmarrayindicesy]  = ind2sub(Ydim, lmInd);
+    lmarrayindices = [lmarrayindicesx, lmarrayindicesy]';
+elseif D == 3
+    [lmarrayindicesx,lmarrayindicesy, lmarrayindicesz]  = ind2sub(Ydim, lmInd);
+    lmarrayindices = [lmarrayindicesx, lmarrayindicesy, lmarrayindicesz]';
+end
+
+if Ydim(1) == 1
+    lmarrayindices = lmarrayindicesy;
+end
 
 end
 

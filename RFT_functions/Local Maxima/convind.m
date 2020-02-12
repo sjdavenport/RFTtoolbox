@@ -1,5 +1,5 @@
-function out = convind( ind, conv2what, size_of_array)
-% CONVIND( ind, conv2what, size_of_array ) switches between vector indexing and 
+function out = convind( ind, size_of_array, conv2what)
+% CONVIND( ind, size_of_array, conv2what ) switches between vector indexing and 
 % coordinate indexing. 
 % For a size vector x = size [x_1, ..., x_n] and an array A of size x we can 
 % convert A to a vector of length x_1*...*x_n via A(:). Similarly for any
@@ -35,22 +35,30 @@ function out = convind( ind, conv2what, size_of_array)
 %--------------------------------------------------------------------------
 % AUTHOR: Sam Davenport.
 if nargin < 2
-    conv2what = 0;
-end
-if nargin < 3
     stdsize = [91,109,91];
     size_of_array = stdsize;
 end
-len_ind = length(ind);
+if nargin < 3
+    conv2what = 0;
+end
 
-if len_ind > 1 && ~(len_ind == length(size_of_array))
+len_ind = length(ind);
+% warning('if there is an error oculd be because you switched the 2nd two arguments')
+
+D = length(size_of_array);
+if len_ind > 1 && ~(len_ind == D)
    error('The length of ind must be 1 (vector representation) or be the same length as the size of the array (array representation).') 
 end
 
 if len_ind == 1
     %Vector to coordinate change
-    [x,y,z] = ind2sub(size_of_array, ind);
-    out = [x,y,z];
+    if D == 3
+        [x,y,z] = ind2sub(size_of_array, ind);
+        out = [x,y,z];
+    elseif D == 2
+        [x,y] = ind2sub(size_of_array, ind);
+        out = [x,y];
+    end
     if conv2what == 1
         out = out - 1;
     elseif conv2what == 2
@@ -65,6 +73,8 @@ else
     ind_string = ind_string(1:end-1);
     out = eval(strcat('sub2ind(size_of_array, ',ind_string,')'));
 end
+
+out = squeeze(out);
 
 end
 

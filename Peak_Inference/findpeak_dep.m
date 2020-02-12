@@ -21,7 +21,7 @@ function x_estimate = findpeak( initial_guess, f, fprime, fprime2, max_or_min, t
 %--------------------------------------------------------------------------
 % EXAMPLES
 % R -> R
-% NewtonRaphson(0.1, @(x) x^4, @(x)4*x^3, @(x) 12*x^2, 1)
+% findpeak(0.1, @(x) x^4, @(x)4*x^3, @(x) 12*x^2, 1)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 if nargin < 4
@@ -124,20 +124,20 @@ else
         fprintf('eigenvalues of fprime2\n')
         eig(gradmate)
         fprintf('h\n')
-        h = -pinv(gradmate)*fprime(x_estimate)
-        pause
+        h = -pinv(gradmate)*fprime(x_estimate);
        
         if f(x_estimate + h) > f(x_estimate - h)
             x_estimate = x_estimate + max_or_min*h;
         else
             x_estimate = x_estimate - max_or_min*h;
         end
+        f(x_estimate)
         
-        if h < htol
-            [V,D] = eig(gradmate)
-            edirections = find(max_or_min*diag(D) > 0)
-            if any(edirections)
-                
+        [V,D] = eig(gradmate);
+        edirections = find(max_or_min*diag(D) > 0);
+        if all(h < htol) && ~isempty(edirections)
+            x_estimate = x_estimate + 0.01*V(:,edirections(1));
+            f(x_estimate)
         end
         
         difference = sum(abs(fprime(x_estimate))); %abs(f(new_x)) + abs(new_x - x_estimate)

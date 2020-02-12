@@ -1,4 +1,4 @@
-function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, data, xvals_vecs, Kernel )
+function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, data, xvals_vecs, Kernel, truncation )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 1D-t
 % convolution field given a 1D lattice with xvalues given by xvalues_at_voxels
 % a vector data with the values of the lattice field at the specified
@@ -38,10 +38,10 @@ if isnumeric(Kernel)
 %     FWHM = Kernel;
 %     truncation = round(10*FWHM2sigma(FWHM));
     Kernel = @(x) GkerMV(x,Kernel);
-else
+end
+if nargin < 5
     truncation = 0;
 end
-truncation = 0;
 
 Ldim = size(data);
 D = length(Ldim) - 1;

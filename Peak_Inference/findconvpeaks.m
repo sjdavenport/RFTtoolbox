@@ -1,5 +1,5 @@
-function peak_locs = findconvpeaks(lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask)
-% FIND_PEAK_LOCS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
+function peak_locs = findconvpeaks(lat_data, Kprime, peak_est_locs, mask, xvals_vecs, Kprime2, truncation)
+% FINDCONVPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -41,13 +41,25 @@ function peak_locs = findconvpeaks(lat_data, Kprime, xvals_vecs, peak_est_locs, 
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D
+% These examples start on negative definite areas so it is easy to then use
+% Newton-Raphson to find a maximum. It's more difficult if that's not the
+% case!!
+% % 1D 
 % Y = [1,2,1];
-% find_peak_locs(Y, 3, 1:3, 1)
+% findconvpeaks(Y, 3, 1)
 %
 % % 2D
 % Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
-% find_peak_locs(Y, 3, 1:4, [2,2]')
+% findconvpeaks(Y, 3, [2,2]')
+%
+% Y = [1,1,1;2,1,1;1,1,1] %I.e so the peak will be outside the mask!
+% mask = [0,1,1;0,1,1;0,1,1];
+% findconvpeaks(Y, 3, [2,2]', mask)
+%
+% Y = [1,1,1;10,1,1;1,1,1] %I.e so the peak will be outside the mask!
+% mask = [0,1,1;0,1,1;0,1,1];
+% findconvpeaks(Y, 3, [3,3]', mask) %Need to fix so that
+% initialization at [2,2] is fine as well!
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport.
 Ldim = size(lat_data);
@@ -66,18 +78,25 @@ end
 if size(peak_est_locs, 1) ~= D
     error('peak_est_locs is the wrong dimension!')
 end
+if nargin < 3 
+    peak_est_locs = 1; %I.e. just consider the maximum.
+end
+if nargin < 4
+    if D == 1
+        mask = ones(1,Ldim);
+    else
+        mask = ones(Ldim);
+    end
+end
 if nargin < 6
     truncation = 0;
-end
-if nargin < 7
-   mask = ones(size(lat_data)); 
 end
 
 if isnan(sum(lat_data(:)))
    error('Cant yet deal with nans') 
 end
 
-Ktype = '';
+Ktype = '';  
 if isnumeric(Kprime)
     FWHM = Kprime;
     if Kprime < 1
@@ -86,13 +105,13 @@ if isnumeric(Kprime)
     Kprime = @(x) GkerMVderiv(x,FWHM);
     Kprime2 = @(x) GkerMVderiv2(x,FWHM);
     Ktype = 'G';
-    field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
+%     field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
 elseif nargin < 5
     Kprime2 = NaN;
 end
 
 %Setting up xvals_vecs
-if nargin < 4
+if nargin < 5
     xvals_vecs = {1:Ldim(1)}; %The other dimensions are taken case of below.
 end
 if ~iscell(xvals_vecs)
@@ -121,10 +140,6 @@ else
     field_deriv2 = @(tval) reshape(applyconvfield(tval, lat_data, Kprime2, truncation, xvals_vecs), [D,D]);
 end
 
-if nargin < 4 
-    peak_est_locs = 1; %I.e. just consider the maximum.
-end
-
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
 
@@ -133,7 +148,7 @@ if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_lo
     if strcmp(Ktype, 'G')
         if D < 3
             xvalues_at_voxels = xvals2voxels(xvals_vecs);
-            smoothed_data = applyconvfield(xvalues_at_voxels', lat_data, FWHM, truncation, xvals_vecs);
+            smoothed_data = applyconvfield(xvalues_at_voxels, lat_data, FWHM, truncation, xvals_vecs);
             smoothed_data = reshape(smoothed_data, size(mask));
             %Using the above no longer need the Ktype condition
 %             smoothed_data = spm_conv(lat_data, FWHM);
@@ -165,51 +180,33 @@ npeaks = size(peak_est_locs, 2);
 
 peak_locs = zeros(D, npeaks);
 for peakI = 1:npeaks
-%     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
-%     field_deriv(peak_est_locs(:, peakI))
-    tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
-    
-    peak_locs(:, peakI) = findpeak( peak_est_locs(:, peakI), field_deriv, fprime, fprime2, 1, tol );
-%     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);
-    if (isnan(sum(peak_locs(:, peakI))) || norm(peak_locs(:, peakI) - peak_est_locs(:, peakI)) > 3)&& strcmp(Ktype, 'G') 
-        ninter = 0.25; %Could be adjusted starting bigger and made to get smaller?
-        subset_xvals_vecs = cell(1,D);
-        for d = 1:D
-            subset_xvals_vecs{d} = (peak_est_locs(d, peakI) - 1 + ninter):ninter:(peak_est_locs(d, peakI) + 1 - ninter);
-        end
-        subset_xvaluesatvoxels = xvals2voxels(subset_xvals_vecs);
-        field_around_peak = field(subset_xvaluesatvoxels);
-        [~,max_index] = max(field_around_peak);
-        new_est_peak_loc = subset_xvaluesatvoxels(:, max_index);
-        peak_locs(:, peakI) = NewtonRaphson(field_deriv, new_est_peak_loc, field_deriv2, tol);
+    %     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
+    %     field_deriv(peak_est_locs(:, peakI))
+    %     tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+    if nargin < 6
+        tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
     end
-%     notconverged = 1;
-%     while notconverged > 0 %This loop is to deal with situations where things don't converge on the first initialization.
-%         try
-%             peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI) + (notconverged-1)*0.1, field_deriv2, tol);
-% %             peak_locs(peakI) = NewtonRaphson(fderiv, peak_est_locs(peakI) + (notconverged-1)*0.1, fderiv2, tol);
-%             notconverged = 0;
-%         catch
-%             notconverged = notconverged + 1;
-%             if notconverged > 10
-%                 error('notconverged has not converged')
-%             end
+    peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol);
+    if field(peak_locs(:, peakI)) < field(peak_est_locs(:, peakI))
+        peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.01, 0.0001);
+    end
+    % %     peak_locs(:, peakI) = gascent( peak_est_locs(:, peakI), field_deriv, 0.01, tol, field);
+%     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);
+end
+
+end
+
+% peak_locs(:, peakI) = findpeak( peak_est_locs(:, peakI), field_deriv, fprime, fprime2, 1, tol );
+% %     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);
+%     if (isnan(sum(peak_locs(:, peakI))) || norm(peak_locs(:, peakI) - peak_est_locs(:, peakI)) > 3)&& strcmp(Ktype, 'G') 
+%         ninter = 0.25; %Could be adjusted starting bigger and made to get smaller?
+%         subset_xvals_vecs = cell(1,D);
+%         for d = 1:D
+%             subset_xvals_vecs{d} = (peak_est_locs(d, peakI) - 1 + ninter):ninter:(peak_est_locs(d, peakI) + 1 - ninter);
 %         end
+%         subset_xvaluesatvoxels = xvals2voxels(subset_xvals_vecs);
+%         field_around_peak = field(subset_xvaluesatvoxels);
+%         [~,max_index] = max(field_around_peak);
+%         new_est_peak_loc = subset_xvaluesatvoxels(:, max_index);
+%         peak_locs(:, peakI) = NewtonRaphson(field_deriv, new_est_peak_loc, field_deriv2, tol);
 %     end
-end
-
-end
-
-% notconverged = 1;
-    %     while notconverged > 0
-    %         peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI) + (notconverged-1)*0.1, field_deriv2);
-    %         try
-%     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI) + (notconverged-1)*0.1, field_deriv2);
-    %             notconverged = 0;
-    %         catch
-    %             notconverged = notconverged + 1;
-    %             if notconverged > 10
-    %                 error('notconverged has not converged')
-    %             end
-    %         end
-    %     end
