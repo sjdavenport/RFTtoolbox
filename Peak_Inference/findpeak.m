@@ -1,4 +1,4 @@
-function x_estimate = findpeak( initial_guess, fprime, fprime2, mask, max_or_min, tol, gamma, g_ascent_tol, f )
+function [x_estimate, ga_estimate] = findpeak( initial_guess, fprime, fprime2, mask, max_or_min, tol, gamma, g_ascent_tol, f )
 % FINDPEAK( initial_guess, f, fprime, fprime2, max_or_min, tol, max_iters )
 % finds the peak (either a maximum or minimum) of a random field by
 % searching from an initial estimate.
@@ -71,7 +71,7 @@ if nargin < 6
     tol = 10^(-5);
 end
 if nargin < 7
-    gamma = 0.05;
+    gamma = 0.025;
 end
 if nargin < 8
     g_ascent_tol = 0.01;
@@ -100,6 +100,7 @@ else
     end
     if inmask(initial_guess, boundary)
         x_estimate = gascent_mask(initial_guess, fprime, mask, gamma, 0.00001, f);
+        ga_estimate = x_estimate;
         % maybe should tkae a large gamma but enforce the algorithm to go
         % no more than 0.5 voxels each time!
     else
@@ -109,7 +110,7 @@ else
     end
 end
 
-% NEED TO IMPLEmENT The below to CATCH IF THE END POINT NOT ON THE MASK
+% NEED TO IMPLEMENT The below to CATCH IF THE END POINT NOT ON THE MASK
 % however don't need to run it if you tried the mask above. Trouble is
 % otherwise you don't have a mask so the below stuff doesn't quite work!
 % Fix it.

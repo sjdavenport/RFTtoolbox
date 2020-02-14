@@ -28,6 +28,10 @@ function xvaluesatvoxels = xvals2voxels( xvals_vecs )
 
 D = length(xvals_vecs);
 
+if ~iscell(xvals_vecs)
+    error('Need it to be a cell array!')
+end
+
 if D == 1
     xvaluesatvoxels = xvals_vecs{1};
 elseif D == 2

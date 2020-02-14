@@ -105,7 +105,9 @@ if fprimenan
     end
 else
     while difference > tol
+%         x_estimate;
         gradmate = fprime(x_estimate);
+%         pinv(gradmate)
         if sum(abs(gradmate(:))) < 100*eps
             warning('The derivative has reached a zero value')
             x_estimate = NaN*ones(1, D);
@@ -120,6 +122,7 @@ else
         iters = iters + 1;
         if iters > max_iters
             x_estimate = NaN*ones(1, D);
+            return
 %             error(strcat('The algorithm doesn''t convergence within ', num2str(max_iters), ' iterations'));
         end
     end

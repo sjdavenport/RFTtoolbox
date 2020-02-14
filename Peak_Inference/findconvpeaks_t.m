@@ -1,4 +1,4 @@
-function peak_locs = findconvpeaks_t(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, tol)
+ function peak_locs = findconvpeaks_t(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, tol)
 % FINDTPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
@@ -151,8 +151,21 @@ for peakI = 1:npeaks
     end
 %     peak_locs(:, peakI) = gascent( peak_est_locs(:, peakI), tcf_deriv, 0.01, tol, tcf);
     peak_locs(:, peakI) = findpeak( peak_est_locs(:, peakI), tcf_deriv, tcf_deriv2, mask, 1, tol, 0.05, 0.01, tcf);
-    if tcf(peak_locs(:, peakI)) < tcf(peak_est_locs(:, peakI))
-        peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), tcf_deriv, tcf_deriv2, mask, 1, tol, 0.01, 0.0001, tcf);
+    if tcf(peak_locs(:, peakI)) < tcf(peak_est_locs(:, peakI)) || isnan(sum(peak_locs(:, peakI)))
+        [NR,GA] = findpeak(peak_est_locs(:, peakI), tcf_deriv, tcf_deriv2, mask, 1, tol, 0.01, 0.0001, tcf);
+        numberofrunthroughs = 1;
+        while isnan(sum(NR(:))) && numberofrunthroughs < 3
+            [NR,GA] = findpeak(peak_est_locs(:, peakI), tcf_deriv, tcf_deriv2, mask, 1, tol/(10^numberofrunthroughs), 0.01, 0.0001, tcf);
+            peak_locs(:, peakI) = GA;
+            numberofrunthroughs = numberofrunthroughs + 1;
+        end
+        if isnan(sum(NR(:)))
+            warning('convergence didn''t occur')
+            peak_locs(:, peakI) = GA;
+        else
+            peak_locs(:, peakI) = NR;
+        end
+%         peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), tcf_deriv, tcf_deriv2, mask, 1, tol, 0.01, 0.001, tcf);
     end
 %     peak_locs(:, peakI) = NewtonRaphson(tcf_deriv, peak_est_locs(:, peakI), tcf_deriv2, tol);
 end
