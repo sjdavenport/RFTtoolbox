@@ -105,7 +105,6 @@ if isnumeric(Kprime)
     Kprime = @(x) GkerMVderiv(x,FWHM);
     Kprime2 = @(x) GkerMVderiv2(x,FWHM);
     Ktype = 'G';
-%     field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
 elseif nargin < 5
     Kprime2 = NaN;
 end
@@ -133,6 +132,7 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
+field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
 field_deriv = @(tval) applyconvfield(tval, lat_data, Kprime, truncation, xvals_vecs );
 if isnumeric(Kprime2)
     field_deriv2 = NaN;
@@ -186,9 +186,9 @@ for peakI = 1:npeaks
     if nargin < 6
         tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
     end
-    peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol);
+    peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.05, 0.01, field);
     if field(peak_locs(:, peakI)) < field(peak_est_locs(:, peakI))
-        peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.01, 0.0001);
+        peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.01, 0.0001, field);
     end
     % %     peak_locs(:, peakI) = gascent( peak_est_locs(:, peakI), field_deriv, 0.01, tol, field);
 %     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);

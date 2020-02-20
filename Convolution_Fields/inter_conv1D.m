@@ -16,7 +16,14 @@ function [cfield, xvals, ss_vec ] = inter_conv1D( data, Kernel, increment, norma
 % ss_vec        a vector with the sum of squares at each point
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% nvox = 100; xvals = 1:nvox;
+% FWHM = 3;
+% lat_data = normrnd(0,1,1,nvox)
+% cfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+% plot(xvals, cfield(xvals))
+% hold on
+% convfield = inter_conv1D( lat_data, FWHM, 0.01);
+% plot(1:0.01:nvox,convfield)
 %--------------------------------------------------------------------------
 % NOTES
 % Potentially should change that so that (given length n) instead of 

@@ -28,8 +28,8 @@ function clusters = clusterloc_1D(data, u, xvals)
 %--------------------------------------------------------------------------
 % EXAMPLES
 % L = 10;
-% data = normrnd(0,1,1,L);
-% [cfield, xvals] = convfield_1D(data, 1);
+% lat_data = normrnd(0,1,1,L);
+% [cfield, xvals] = convfield_1D(lat_data, 1);
 % thresh = 1;
 % plot(xvals, cfield)
 % hold on
@@ -68,6 +68,7 @@ end
 clusters.locs = cell(clusters.nC, 1);
 clusters.indices = cell(clusters.nC, 1);
 clusters.maxloc = zeros(1,clusters.nC);
+clusters.maxval = zeros(1,clusters.nC);
 clusters.peakinclus = zeros(1,clusters.nC);
 clusters.cextent = zeros(1,clusters.nC);
 
@@ -75,7 +76,7 @@ for J = 1:clusters.nC
     clusters.indices{J} = [start_locs(J), end_locs(J)];
     clusters.locs{J} = xvals(clusters.indices{J}); %[xvals(start_locs(J)), xvals(end_locs(J))];
     cluster_indices = start_locs(J):end_locs(J);
-    [~,maxidx] = max(data(cluster_indices)); 
+    [clusters.maxval(J),maxidx] = max(data(cluster_indices)); 
     clusters.maxloc(J) = xvals(cluster_indices(maxidx));
     
     if (clusters.maxloc(J) > xvals(start_locs(J))) && (clusters.maxloc(J) < xvals(end_locs(J)))
