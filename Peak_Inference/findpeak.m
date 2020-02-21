@@ -8,7 +8,7 @@ function [x_estimate, ga_estimate] = findpeak( initial_guess, fprime, fprime2, m
 % gets slower as you approach a maximum and NR can get stuck at local
 % minima or saddle points!) Plus near saddle points/local minima you should 
 % be taking the line of steepest ascent up. Near boundaries should just use
-% gradient ascent as the derivative is not zeor so you won't converge
+% gradient ascent as the derivative is not zero so you won't converge
 % slowly!! May need to investigate peturbing things if you still get stuck
 % in saddle points.  NEED TO Put In A CLAUSE FOR WHEN THE FPRIME2 is not
 % specfied forcingit to use gradient ascent in this case!.

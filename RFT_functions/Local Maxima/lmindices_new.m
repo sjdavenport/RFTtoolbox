@@ -41,7 +41,7 @@ end
 if nargin < 4
     if D == 2
         CC = 8;
-    elseif DD == 3
+    elseif D == 3
         CC = 26;
     else
         error('NotworkedoutD>3yet')
