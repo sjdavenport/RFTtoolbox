@@ -1,4 +1,4 @@
-function peak_locs = findconvpeaks(lat_data, Kprime, peak_est_locs, mask, xvals_vecs, Kprime2, truncation)
+function peak_locs = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % FINDCONVPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
@@ -97,16 +97,9 @@ if isnan(sum(lat_data(:)))
 end
 
 Ktype = '';  
-if isnumeric(Kprime)
-    FWHM = Kprime;
-    if Kprime < 1
-        warning('Are you sure the FWHM and increm have been written the right way around?')
-    end
-    Kprime = @(x) GkerMVderiv(x,FWHM);
-    Kprime2 = @(x) GkerMVderiv2(x,FWHM);
+if isnumeric(Kernel)
+    FWHM = Kernel;
     Ktype = 'G';
-elseif nargin < 5
-    Kprime2 = NaN;
 end
 
 %Setting up xvals_vecs
@@ -133,12 +126,6 @@ if ~isequal(xvals_vecs_dims, Ldim)
 end
 
 field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
-field_deriv = @(tval) applyconvfield(tval, lat_data, Kprime, truncation, xvals_vecs );
-if isnumeric(Kprime2)
-    field_deriv2 = NaN;
-else
-    field_deriv2 = @(tval) reshape(applyconvfield(tval, lat_data, Kprime2, truncation, xvals_vecs), [D,D]);
-end
 
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
@@ -179,22 +166,38 @@ end
 npeaks = size(peak_est_locs, 2);
 
 peak_locs = zeros(D, npeaks);
+A = [eye(D);-eye(D)];
+% b = [Ldim(:)+0.5;ones(D,1)-0.5];
+b = zeros(2*D,1);
+for d = 1:D
+    b(d) = xvals_vecs{d}(end);
+end
+for d = 1:D
+    b(d+D) = xvals_vecs{d}(1);
+end
+%Need to discuss which boundary to use with Fabian!!!
+
 for peakI = 1:npeaks
-    %     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
-    %     field_deriv(peak_est_locs(:, peakI))
-    %     tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
-    if nargin < 6
-        tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
-    end
-    peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.05, 0.01, field);
-    if field(peak_locs(:, peakI)) < field(peak_est_locs(:, peakI))
-        peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.01, 0.0001, field);
-    end
-    % %     peak_locs(:, peakI) = gascent( peak_est_locs(:, peakI), field_deriv, 0.01, tol, field);
-%     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);
+    peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b);
 end
 
 end
+
+
+% for peakI = 1:npeaks
+%     %     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
+%     %     field_deriv(peak_est_locs(:, peakI))
+%     %     tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+%     if nargin < 6
+%         tol = min(abs(field_deriv(peak_est_locs(:,peakI)))/100000, 0.0001);
+%     end
+%     peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.05, 0.01, field);
+%     if field(peak_locs(:, peakI)) < field(peak_est_locs(:, peakI))
+%         peak_locs(:, peakI) = findpeak(peak_est_locs(:, peakI), field_deriv, field_deriv2, mask, 1, tol, 0.01, 0.0001, field);
+%     end
+%     % %     peak_locs(:, peakI) = gascent( peak_est_locs(:, peakI), field_deriv, 0.01, tol, field);
+% %     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);
+% end
 
 % peak_locs(:, peakI) = findpeak( peak_est_locs(:, peakI), field_deriv, fprime, fprime2, 1, tol );
 % %     peak_locs(:, peakI) = NewtonRaphson(field_deriv, peak_est_locs(:, peakI), field_deriv2, tol);

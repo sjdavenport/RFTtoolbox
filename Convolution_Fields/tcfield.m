@@ -72,6 +72,10 @@ end
 
 [T,mu,sigma,d] = mvtstat(Xcfields_at_tval);
 
+if D == 1
+    T = T';
+end
+
 end
 
 

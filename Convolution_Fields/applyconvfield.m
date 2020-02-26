@@ -56,7 +56,7 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % 
 % 2D:
 % Y = [1,2;3,4];
-% tval = [1.5,2; 3.4,2]; FWHM = 3;
+% tval = [1.5,2,4; 3.4,2, 5]; FWHM = 3;
 % applyconvfield_gen(tval, Y, @(x) GkerMV( x, FWHM))
 % applyconvfield(tval, Y, FWHM)
 %

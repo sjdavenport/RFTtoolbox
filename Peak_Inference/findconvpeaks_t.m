@@ -104,21 +104,22 @@ tcf = @(tval) tcfield( tval, lat_data, xvals_vecs, Kernel, truncation );
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
 
-if isequal(size(peak_est_locs), [1,1])
+if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
     top = peak_est_locs;
-    xvalues_at_voxels = xvals2voxels( xvals_vecs );
-    if D < 3
-        teval_lat = tcf(xvalues_at_voxels);
-    else
-        smoothed_field = zeros([Ldim, nsubj]);
-        smoothing_store = zeros(Ldim);
-        for subj = 1:nsubj
-            spm_smooth(lat_data(:,:,:,subj), smoothing_store, Kernel);
-            smoothed_field(:,:,:,subj) = smoothing_store;
-        end
-        teval_lat = mvtstat(smoothed_field, Ldim);
-    end
-    max_indices = lmindices(teval_lat, top, mask)'; %Note the transpose here! It's necessary for the input to other functions.
+%     xvalues_at_voxels = xvals2voxels( xvals_vecs );
+    teval_lat = smoothtstat(lat_data, Kernel);
+%     if D < 3
+%         teval_lat = tcf(xvalues_at_voxels);
+%     else
+%         smoothed_field = zeros([Ldim, nsubj]);
+%         smoothing_store = zeros(Ldim);
+%         for subj = 1:nsubj
+%             spm_smooth(lat_data(:,:,:,subj), smoothing_store, Kernel);
+%             smoothed_field(:,:,:,subj) = smoothing_store;
+%         end
+%         teval_lat = mvtstat(smoothed_field, Ldim);
+%     end
+    max_indices = lmindices_new(teval_lat, top, mask); %Note the transpose here! It's necessary for the input to other functions.
     if D == 1
         max_indices = max_indices';
     end
@@ -135,9 +136,17 @@ npeaks = size(peak_est_locs, 2);
 
 peak_locs = zeros(D, npeaks);
 A = [eye(D);-eye(D)];
-b = [Ldim(:)+0.5;ones(D,1)-0.5];
+% b = [Ldim(:)+0.5;ones(D,1)-0.5];
+b = zeros(2*D,1);
+for d = 1:D
+    b(d) = xvals_vecs{d}(end);
+end
+for d = 1:D
+    b(d+D) = xvals_vecs{d}(1);
+end
+% b = [Ldim(:);ones(D,1)] %Need to discuss which boundary to use with Fabian!!!
+
 for peakI = 1:npeaks
-    fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b)
     peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b);
 end
 

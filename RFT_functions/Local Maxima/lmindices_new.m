@@ -21,6 +21,7 @@ function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
 %
 % %1D example
 % lmindices_new([1,2,1])
+% lmindices_new([1,2,1,2,1],2)
 %
 % %2D example
 % lmindices_new([1,1,1;1,2,1;1,1,1])
