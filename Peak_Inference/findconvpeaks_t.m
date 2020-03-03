@@ -142,7 +142,7 @@ for d = 1:D
     b(d) = xvals_vecs{d}(end);
 end
 for d = 1:D
-    b(d+D) = xvals_vecs{d}(1);
+    b(d+D) = -xvals_vecs{d}(1);
 end
 % b = [Ldim(:);ones(D,1)] %Need to discuss which boundary to use with Fabian!!!
 

@@ -76,7 +76,7 @@ if Ldim(1) == 1
     end
 end
 if size(peak_est_locs, 1) ~= D
-    error('peak_est_locs is the wrong dimension!')
+si    error('peak_est_locs is the wrong dimension!')
 end
 if nargin < 3 
     peak_est_locs = 1; %I.e. just consider the maximum.

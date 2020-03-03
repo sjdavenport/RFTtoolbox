@@ -10,7 +10,7 @@ function sigma = FWHM2sigma( FWHM )
 % EXAMPLES
 % 
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
+% AUTHOR: Samuel Davenport.
 
 sigma = FWHM/sqrt(8*log(2));
 end
