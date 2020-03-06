@@ -39,6 +39,10 @@ D = length(Ydim); %Note in the D = 1 case we still take D = 2 and use a
 if nargin < 3
     mask = ones(Ydim);
 end
+if ~isequal(size(mask), size(Y))
+    error('The mask must be the same size as Y')
+end
+
 if nargin < 4
     if D == 2
         CC = 8;
@@ -69,8 +73,12 @@ elseif D == 3
     lmarrayindices = [lmarrayindicesx, lmarrayindicesy, lmarrayindicesz]';
 end
 
-if Ydim(1) == 1
-    lmarrayindices = lmarrayindicesy;
+if D == 2
+    if Ydim(1) == 1
+        lmarrayindices = lmarrayindicesy;
+    elseif Ydim(2) == 1
+        lmarrayindices = lmarrayindicesx;
+    end
 end
 
 end

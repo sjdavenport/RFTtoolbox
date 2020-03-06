@@ -76,7 +76,7 @@ if Ldim(1) == 1
     end
 end
 if size(peak_est_locs, 1) ~= D
-si    error('peak_est_locs is the wrong dimension!')
+    error('peak_est_locs is the wrong dimension!')
 end
 if nargin < 3 
     peak_est_locs = 1; %I.e. just consider the maximum.
@@ -173,7 +173,7 @@ for d = 1:D
     b(d) = xvals_vecs{d}(end);
 end
 for d = 1:D
-    b(d+D) = xvals_vecs{d}(1);
+    b(d+D) = -xvals_vecs{d}(1);
 end
 %Need to discuss which boundary to use with Fabian!!!
 
