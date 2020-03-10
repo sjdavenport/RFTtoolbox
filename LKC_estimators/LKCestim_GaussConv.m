@@ -126,7 +126,7 @@ switch D
 
     case 2
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, N ] );
+        Y2 = zeros( [ Dimhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel

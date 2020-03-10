@@ -16,8 +16,7 @@ function [val, deriv, deriv2] = Gker( x, sigma2_or_FWHM, use_fwhm )
 % Gker([1.5,2], 3)
 % Gker([1.5,2; 0, 1], 3)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
-% Don't change this! Too much depends on it! LOL
+% AUTHOR: Samuel Davenport
 if nargin < 3
     use_fwhm = 1;
 end
