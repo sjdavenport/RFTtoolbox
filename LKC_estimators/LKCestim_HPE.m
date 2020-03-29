@@ -27,7 +27,6 @@ function LKC = LKCestim_HPE( Y, D, mask, Mboot, version )
 % dim   = [50 50 50];
 % nsubj = 30;
 % D     = length( dim );
-% uvals = -6 : 0.1 : 6;
 % mask  = true(dim);
 % 
 % % generate random noise
@@ -35,8 +34,7 @@ function LKC = LKCestim_HPE( Y, D, mask, Mboot, version )
 % % compute HPE and bHPE
 % HPE  = LKCestim_HPE( Y, D, mask, 1, "C" );
 % bHPE = LKCestim_HPE( Y, D, mask, 5e3, "C" );
-% 
-% --------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 
 %%%%%%%%%%%%%%%%%%%%%%% Get constants from the input %%%%%%%%%%%%%%%%%%%%%%
@@ -49,7 +47,7 @@ index  = repmat( {':'}, 1, D );     % get variable domain counter
 
 % check that method is implemented for dimension D
 if D > 3
-    error( 'Size of Y can only have length<4. Higher dimensional domains not implemented')
+    error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% add default values %%%%%%%%%%%%%%%%%%%%%%%%%%%

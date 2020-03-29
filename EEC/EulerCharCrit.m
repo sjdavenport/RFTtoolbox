@@ -8,8 +8,8 @@ function EC = EulerCharCrit( f, D, mask, version )
 %        characteristic curves should be computed
 %   D    an integer containing the dimension of the domain of the random
 %        fields
-%   mask an boolean array K_1, x ... x K_D) having TRUE, for the values
-%        voxels belonging to the mask. Default True(size(f, 1:D)).
+%   mask an boolean array K_1, x ... x K_D having TRUE, for the values
+%        voxels belonging to the mask. Default: true(size(f, 1:D)).
 %   version a string. If "C" the fast C implementation is used (default)
 %           if "matlab" a slow matlab only implementation is used.
 %--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ function EC = EulerCharCrit( f, D, mask, version )
 
 %%%%%%%%% Preliminary constants, input check etc.
 if D > 3
-    error( "The method is unfortunately until now only implemeted for D < 3." )
+    error( "The method is unfortunately until now only implemeted for D <= 3." )
 end
 
 switch D
@@ -59,7 +59,7 @@ if ~exist( 'mask', 'var' )
     mask = true( sf(1:D) );
     L0 = 1;
 elseif ~all( size( mask ) == sf( 1:D ) )
-    error( "Please, specify an input mask, which has the same dimension as the domain of the data" )
+    error( "Please specify an input mask, which has the same dimension as the domain of the data" )
 else
     L0 = EulerChar( mask, 0.5, D );
 end
