@@ -90,6 +90,16 @@ surf(Sig)
 
 ![alt tag](Figures/readme_signal.png)
 
-## Set Up
+## Set Up <a name="setup"></a>
 If you have any difficulties getting this code to run or have any questions
 feel free to get in touch with me via samuel.davenport(AT)stats.ox.ac.uk.
+
+### Compiling C code
+In order to compile the c-code required to efficiently run the hermite projector estimator
+you will need to navigate to the folder EEC/csource/ and run
+```
+mex EulerCharCrit_c.cpp
+```
+you may need to install the MATLAB C/C++ compiler for your system in order to do this.
+MATLAB give you instructions on how to do so in an error message obtained from 
+running the above code.
