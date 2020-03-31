@@ -132,7 +132,8 @@ else
         % differences of EC between consecutive critical values
         b = -diff( ECall{ i }( 2:end, 2 ) );
         % Hermite polynomials evaluated at critical values
-        H =  [ v; ( v.^2 - 1 ); ( v.^3 - 3 * v ); ( v.^4 - 6 * v.^2 + 3 ) ];
+        H =  [ v; ( v.^2 - 1 ); ( v.^3 - 3 * v );...
+                    ( v.^4 - 6 * v.^2 + 3 ) ];
 
         L_hat( :, i ) = p( 1:D ) .* ( H( 1:D, : ) * b );
     end

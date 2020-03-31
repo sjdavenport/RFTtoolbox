@@ -1,4 +1,4 @@
-function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
+function [L, geom] = LKCestim_GaussConv( Y, FWHM, D, resAdd, remove )
 % LKCestim_GaussConv( Y, nu, D, resAdd, remove )
 % estimates the Lipschitz Killing curvatures for a convolution process.
 % It uses the fact that derivatives can be represented as convolutions
@@ -56,7 +56,7 @@ domDim = sY( 1 : end-1 );
 % dimension of the domain
 D = length( domDim );
 % number of samples
-N      = sY( end );
+nsubj = sY( end );
 
 %------------ check input and set default values --------------------------
 if nargin < 5
@@ -85,7 +85,7 @@ geom = struct();
 switch D
     case 1
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, N ] );
+        Y2 = zeros( [ domDimhr, nsubj ] );
         Y2( 1:(resAdd + 1):end, : ) = Y;
         
         % grid for convolution kernel
@@ -104,7 +104,7 @@ switch D
         % get the estimates of the covariances
         VY    = var( smY,  0, D+1 );
         VdxY  = var( smYx, 0, D+1 );
-        CYdxY = sum( ( smYx - mean(smYx, D+1) ) .* smY, D+1 ) / (N-1);
+        CYdxY = sum( ( smYx - mean(smYx, D+1) ) .* smY, D+1 ) / (nsubj-1);
                  
         % remove padded values in simulation of generated process to
         % avoid boundary effect
@@ -126,7 +126,7 @@ switch D
 
     case 2
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ Dimhr, nsubj ] );
+        Y2 = zeros( [ domDimhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel
@@ -151,11 +151,11 @@ switch D
         VdxY = var( smYx, 0, D+1 );
         VdyY = var( smYy, 0, D+1 );
         CdxYdyY = sum( ( smYy - mean( smYy, D+1 ) ) .* ...
-                         smYx, D+1 ) / (N-1);
+                         smYx, D+1 ) / (nsubj-1);
         CYdxY = sum( ( smYx - mean( smYx, D+1 ) ) .* ...
-                       smY, D+1 ) / (N-1);
+                       smY, D+1 ) / (nsubj-1);
         CYdyY = sum( ( smYy - mean( smYy, D+1 ) ) .* ...
-                       smY, D+1 ) / (N-1);
+                       smY, D+1 ) / (nsubj-1);
                  
         % entries of riemanian metric
         g_xx = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
@@ -199,7 +199,7 @@ switch D
         
     case 3
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, N ] );
+        Y2 = zeros( [ domDimhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel
@@ -228,18 +228,18 @@ switch D
         VdzY = var( smYy, 0, D+1 );
         
         CdxYdyY = sum( ( smYy - mean( smYy, D+1 ) ) .* ...
-                     ( smYx - mean( smYx, D+1 ) ), D+1 ) / (N-1);
+                     ( smYx - mean( smYx, D+1 ) ), D+1 ) / (nsubj-1);
         CdxYdzY = sum( ( smYx - mean( smYx, D+1 ) ) .* ...
-                     ( smYz - mean( smYz, D+1 ) ), D+1 ) / (N-1);
+                     ( smYz - mean( smYz, D+1 ) ), D+1 ) / (nsubj-1);
         CdyYdzY = sum( ( smYy - mean( smYy, D+1 ) ) .* ...
-                     ( smYz - mean( smYz, D+1 ) ), D+1 ) / (N-1);
+                     ( smYz - mean( smYz, D+1 ) ), D+1 ) / (nsubj-1);
 
         CYdxY = sum( ( smYx - mean( smYx, D+1 ) ) .* ...
-                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (N-1);
+                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (nsubj-1);
         CYdyY = sum( ( smYy - mean( smYy, D+1 ) ) .* ...
-                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (N-1);
+                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (nsubj-1);
         CYdzY = sum( ( smYz - mean( smYz, D+1 ) ) .* ...
-                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (N-1);
+                     ( smY  - mean( smY,  D+1 ) ), D+1 ) / (nsubj-1);
                  
         % entries of riemanian metric
         g_xx = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
