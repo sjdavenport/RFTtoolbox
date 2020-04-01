@@ -12,6 +12,9 @@ function EC = EulerCharCrit( f, D, mask, version )
 %        voxels belonging to the mask. Default: true(size(f, 1:D)).
 %   version a string. If "C" the fast C implementation is used (default)
 %           if "matlab" a slow matlab only implementation is used.
+%           If the string is "CN" with N an integer, the image is split into
+%           N parts and EC is computed parallelized using parfor.
+%           Note that this will require the parallel computing toolbox. 
 %--------------------------------------------------------------------------
 % OUTPUT
 %   EC curve is computed for all N fields f. The 2 x N_crit array contains
@@ -68,6 +71,24 @@ if ~exist( 'version', 'var' )
     version = "C";
 end
 
+% prepare for parallelisation, if assumed.
+if ~isempty( str2num( version ) )
+    Npar    = str2num( version );
+    version = "C";
+    
+    % save the state of the CPU's are open already
+    state_gcp = isempty(gcp('nocreate'));
+
+    % open connection to CPUs, if not already established
+    if( state_gcp && Npar > 1 ) 
+        parpool( Npar );
+        state_gcp = 42;
+    end
+
+else
+    Npar    = 0;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % set all values outside the mask to -Inf
 if ~all(mask(:))
@@ -78,38 +99,122 @@ if ~all(mask(:))
     end
 end
 
-% Pad large negative values to the array, which is required for 
-% EulerCharCrit_c input
-f_tmp = f;
-if length( sf ) == D
-    f     = -Inf * ones( sf + repmat( 2, [ 1 D ] ) );
-else
-    f     = -Inf * ones( sf + [ repmat( 2, [ 1 D ] ) 0 ] );
-end
+% prepare the field for the EulerCharCrit_c input
+if Npar == 0
+    % Pad large negative values to the array, which is required for 
+    % EulerCharCrit_c input
+    f_tmp = f;
+    if length( sf ) == D
+        f = -Inf * ones( sf + repmat( 2, [ 1 D ] ) );
+    else
+        f = -Inf * ones( sf + [ repmat( 2, [ 1 D ] ) 0 ] );
+    end
 
-switch D
-    case 1
-        f( 2:end-1, : ) = f_tmp;
-    case 2
-        f( 2:end-1, 2:end-1, : ) = f_tmp;
-    case 3
-        f( 2:end-1, 2:end-1, 2:end-1, : ) = f_tmp;
+    switch D
+        case 1
+            f( 2:end-1, : ) = f_tmp;
+        case 2
+            f( 2:end-1, 2:end-1, : ) = f_tmp;
+        case 3
+            f( 2:end-1, 2:end-1, 2:end-1, : ) = f_tmp;
+    end
+    clear f_tmp
+else
+    % find Npar break points
+    par_breaks = 1:floor( sf(1) / Npar ):sf(1);
+    par_breaks(end) = sf(1);
+    
+    f_tmp = cell( [ 1 Npar ] );
+    index  = repmat( {':'}, 1, D );
+    
+    for k = 1:Npar
+        if length( sf ) == D
+            f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k) sf(2:end) ]...
+                                + repmat( 2, [ 1 D ] ) );
+        else
+            f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k)+1 sf(2:end) ]...
+                                + [ repmat( 2, [ 1 D ] ) 0 ] );
+        end
+        
+        if k == 1
+            switch D
+                case 1
+                    f_tmp{k}(2:end, :) = f( ( 1:par_breaks(k+1) + 1),...
+                                             index{:} );
+                case 2
+                    f_tmp{k}(2:end, 2:end-1, :) = f( ( 1:par_breaks(k+1) + 1),...
+                                             index{:} );
+                case 3
+                    f_tmp{k}(2:end, 2:end-1, 2:end-1, :) = f( ( 1:par_breaks(k+1) + 1),...
+                                             index{:} );
+            end
+        elseif k == Npar
+            switch D
+                case 1
+                    f_tmp{k}(1:end-1, :) = f( ( (par_breaks(k)-1):par_breaks(k+1) ),...
+                                             index{:} );
+                case 2
+                    f_tmp{k}(1:end-1, 2:end-1, :) = f( ( (par_breaks(k)-1):par_breaks(k+1) ),...
+                                             index{:} );
+                case 3
+                    f_tmp{k}(1:end-1, 2:end-1, 2:end-1, :) = f( ( (par_breaks(k)-1):par_breaks(k+1) ),...
+                                             index{:} );
+            end
+        else
+            switch D
+                case 1
+                    f_tmp{k}(:, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                                             index{:} );
+                case 2
+                    f_tmp{k}(:, 2:end-1, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                                             index{:} );
+                case 3
+                    f_tmp{k}(:, 2:end-1, 2:end-1, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                                             index{:} );
+            end
+        end
+    end
 end
-clear f_tmp
 
 %%%% Compute the EC curves
 if strcmp( version, "C" )
     % C based implementation
-    for n = 1:nEC
-        ECn = EulerCharCrit_c( f( index{:}, n ), cc )';
-        ECn = ECn( ECn( :, 2 ) ~= 0, : );
-        ECn = ECn( ~isnan( ECn( :, 1 ) ), : );
-        ECn = ECn( ECn( :, 1 )~=-Inf, : );
+    if Npar < 2
+        for n = 1:nEC
+            ECn = EulerCharCrit_c( f( index{:}, n ), cc )';
+            ECn = ECn( ECn( :, 2 ) ~= 0, : );
+            ECn = ECn( ~isnan( ECn( :, 1 ) ), : );
+            ECn = ECn( ECn( :, 1 )~=-Inf, : );
 
-        [ ~, I ]   = sort( ECn( :, 1 ), 'ascend' );
-        ECn     = ECn( I, : );
-        EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ 1; 1; 1 + ...
-                    cumsum( ECn( :, 2 ) ) ] ];
+            [ ~, I ]   = sort( ECn( :, 1 ), 'ascend' );
+            ECn     = ECn( I, : );
+            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ 1; 1; 1 + ...
+                        cumsum( ECn( :, 2 ) ) ] ];
+        end
+    else
+        for n = 1:nEC
+            % parallelize EC computation using parfor
+            tmp = cell( [ 1 Npar ] );
+            parfor k = 1:Npar
+                index2  = repmat( {':'}, 1, D );
+                tmp{k} = EulerCharCrit_c( f_tmp{k}( index2{:}, n ), cc )';
+            end
+            clear index2
+            
+            ECn = [];
+            for k = 1:Npar
+                ECn = [ECn; tmp{k}];
+            end
+            
+            ECn = ECn( ECn( :, 2 ) ~= 0, : );
+            ECn = ECn( ~isnan( ECn( :, 1 ) ), : );
+            ECn = ECn( ECn( :, 1 )~=-Inf, : );
+
+            [ ~, I ]   = sort( ECn( :, 1 ), 'ascend' );
+            ECn     = ECn( I, : );
+            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ 1; 1; 1 + ...
+            cumsum( ECn( :, 2 ) ) ] ];
+        end
     end
 else
     % treat cases split by dimension
@@ -184,4 +289,10 @@ else
             end
     end
 end
+
+% close connection to CPUs
+if( state_gcp == 42 && Npar > 1 )   
+    delete(gcp)
+end
+
 return
