@@ -1,4 +1,4 @@
-function LKC = LKCestim_HPE( Y, D, mask, Mboot, version )
+function LKC = LKCestim_HPE( Y, D, mask, Mboot, normalize, version )
 % LKCestim_HPE( Y, D, mask, Mboot, version )
 % This function computes the Lipschitz Killing curvature using the
 % Hermite projection estimator proposed in Telschow et al (2020+).
@@ -17,6 +17,7 @@ function LKC = LKCestim_HPE( Y, D, mask, Mboot, version )
 % Mboot     an integer specifying the number of bootstraps used for
 %           estimation of LKC. If 1 the estimator is equal to the HPE
 %           otherwise the bHPE (recommended Mboot>3e3)
+% normalize boolean indicating whether Y is standardized. Default 1.
 % version   if "C" (default), critical values are computed using C++, if
 %           it is any other value a slow matlab only implementation is used.
 %--------------------------------------------------------------------------
@@ -74,11 +75,15 @@ else
 end
 clear i
 
-if nargin < 7
+if nargin < 5
     % default value of "version"
     version = "C";
 end
 
+if nargin < 6
+    % default value of "version"
+    normalize = true;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize the LKC output
@@ -100,7 +105,7 @@ if( Mboot > 1 )
     % reshape and and standardize the field, such that it has unit variance
     Y = reshape( Y, prod( sY(1:end-1) ), N );
     % normalize the residuals
-    Y = Y ./ sqrt(sum( Y.^2, 2 ));
+    Y = ( Y - mean( Y, 2 ) ) ./ sqrt( sum( Y.^2, 2 ) );
 
     for i = 1:Mboot
         % get the bootstrapped process
@@ -122,6 +127,11 @@ if( Mboot > 1 )
     end
     L0 = EC(1,2);
 else
+    % normalize the field to have mean zero and unit variance
+    if normalize
+        Y = ( Y - mean( Y, D+1 ) ) ./ std( Y, 0, D+1 );
+    end
+    
     % Get the EC stepfunctions
     ECall = EulerCharCrit( Y, D, mask, version );
 
