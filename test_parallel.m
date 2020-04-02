@@ -13,31 +13,37 @@ f = noisegen( Dim, nsubj, FWHM, 0);
 mask = ones(Dim);
 
 % number of bootstraps used
-Mboot = 5e3;
-
+Mboot   = 1e3;
+locWork = 2; 
 
 delete(gcp) 
-parpool( 2 );
+parpool( locWork );
+% slow parallel version
+rng(1)
 tic;
- LKC = LKCestim_HPE( f, D, mask, Mboot, 0, "2" );
+ LKC1 = LKCestim_HPE( f, D, mask, Mboot, 0, num2str(locWork) );
 toc;
-L1 = LKC.hatn;
+% quick parallel version
+rng(1)
+tic;
+ LKC2 = LKCestim_HPE2( f, D, mask, Mboot, 0, num2str(locWork) );
+toc;
+delete(gcp)
+% check values
+mean( (LKC1.hat1(:)-LKC2.hat1(:)).^2 )
  
-delete(gcp('nocreate')) 
-parpool( 2 );
+% normal version 1
+rng(1)
 tic;
- LKC = LKCestim_HPE2( f, D, mask, Mboot, 0, "2" );
+ LKC3 = LKCestim_HPE( f, D, mask, Mboot );
 toc;
-L3 = LKC.hatn;
- 
- delete(gcp)
+% check values
+mean( (LKC2.hat1(:)-LKC3.hat1(:)).^2 )
+
+% normal version 2
+rng(1)
 tic;
- LKC = LKCestim_HPE( f, D, mask, Mboot, 0, "C" );
+LKC4 = LKCestim_HPE( f, D, mask, Mboot, 0, "C" );
 toc;
- L2 = LKC.hatn;
-
- % difference between estimates obtained by parallelization or not
-dL = L1-L2
-
-parTimeE - parTimeB
-norTimeE - norTimeB
+% check values
+mean( (LKC2.hat1(:)-LKC4.hat1(:)).^2 )
