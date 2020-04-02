@@ -85,6 +85,23 @@ if nargin < 6
     normalize = true;
 end
 
+% prepare for parallelisation, if assumed.
+if ~isempty( str2num( version ) )
+    Npar    = str2num( version );
+    
+    % save the state of the CPU's are open already
+    state_gcp = isempty(gcp('nocreate'));
+
+    % open connection to CPUs, if not already established
+    if( state_gcp && Npar > 1 ) 
+        parpool( Npar );
+        state_gcp = 42;
+    end
+else
+    Npar    = 0;
+    state_gcp = 0;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize the LKC output
 if Mboot > 1
@@ -125,7 +142,7 @@ if( Mboot > 1 )
 
         L_hat( :, i ) = p( 1:D ) .* ( H( 1:D, : ) * b );
     end
-    L0 = EC(1,2);
+    L0 = EC( 1, 2 );
 else
     % normalize the field to have mean zero and unit variance
     if normalize
@@ -148,6 +165,11 @@ else
         L_hat( :, i ) = p( 1:D ) .* ( H( 1:D, : ) * b );
     end
     L0 = ECall{1}(1,2);
+end
+
+% close connection to CPUs
+if( state_gcp == 42 && Npar > 1 )   
+    delete(gcp)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% stat summary %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
