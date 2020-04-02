@@ -84,9 +84,9 @@ if ~isempty( str2num( version ) )
         parpool( Npar );
         state_gcp = 42;
     end
-
 else
     Npar    = 0;
+    state_gcp = 0;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,31 +122,45 @@ if Npar == 0
 else
     % find Npar break points
     par_breaks = 1:floor( sf(1) / Npar ):sf(1);
-    par_breaks(end) = sf(1);
+    if length( par_breaks ) == Npar+1
+        par_breaks(end) = sf(1);
+    else
+        par_breaks = [ par_breaks, sf(1)];
+    end
     
     f_tmp = cell( [ 1 Npar ] );
     index  = repmat( {':'}, 1, D );
     
     for k = 1:Npar
         if length( sf ) == D
-            f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k) sf(2:end) ]...
+            if k < Npar
+                f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k) sf(2:end) ]...
                                 + repmat( 2, [ 1 D ] ) );
+            else
+                f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k)+1 sf(2:end) ]...
+                                + repmat( 2, [ 1 D ] ) );
+            end
         else
-            f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k)+1 sf(2:end) ]...
+            if k < Npar
+                f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k) sf(2:end) ]...
                                 + [ repmat( 2, [ 1 D ] ) 0 ] );
+            else
+                f_tmp{k} = -Inf * ones( [ par_breaks(k+1)-par_breaks(k)+1 sf(2:end) ]...
+                                + [ repmat( 2, [ 1 D ] ) 0 ] );
+            end
         end
         
         if k == 1
             switch D
                 case 1
-                    f_tmp{k}(2:end, :) = f( ( 1:par_breaks(k+1) + 1),...
-                                             index{:} );
+                    f_tmp{k}(2:end, :) = f( ( 1:par_breaks(k+1) ),...
+                                              index{:} );
                 case 2
-                    f_tmp{k}(2:end, 2:end-1, :) = f( ( 1:par_breaks(k+1) + 1),...
-                                             index{:} );
+                    f_tmp{k}(2:end, 2:end-1, :) = f( ( 1:par_breaks(k+1) ),...
+                                                       index{:} );
                 case 3
-                    f_tmp{k}(2:end, 2:end-1, 2:end-1, :) = f( ( 1:par_breaks(k+1) + 1),...
-                                             index{:} );
+                    f_tmp{k}(2:end, 2:end-1, 2:end-1, :) = f( ( 1:par_breaks(k+1) ),...
+                                                                index{:} );
             end
         elseif k == Npar
             switch D
@@ -163,13 +177,13 @@ else
         else
             switch D
                 case 1
-                    f_tmp{k}(:, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                    f_tmp{k}(:, :) = f( ( ( par_breaks(k)-1):(par_breaks(k+1) ) ),...
                                              index{:} );
                 case 2
-                    f_tmp{k}(:, 2:end-1, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                    f_tmp{k}(:, 2:end-1, :) = f( ( ( par_breaks(k)-1):(par_breaks(k+1) ) ),...
                                              index{:} );
                 case 3
-                    f_tmp{k}(:, 2:end-1, 2:end-1, :) = f( ( (par_breaks(k)-1):(par_breaks(k+1)+1) ),...
+                    f_tmp{k}(:, 2:end-1, 2:end-1, :) = f( ( ( par_breaks(k)-1):(par_breaks(k+1) ) ),...
                                              index{:} );
             end
         end
