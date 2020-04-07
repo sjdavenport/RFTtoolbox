@@ -6,21 +6,24 @@ close all
 
 Dim = [30 30 30];
 nSubj = 200;
-FWHM = 4;
+FWHM = 5;
 FWHMcor = 10;
 
 % different choices for voxelmaps
 rng(1)
-voxelmap = 1:85184; % identity
-voxelmap = randsample( 85184, 85184 ); % all random
-voxelmap = (0:44:(44^3-1) ) + randsample( 44, 44 );
+Nwvox = 110592;
+wd1 = round((Nwvox)^(1/3));
+
+voxelmap = 1:Nwvox; % identity
+voxelmap = randsample( Nwvox, Nwvox ); % all random
+voxelmap = (0:wd1:(Nwvox-1) ) + randsample( wd1, wd1 );
 voxelmap = voxelmap(:);
-voxelmap = (0:44:(44^3/2-1) ) + randsample( 44, 44 );
+voxelmap = (0:wd1:(Nwvox/2-1) ) + randsample( wd1, wd1 );
 voxelmap = voxelmap(:);
-voxelmap = [voxelmap; 44^3/2 + randsample( 44^3/2, 44^3/2 )];
+voxelmap = [voxelmap; Nwvox/2 + randsample( Nwvox/2, Nwvox/2 )];
 
 
-rng(1)
+%rng(1)
 [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM, FWHMcor, voxelmap );
 figure(1)
 imagesc(squeeze(data(:,14,:,14))), colorbar
@@ -54,3 +57,14 @@ figure(11)
 imagesc(squeeze(datan(:,14,:,1))), colorbar
 figure(12)
 imagesc(squeeze(datan(:,14,:,12))), colorbar
+
+%% Test the multiplier base fields
+data2 = multiplier_field( data, 1000 );
+figure(13)
+imagesc( squeeze(data2(:,14,:,14)) ), colorbar
+figure(14)
+imagesc(squeeze(data2(:,14,:,15))), colorbar
+figure(15)
+imagesc(squeeze(data2(:,14,:,1))), colorbar
+figure(16)
+imagesc(squeeze(data2(:,14,:,12))), colorbar
