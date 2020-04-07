@@ -7,7 +7,7 @@ close all
 Dim = [30 30 30];
 nSubj = 200;
 FWHM = 4;
-FWHMcor = 5;
+FWHMcor = 10;
 
 % different choices for voxelmaps
 rng(1)
@@ -33,12 +33,24 @@ imagesc(squeeze(RawNoise(:,14,:,15))), colorbar
 
 % mean variance of nonstat field
 datastd = std( data, 0, length(Dim)+1 );
-figure(5), imagesc(datastd(:,:,10)), colorbar
+figure(5), imagesc( squeeze(datastd(:,10,:)) ), colorbar
 datamean = mean( data, length(Dim)+1 );
-figure(6), imagesc( datamean(:,:,10)), colorbar
+figure(6), imagesc( squeeze(datamean(:,10,:)) ), colorbar
 
 % mean variance of raw data
 rawstd = std( RawNoise, 0, length(Dim)+1 );
-figure(7), imagesc(rawstd(:,:,10)), colorbar
+figure(7), imagesc( squeeze(rawstd(:,10,:)) ), colorbar
 rawmean = mean( RawNoise, length(Dim)+1 );
-figure(8), imagesc(rawmean(:,:,10)), colorbar
+figure(8), imagesc( squeeze(rawmean(:,10,:)) ), colorbar
+
+% pointwise normalized fields
+datan = (data - mean(data, 4) ) ./ std(data, 0, 4);
+
+figure(9)
+imagesc( squeeze(datan(:,14,:,14)) ), colorbar
+figure(10)
+imagesc(squeeze(datan(:,14,:,15))), colorbar
+figure(11)
+imagesc(squeeze(datan(:,14,:,1))), colorbar
+figure(12)
+imagesc(squeeze(datan(:,14,:,12))), colorbar

@@ -172,10 +172,5 @@ for subj = 1:nSubj
         end
     end
 end
-
-if shape_of_array == 0
-    data    = data - mean(data, nDim+1);
-end
-
 end
 
