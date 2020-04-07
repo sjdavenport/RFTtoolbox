@@ -138,9 +138,8 @@ for subj = 1:nSubj
         else
             tt       = spm_smooth_mod(RawNoise(:,:,:,subj),Noises,FWHM);
         end
-        Noises    = Noises/sqrt(tt); %Done to standardize.
     end
-  
+        
     % Truncate to avoid edge effects
     if nDim == 1 
         trunNoises    = Noises(TrnInd{1});
@@ -172,6 +171,10 @@ for subj = 1:nSubj
             data(subj,:,:,:) = trunNoises;
         end
     end
+end
+
+if shape_of_array == 0
+    data    = data - mean(data, nDim+1);
 end
 
 end

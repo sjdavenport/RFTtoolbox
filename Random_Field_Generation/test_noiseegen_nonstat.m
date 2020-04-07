@@ -5,7 +5,7 @@ clear all
 close all
 
 Dim = [30 30 30];
-nSubj = 50;
+nSubj = 200;
 FWHM = 4;
 FWHMcor = 5;
 
@@ -15,23 +15,27 @@ voxelmap = 1:85184; % identity
 voxelmap = randsample( 85184, 85184 ); % all random
 voxelmap = (0:44:(44^3-1) ) + randsample( 44, 44 );
 voxelmap = voxelmap(:);
+voxelmap = (0:44:(44^3/2-1) ) + randsample( 44, 44 );
+voxelmap = voxelmap(:);
+voxelmap = [voxelmap; 44^3/2 + randsample( 44^3/2, 44^3/2 )];
+
 
 rng(1)
 [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM, FWHMcor, voxelmap );
 figure(1)
-imagesc(data(:,:,14,14)), colorbar
+imagesc(squeeze(data(:,14,:,14))), colorbar
 figure(2)
-imagesc(RawNoise(:,:,14,14)), colorbar
+imagesc(squeeze(RawNoise(:,14,:,14))), colorbar
 figure(3)
-imagesc(data(:,:,14,15)), colorbar
+imagesc(squeeze(data(:,14,:,15))), colorbar
 figure(4)
-imagesc(RawNoise(:,:,14,15)), colorbar
+imagesc(squeeze(RawNoise(:,14,:,15))), colorbar
 
 % mean variance of nonstat field
 datastd = std( data, 0, length(Dim)+1 );
 figure(5), imagesc(datastd(:,:,10)), colorbar
 datamean = mean( data, length(Dim)+1 );
-figure(6), imagesc( data(:,:,10)), colorbar
+figure(6), imagesc( datamean(:,:,10)), colorbar
 
 % mean variance of raw data
 rawstd = std( RawNoise, 0, length(Dim)+1 );
