@@ -24,12 +24,30 @@ function [cfield, xvals, ss_vec ] = inter_conv1D( data, Kernel, increment, norma
 % hold on
 % convfield = inter_conv1D( lat_data, FWHM, 0.01);
 % plot(1:0.01:nvox,convfield)
-%--------------------------------------------------------------------------
+%
+% % Illusrating the normalizing feature
+% nvox = 100;
+% FWHM = 3;
+% niters = 1000;
+% xvals = 1:0.01:nvox;
+% L = length(xvals);
+% field_store = zeros(niters,L);
+% 
+% for I = 1:niters
+%     if mod(I, 1000) == 0 
+%         I
+%     end
+%     lat_data = normrnd(0,1,1,nvox);
+%     field_store(I, :) = inter_conv1D( lat_data, FWHM, 0.01, 1);
+% end
+% var_est = var(field_store);
+% plot(var_est)
+% --------------------------------------------------------------------------
 % NOTES
 % Potentially should change that so that (given length n) instead of 
 % generating data on [1,n] it generates it on [1/2, n+1/2] which might make
 % more sense in the context of the brain.
-% AUTHOR: Sam Davenport.
+% AUTHOR: Samuel Davenport.
 if nargin < 3
     increment = 0.01;
 end

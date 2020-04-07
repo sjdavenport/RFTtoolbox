@@ -177,8 +177,9 @@ for d = 1:D
 end
 %Need to discuss which boundary to use with Fabian!!!
 
+options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
 for peakI = 1:npeaks
-    peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b);
+    peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
 end
 
 end

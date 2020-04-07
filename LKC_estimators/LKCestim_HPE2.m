@@ -1,4 +1,4 @@
-function LKC = LKCestim_HPE( Y, D, mask, Mboot, normalize, version )
+function LKC = LKCestim_HPE2( Y, D, mask, Mboot, normalize, version )
 % LKCestim_HPE( Y, D, mask, Mboot, version )
 % This function computes the Lipschitz Killing curvature using the
 % Hermite projection estimator proposed in Telschow et al (2020+).
@@ -90,7 +90,7 @@ if ~isempty( str2num( version ) )
     Npar    = str2num( version );
     
     % save the state of the CPU's are open already
-    state_gcp = isempty(gcp('nocreate'));
+    state_gcp = isempty( gcp( 'nocreate' ) );
 
     % open connection to CPUs, if not already established
     if( state_gcp && Npar > 1 ) 
@@ -123,13 +123,18 @@ if( Mboot > 1 )
     Y = reshape( Y, prod( sY(1:end-1) ), N );
     % normalize the residuals
     Y = ( Y - mean( Y, 2 ) ) ./ sqrt( sum( Y.^2, 2 ) );
+    
+    sYY = sY(1:end-1);
+    version = "C";
 
-    for i = 1:Mboot
+    parfor i = 1:Mboot
+        p = [ sqrt( 2 * pi ); pi; ( 2 * pi )^( 3 / 2 ) / factorial( 3 ); ...
+      ( 2 * pi )^( 4 / 2 ) / factorial( 4 ) ];
         % get the bootstrapped process
-        mY = reshape( Y * multiplier( :, i ), sY(1:end-1) );
+        mY = reshape( Y * multiplier( :, i ), sYY );
 
         % Get the EC stepfunctions
-        EC = EulerCharCrit( mY, D, mask, version );
+        EC = EulerCharCrit2( mY, D, mask, version );
         EC = EC{ 1 };
 
         % Get LKC by integrating the EC curves against the Hermite
@@ -142,7 +147,6 @@ if( Mboot > 1 )
 
         L_hat( :, i ) = p( 1:D ) .* ( H( 1:D, : ) * b );
     end
-    L0 = EC( 1, 2 );
 else
     % normalize the field to have mean zero and unit variance
     if normalize
@@ -150,7 +154,7 @@ else
     end
     
     % Get the EC stepfunctions
-    ECall = EulerCharCrit( Y, D, mask, version );
+    ECall = EulerCharCrit2( Y, D, mask, version );
 
     for i = 1:N
         % Get LKC by integrating the Euler Char curves against the Hermite
@@ -188,5 +192,5 @@ else
 end
 % Summarize output
 LKC  = struct( 'hat1', L_hat, 'hatn', L_hatn, 'Sigma_hat', Sigma_hat, ...
-               'se_hat', L_se_hat, 'conf_hat', L_conf_hat, 'L0', L0 );
+               'se_hat', L_se_hat, 'conf_hat', L_conf_hat, 'L0', EulerChar( mask, 0.5, D ) );
 return
