@@ -75,12 +75,12 @@ else
 end
 clear i
 
-if nargin < 5
+if nargin < 6
     % default value of "version"
     version = "C";
 end
 
-if nargin < 6
+if nargin < 5
     % default value of "version"
     normalize = true;
 end
