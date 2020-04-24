@@ -22,7 +22,6 @@ voxelmap = (0:wd1:(Nwvox/2-1) ) + randsample( wd1, wd1 );
 voxelmap = voxelmap(:);
 voxelmap = [voxelmap; Nwvox/2 + randsample( Nwvox/2, Nwvox/2 )];
 
-
 %rng(1)
 [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM, FWHMcor, voxelmap );
 figure(1)

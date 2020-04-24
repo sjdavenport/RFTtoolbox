@@ -19,17 +19,19 @@ function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
 % a(10,50,35) = 3;
 % lmindices_new(a,2)
 %
-% %1D example
+% %1D example 
 % lmindices_new([1,2,1])
 % lmindices_new([1,2,1,2,1],2)
 %
 % %2D example
-% lmindices_new([1,1,1;1,2,1;1,1,1])
+% [ lmarrayindices, lmInd ] = lmindices_new([1,1,1;1,2,1;1,1,1])
 % lmindices_new([1,1,1;1,2,1;1,1,1;1,1,2], 2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 if nargin < 2
     top = 1;
+elseif strcmp(top, 'all')
+    top = numel(Y);
 end
 Y = squeeze(Y);
 Ydim = size(Y);

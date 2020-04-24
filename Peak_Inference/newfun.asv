@@ -1,0 +1,20 @@
+function [ out ] = find1Dlms( fn, bounds )
+% FIND1DLMS( fn, bounds ) finds the local maxima of a 1D function within
+% the specified bounds.
+%--------------------------------------------------------------------------
+% ARGUMENTS
+% fn    a function handle of a 1D function to maximize.
+% bounds    a length 2 vector: [lower_bound, upper_bound] which gives the
+%           lower bound and upper bound for the sea
+%--------------------------------------------------------------------------
+% OUTPUT
+% 
+%--------------------------------------------------------------------------
+% EXAMPLES
+% 
+%--------------------------------------------------------------------------
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
+
+end
+

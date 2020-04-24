@@ -2,10 +2,13 @@ function smooth_data = convfield( lat_data, FWHM, spacing, D, derivtype )
 % CONVFIELD( lat_data, xvals_vecs, FWHM )
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% lat_data
-% FWHM
-% resAdd     the number of points between each voxel. Default is zero
-%            i.e. to just compute the smooth field on the lattice.
+% lat_data      the data on a lattice to be smoothed
+% FWHM          the FWHM of the kernel with which to do smoothing
+% spacing
+% D             the dimension of the data
+% derivtype     0/1/2, 0 returns the convolution field, 1 it's derivative
+%               and 2 it's second derivative (at all points). Default is 0
+%               i.e to return the field!
 %--------------------------------------------------------------------------
 % OUTPUT
 %
@@ -33,6 +36,7 @@ function smooth_data = convfield( lat_data, FWHM, spacing, D, derivtype )
 % 
 % %% Multiple subjects
 % nsubj = 3;
+% nvox = 100;
 % lat_data = normrnd(0,1,nvox,nsubj);
 % cfield = spm_conv(lat_data(:,1), FWHM);
 % plot(1:nvox,cfield)
@@ -91,16 +95,20 @@ if D > 1
         Dim = slatdata( 1 : end-1 );
     end
 else
+    vert2horz = 0;
     if D_latdata == 2 && slatdata(1) == 1
         nsubj = 1;
         Dim = slatdata(slatdata > 1);
+        vert2horz = 1; % I.e. if a horizontal field is entered it returns one as well
     elseif D_latdata == 2 && slatdata(2) == 1
         nsubj = 1;
         Dim = slatdata(slatdata > 1);
-    else
-        slatdata = squeeze(slatdata);
-        Dim = slatdata(1);
-        nsubj = slatdata(2);
+    else %I.e. if D_lat_data == 2 and slatdata(1) and slatdata(2) are both > 1
+        % or if D_lat_data > 2 and there are some 1 dimensional dimensions
+        % hanging around for some reason.
+        slatdata_squeezed = size(squeeze(lat_data));
+        Dim = slatdata_squeezed(1);
+        nsubj = slatdata_squeezed(2);
     end
 end
 
@@ -133,6 +141,10 @@ if D == 1
     else
         error('Higher derivatives are not supported')
     end
+    
+    if vert2horz && nsubj == 1
+        smooth_data = smooth_data';
+    end
 elseif D == 2
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
@@ -141,7 +153,7 @@ elseif D == 2
     [x,y] = meshgrid( gridside, gridside );
     xvals = [x(:), y(:)]';
     
-    % convolution kernels to be used ith convn
+    % convolution kernels to be used with convn
     if derivtype == 0
         h   = reshape( GkerMV( xvals, FWHM ), size(x) );
         smooth_data  = convn( expanded_lat_data, h, 'same' );

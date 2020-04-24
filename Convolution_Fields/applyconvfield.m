@@ -64,6 +64,13 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % FWHM = 3;
 % round(4*FWHM2sigma(FWHM));
 %
+% % Need to truncate for speed, eles things are really slow!!
+% FWHM = 3;
+% lat_data = normrnd(0,1,1000,1000);
+% tic; applyconvfield([500,500]', lat_data, FWHM); toc
+% tic; applyconvfield([500,500]', lat_data, FWHM, 10); toc
+% tic; convfield(lat_data, FWHM, 1, 2); toc
+%
 % 3D:
 % FWHM = 3;
 % noise = reshape(noisegen([91,109,91], 1, 6, 1), [91,109,91]);
