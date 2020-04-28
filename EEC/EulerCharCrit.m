@@ -61,7 +61,8 @@ if ~exist( 'mask', 'var' )
     % masks which voxels should be considered
     mask = true( sf(1:D) );
     L0 = 1;
-elseif ~all( size( mask ) == sf( 1:D ) )
+elseif( ( ~all( size( mask ) == sf( 1 : D ) ) && D ~= 1 ) || ...
+           (sf( 1 : D ) ~= max( size( mask ) ) && D == 1 ) )
     error( "Please specify an input mask, which has the same dimension as the domain of the data" )
 else
     L0 = EulerChar( mask, 0.5, D );
