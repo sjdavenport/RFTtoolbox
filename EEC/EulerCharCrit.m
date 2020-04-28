@@ -202,7 +202,7 @@ if strcmp( version, "C" )
 
             [ ~, I ]   = sort( ECn( :, 1 ), 'ascend' );
             ECn     = ECn( I, : );
-            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ 1; 1; 1 + ...
+            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ L0; L0; L0 + ...
                         cumsum( ECn( :, 2 ) ) ] ];
         end
     else
@@ -226,7 +226,7 @@ if strcmp( version, "C" )
 
             [ ~, I ]   = sort( ECn( :, 1 ), 'ascend' );
             ECn     = ECn( I, : );
-            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ 1; 1; 1 + ...
+            EC{ n } = [ [ -Inf; ECn( :, 1 ); Inf ], [ L0; L0; L0 + ...
             cumsum( ECn( :, 2 ) ) ] ];
         end
     end
@@ -257,7 +257,7 @@ else
                 dEC         = dEC( I, : );
                 dEC( 1, 2 ) = dEC( 1, 2 ) + L0;
                 EC{ k }     = [ [ -Inf; dEC( :, 1 ); Inf ],...
-                                [ 1; 1; cumsum( dEC( :, 2 ) ) ] ];
+                                [ L0; L0; L0 + cumsum( dEC( :, 2 ) ) ] ];
             end
 
         case 2
@@ -278,7 +278,7 @@ else
                 CritMat = CritMat( I, : );
                 clear I
                 EC{l}   = [ [ -Inf; CritMat( :, 1 ); Inf ], ...
-                            [ 1; 1; 1 + cumsum( CritMat( :, 2 ) ) ] ];
+                            [ L0; L0; L0 + cumsum( CritMat( :, 2 ) ) ] ];
            end
         case 3
             for l = 1 : nEC
@@ -299,7 +299,7 @@ else
                 CritMat = CritMat( I, : );
                 clear I
                 EC{l}   = [ [ -Inf; CritMat( :, 1 ); Inf ], ...
-                            [ 1; 1; 1 + cumsum( CritMat( :, 2 ) ) ] ];
+                            [ L0; L0; L0 + cumsum( CritMat( :, 2 ) ) ] ];
             end
     end
 end
