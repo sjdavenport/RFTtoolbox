@@ -5,19 +5,19 @@ clear all
 close all
 
 Dim = [30 30 30];
-nSubj = 200;
-FWHM = 5;
-FWHMcor = 10;
+nSubj = 15;
+FWHM = 2;
+FWHMcor = 15;
 
 % different choices for voxelmaps
 rng(1)
-Nwvox = 110592;
+Nwvox = 54872;
 wd1 = round((Nwvox)^(1/3));
 
-voxelmap = 1:Nwvox; % identity
-voxelmap = randsample( Nwvox, Nwvox ); % all random
-voxelmap = (0:wd1:(Nwvox-1) ) + randsample( wd1, wd1 );
-voxelmap = voxelmap(:);
+%voxelmap = 1:Nwvox; % identity
+%voxelmap = randsample( Nwvox, Nwvox ); % all random
+%voxelmap = (0:wd1:(Nwvox-1) ) + randsample( wd1, wd1 );
+%voxelmap = voxelmap(:);
 voxelmap = (0:wd1:(Nwvox/2-1) ) + randsample( wd1, wd1 );
 voxelmap = voxelmap(:);
 voxelmap = [voxelmap; Nwvox/2 + randsample( Nwvox/2, Nwvox/2 )];
@@ -32,6 +32,7 @@ figure(3)
 imagesc(squeeze(data(:,14,:,15))), colorbar
 figure(4)
 imagesc(squeeze(RawNoise(:,14,:,15))), colorbar
+
 
 % mean variance of nonstat field
 datastd = std( data, 0, length(Dim)+1 );
@@ -67,3 +68,16 @@ figure(15)
 imagesc(squeeze(data2(:,14,:,1))), colorbar
 figure(16)
 imagesc(squeeze(data2(:,14,:,12))), colorbar
+
+%% approximating isotropic fields by multiplier bootstrap
+data3 = noisegen( Dim, 1000, FWHM );
+data4 = multiplier_field( data3, 4 );
+
+figure(17)
+imagesc( squeeze( data3( :, 14, :, 1 ) ) ), colorbar
+figure(18)
+imagesc( squeeze( data4( :, 14, :, 2 ) ) ), colorbar
+figure(19)
+imagesc( squeeze( data4( :, 14, :,3 ) ) ), colorbar
+figure(20)
+imagesc( squeeze( data4( :, 14, :,4 ) ) ), colorbar
