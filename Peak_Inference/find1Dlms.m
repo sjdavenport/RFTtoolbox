@@ -40,6 +40,9 @@ function peaklocs = find1Dlms( fn, lower_bounds, upper_bounds, initial_estimates
 % find1Dlms( cfield, [1,length(Y)], [2.5,6.5])
 % find1Dlms( cfield, [1,6], [3,9], [2.5,6.5])
 %--------------------------------------------------------------------------
+% TODO: EXTEND TO MANY D and incorporate into findconvpeaks so that the
+% correct local maxima are always found!
+%--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 npeaks = length(initial_estimates);

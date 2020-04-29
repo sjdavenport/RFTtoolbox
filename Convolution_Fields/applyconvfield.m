@@ -1,17 +1,21 @@
-function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_vecs)
+function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_vecs, mask)
 % APPLYCONVFIELD(tval, Y, Kernel, xvals_vecs, truncation)
-% calculates the convolution field at a point.
+% calculates the convolution field at points specified by tval
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% tval      the t values (an ndim=D by nvalues matrix) at which to evaluate 
+% tval      the t values (an ndim = D by nvalues matrix) at which to evaluate 
 %           the field.
-% Y         the lattice field an array of size ndim.
-% Kernel    the smoothing Kernel (as a function)  
+% Y         the lattice field an array of size Dim.
+% Kernel    the smoothing Kernel (as a function). If Kernel is a postive
+%           number then an isotropic Gaussian kernel with dimension D and
+%           FWHM = Kernel is used
 % truncation    a window around the points at which to evaluate the kernel
 %               setting this parameter allows for quicker computation of
 %           the convolution field and has very litle effect on the values
 %           of the field for kernels that have light tails such as the
-%           Gaussian kernel.
+%           Gaussian kernel. Default (which is recorded by setting
+%           truncation = -1) results in a truncation of 4*FWHM2sigma(Kernel);
+%           Setting truncation = 0 results in no truncation at all.
 % xvals_vecs    a D-dimensional cell array whose entries are vectors giving the
 %               xvalues at each each dimension along the lattice. It assumes
 %               a regular, rectangular lattice (though within a given
@@ -25,6 +29,9 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 %               voxels is 1. If only one xval_vec direction is set the
 %               others are taken to range up from 1 with increment given by
 %               the set direction.
+% mask      a 0/1 array with the same number of dimensions as Y that serves
+%           as a mask for the data. The default (if no mask is included) is
+%           not to mask the data, i.e. setting mask = ones(Dim);
 %--------------------------------------------------------------------------
 % OUTPUT
 % field_vals    an nvalues length vector whose entries are the field 
@@ -41,7 +48,7 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % nvox = 100;
 % xvals_vecs = 1:nvox;
 % nsubj = 50;
-% lat_field = normrnd(0,1,nsubj,nvox)';
+% lat_field = normrnd(0,1,nvox,nsubj);
 % field_at_voxels = applyconvfield(1:nvox, mean(lat_field,2)', FWHM, truncation, xvals_vecs);
 % [~, ss] = applyconvfield(nvox/2, lat_field(:,1)', FWHM, truncation, xvals_vecs);
 % plot(field_at_voxels/sqrt(ss))
@@ -64,7 +71,7 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % FWHM = 3;
 % round(4*FWHM2sigma(FWHM));
 %
-% % Need to truncate for speed, eles things are really slow!!
+% % Need to truncate for speed, else  things are really slow!!
 % FWHM = 3;
 % lat_data = normrnd(0,1,1000,1000);
 % tic; applyconvfield([500,500]', lat_data, FWHM); toc
@@ -86,15 +93,22 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % applyconvfield([50,40,60]', noise, FWHM, truncation)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
+if nargin >= 6
+    Y = Y.*mask; %This masks the unsmoothed data
+end
+
 Ydim = size(Y);
+if length(Ydim) == 2 && Ydim(2) == 1
+    Ydim = Ydim'; %Allows column vector to be used as inputs
+end
 if Ydim(1) == 1
-    Ydim = Ydim(2:end);
+    Ydim = Ydim(2:end); %Gets the dimension in 1D
 end
 D = length(Ydim);
 
 if nargin < 4
-    truncation = 0;
-%     scale_var = 0;
+    truncation = -1; %Default truncation
 end
 
 if ~isequal(size(truncation),[1,1])
@@ -108,6 +122,8 @@ if isnumeric(Kernel)
         truncation = round(4*sigma);
     end
     Kernel = @(x) GkerMV(x,Kernel);
+elseif truncation == -1
+    truncation = 0; %-1 selection only set up for isotropic Gaussian kernels
 end
 
 if nargin < 5
@@ -130,7 +146,6 @@ if truncation == 0
         xvalues_at_voxels = xvals_vecs{1}';
     elseif D == 2
         [x, y] = ndgrid(xvals_vecs{1},xvals_vecs{2});
-        %     [x, y] = ndgrid(1:Ydim(1),1:Ydim(2));
         xvalues_at_voxels = [x(:),y(:)];
     elseif D == 3
         [x, y, z] = ndgrid(xvals_vecs{1},xvals_vecs{2},xvals_vecs{3});
@@ -149,7 +164,17 @@ end
  
 outputdim = length(Kernel(tval(:,1)));
 field_vals = zeros(outputdim, size(tval, 2));
-ss = zeros(1, size(tval, 2));
+ss = zeros(1, size(tval, 2)); % ss will record the sum of squares of the kernel in case you want to normalize0
+
+if truncation > 0
+    % this is a fix for now, need to make it so that arbitrary xvals_vecs
+    % can be used as input!! I.e. if you have irregularly spaced grid
+    % points such as in MEG!
+    for d = 1:D
+        tval(d,:) = tval(d,:) - xvals_vecs{d}(1) + 1;
+        xvals_vecs{d} = xvals_vecs{d} - xvals_vecs{d}(1) + 1;
+    end
+end
 
 for I = 1:size(tval, 2)
     if truncation > 0
@@ -157,10 +182,13 @@ for I = 1:size(tval, 2)
         upper = ceil(tval(:,I) + truncation);
         if D == 1
             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))';
+%             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))'  - xvals_vecs{1}(1) + 1;
             Ytemp = Y(xvalues_at_voxels);
         elseif D == 2
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
+%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
+%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
             [x, y] = ndgrid(eval1,eval2);  
             xvalues_at_voxels = [x(:),y(:)];
             Ytemp = Y(eval1, eval2);
@@ -168,6 +196,9 @@ for I = 1:size(tval, 2)
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end));
+%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
+%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
+%             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end)) - xvals_vecs{3}(1) + 1;
             [x, y, z] = ndgrid(eval1,eval2,eval3);
             xvalues_at_voxels = [x(:),y(:),z(:)];
             Ytemp = Y(eval1, eval2, eval3);

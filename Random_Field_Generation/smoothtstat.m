@@ -26,6 +26,7 @@ function [ tstat, xbar, setof_smoothed_fields ] = smoothtstat( lat_data, FWHM )
 % surf(smoothfield)
 %------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
+%------------------------------------------------------------------------
 
 s_lat_data = size(lat_data);
 nsubj = s_lat_data(end);

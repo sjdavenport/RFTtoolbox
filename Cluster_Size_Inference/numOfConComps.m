@@ -23,7 +23,8 @@ function [number_of_clusters, occurences, sizes, index_locations] = numOfConComp
 % sims > thresh
 % sizes
 %--------------------------------------------------------------------------
-% AUTHORS: Tom Maullin, Sam Davenport (05/02/2018)
+% AUTHORS: Thomas Maullin, Samuel Davenport
+%--------------------------------------------------------------------------
 s = size(data);
 ones_and_zeros = zeros(s);
 

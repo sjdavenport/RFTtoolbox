@@ -5,7 +5,9 @@ function smooth_data = convfield( lat_data, FWHM, spacing, D, derivtype )
 % lat_data      the data on a lattice to be smoothed
 % FWHM          the FWHM of the kernel with which to do smoothing
 % spacing
-% D             the dimension of the data
+% D             the dimension of the data, if this is left blank it is
+%               assumed that nsubj = 1 and that the convolution field has 
+%               the same numberof dimesions as lat_data
 % derivtype     0/1/2, 0 returns the convolution field, 1 it's derivative
 %               and 2 it's second derivative (at all points). Default is 0
 %               i.e to return the field!
@@ -76,7 +78,8 @@ function smooth_data = convfield( lat_data, FWHM, spacing, D, derivtype )
 % % approximation, but that's why we want to use derivfield in the first
 % % place!!
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport
+% AUTHOR: Samuel Davenport                                                
+%--------------------------------------------------------------------------
 if nargin < 3
     spacing = 0.1;
 end
@@ -86,6 +89,11 @@ end
 
 slatdata = size(lat_data);
 D_latdata = length(slatdata);
+
+if nargin < 4
+    D = D_latdata;
+end
+
 if D > 1
     if D_latdata == D
         nsubj = 1;
@@ -167,6 +175,8 @@ elseif D == 2
     else
         error('Higher derivatives are not supported')  
     end
+else
+    error('D > 2 has not been implemented here yet!')
 end
 
 end

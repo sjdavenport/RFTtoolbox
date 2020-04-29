@@ -1,14 +1,11 @@
-function peak_locs = findconvpeaks_t(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, tol)
+function [peak_locs, peak_vals] = findconvpeaks_t(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, tol)
 % FINDTPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
 % calculates the locations of peaks in a convolution field using Newton Raphson.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % lat_data      A D by nsubj matrix array giving the value of the lattice
 %               field at every point.
-% Kprime        a function handle giving the derivative of the kernel. If
-%               this is numeric the kernel is taken to be Gaussian with the
-%               value as the FWHM. I.e. if Kprime = 2, then within the
-%               function Kprime is set to be @(x) GkerMVderiv(x,2).
+% Kernel
 % xvals_vecs    a D-dimensional cell array whose entries are vectors giving the
 %               xvalues at each each dimension along the lattice. It assumes
 %               a regular, rectangular lattice (though within a given
@@ -39,14 +36,17 @@ function peak_locs = findconvpeaks_t(lat_data, Kernel, peak_est_locs, mask, xval
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D
+% 1D
 % L = 100;
 % nsubj = 50;
 % lat_data = normrnd(0,1, nsubj, L)';
-% findconvpeaks_t(lat_data, 3)
-% tcf = @(tval) tcfield( tval, lat_data, xvals_vecs, Kernel, truncation );
+% FWHM = 3;
+% findconvpeaks_t(lat_data, FWHM)
+% tcf = @(tval) tcfield( tval, lat_data, FWHM, truncation, 1:L );
+% plot(1:L, tcf(1:L))
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport.
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 Ldim = size(lat_data);
 nsubj = Ldim(end);
 Ldim = Ldim(1:end-1);
@@ -99,7 +99,7 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
-tcf = @(tval) tcfield( tval, lat_data, xvals_vecs, Kernel, truncation );
+tcf = @(tval) tcfield( tval, lat_data, Kernel, truncation, xvals_vecs );
 
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
@@ -119,7 +119,7 @@ if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_lo
 %         end
 %         teval_lat = mvtstat(smoothed_field, Ldim);
 %     end
-    max_indices = lmindices_new(teval_lat, top, mask); %Note the transpose here! It's necessary for the input to other functions.
+    max_indices = lmindices(teval_lat, top, mask); %Note the transpose here! It's necessary for the input to other functions.
     if D == 1
         max_indices = max_indices';
     end
@@ -133,8 +133,9 @@ if D == 1 && isnan(peak_est_locs(1))
     peak_est_locs = peak_est_locs(2:end);
 end
 npeaks = size(peak_est_locs, 2);
-
 peak_locs = zeros(D, npeaks);
+peak_vals = zeros(1, npeaks); 
+
 A = [eye(D);-eye(D)];
 % b = [Ldim(:)+0.5;ones(D,1)-0.5];
 b = zeros(2*D,1);
@@ -146,8 +147,15 @@ for d = 1:D
 end
 % b = [Ldim(:);ones(D,1)] %Need to discuss which boundary to use with Fabian!!!
 
+% for peakI = 1:npeaks
+%     peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b);
+%     peak_vals(peakI) = tcf(peak_locs(:, peakI));
+% end
+
+options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
 for peakI = 1:npeaks
-    peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b);
+    peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
+    peak_vals(peakI) = tcf(peak_locs(:, peakI));
 end
 
 end

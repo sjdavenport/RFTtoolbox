@@ -1,7 +1,9 @@
-function [lmarrayindices, lmInd, IntInd] = lmindices(Y, top, mask, CC)
-% lmindices(Y, top, mask, CC) finds the local maxima in an N-dimensional array
+function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
+% lmindices_new( Y, top, CC, mask ) finds the top local maxima of an image,
+% given a conectivity criterion CC, that lie within a specified mask.
 %--------------------------------------------------------------------------
-% Y      a D dimensional array of real values
+% ARGUMENTS
+% Y      a 3 dimensional array of real values
 % top    the top number of local maxima of which to report
 % CC     the connectivity criterion
 % mask   a 0/1 mask.
@@ -11,66 +13,75 @@ function [lmarrayindices, lmInd, IntInd] = lmindices(Y, top, mask, CC)
 % lmInd 
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %3D example
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
-% max_index = lmindices(a)
-% 
 % a(10,50,35) = 3;
-% top_2_lms = lmindices(a, 2)
+% lmindices_new(a,2)
 %
-% Y = [1,1,1;1,2,1;1,1,1;1,2,1;1,1,1];
-% lmindices_2D(Y,2)
+% %1D example 
+% lmindices_new([1,2,1])
+% lmindices_new([1,2,1,2,1],2)
+%
+% %2D example
+% [ lmarrayindices, lmInd ] = lmindices_new([1,1,1;1,2,1;1,1,1])
+% lmindices_new([1,1,1;1,2,1;1,1,1;1,1,2], 2)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
-dimY = size(Y);
-nD = length(dimY);
+% AUTHOR: Samuel Davenport
 if nargin < 2
     top = 1;
+elseif strcmp(top, 'all')
+    top = numel(Y);
+end
+Y = squeeze(Y);
+Ydim = size(Y);
+D = length(Ydim); %Note in the D = 1 case we still take D = 2 and use a 
+%connectivity criterion of 8 as this is equivalent to a connectivity criterion of 2!
+
+if nargin < 3
+    mask = ones(Ydim);
+end
+if ~isequal(size(mask), size(Y))
+    error('The mask must be the same size as Y')
 end
 
 if nargin < 4
-    if nD == 2
-        CC = 4;
-    elseif nD == 3
-        CC = 6;
+    if D == 2
+        CC = 8;
+    elseif D == 3
+        CC = 26;
+    else
+        error('NotworkedoutD>3yet')
     end
 end
 
-if nD == 2
-    if dimY(1) == 1 
-        nD = 1;
-    elseif dimY(2) == 1
-        nD = 1;
-        Y = Y';
-    else 
-        nD = 2;
+r = 0.1;
+[a,b,c] = ndgrid(r*(1:size(Y,1)), r*(1:size(Y,2)), r*(1:size(Y,3)));
+ramp = min(Y(:)) - (a+b+c);
+Y(logical(1-mask)) = ramp(logical(1-mask));
+
+indices = find(imregionalmax(Y, CC).*mask); 
+%ensures that the boundary of the mask are not calculated as local maxima 
+
+[~, sorted_lm_indices] = sort(Y(indices), 'descend');
+top = min(top, length(sorted_lm_indices));
+lmInd = indices(sorted_lm_indices(1:top)); %choose the top indices and return with top first second second etcetera
+
+if D == 2
+    [lmarrayindicesx,lmarrayindicesy]  = ind2sub(Ydim, lmInd);
+    lmarrayindices = [lmarrayindicesx, lmarrayindicesy]';
+elseif D == 3
+    [lmarrayindicesx,lmarrayindicesy, lmarrayindicesz]  = ind2sub(Ydim, lmInd);
+    lmarrayindices = [lmarrayindicesx, lmarrayindicesy, lmarrayindicesz]';
+end
+
+if D == 2
+    if Ydim(1) == 1
+        lmarrayindices = lmarrayindicesy;
+    elseif Ydim(2) == 1
+        lmarrayindices = lmarrayindicesx;
     end
 end
-
-% Need to put this after the previous for loop as dim(Y) can change there!
-if nargin < 3
-    mask = ones(size(Y));
-end
-
-if nD == 1
-    [lmInd, IntInd] = lmindices_1D(Y, top, mask);
-    lmarrayindices = lmInd; %arrayindices == indices in 1D!
-elseif nD == 2
-    [lmarrayindices, lmInd] = lmindices_2D(Y, top, CC, mask);
-    IntInd = lmarrayindices;
-elseif nD == 3
-    [lmarrayindices, lmInd] = lmindices_3D(Y, top, CC, mask);
-    IntInd = lmarrayindices;
-else
-    error('N > 3 is not supported yet')
-end
-
-% Need to add code to remove the edges here!
-% if edges == 0
-%     for I = 1:size(lmarrayindices, 1)
-%         if 
-%     end
-% end
 
 end
 

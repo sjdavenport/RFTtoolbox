@@ -1,22 +1,20 @@
 function [peak_locs, peak_vals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
-% FINDCONVPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
-% calculates the locations of peaks in a convolution field using Newton Raphson.
+% FINDCONVPEAKS(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
+% calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % lat_data      A D-dimensional matrix array giving the value of the lattice 
 %               field at every point.
-% Kprime        a function handl. And that the x-values take the values:
-%               [1,2,3,4] and te giving the derivative of the kernel. If
-%               this is numeric the kernel is taken to be Gaussian with the 
-%               value as the FWHM. I.e. if Kprime = 2, then within the 
-%               function Kprime is set to be @(x) GkerMVderiv(x,2).
+% Kernel        the smoothing Kernel (as a function). If Kernel is a postive
+%               number then an isotropic Gaussian kernel with dimension D and
+%               FWHM = Kernel is used
 % xvals_vecs    a D-dimensional cell array whose entries are vectors giving the
 %               xvalues at each each dimension along the lattice. It assumes
 %               a regular, rectangular lattice (though within a given
 %               dimension the voxels can be spaced irregularly).
 %               I.e suppose that your initial lattice grid is a
 %               4by5 2D grid with 4 voxels in the x direction and 5 in
-%               the y directionhe y-values take the values: [0,2,4,6,8].
+%               the y direction the y-values take the values: [0,2,4,6,8].
 %               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
 %               The default is to assume that the spacing between the
 %               voxels is 1. If only one xval_vec direction is set the
@@ -82,7 +80,8 @@ function [peak_locs, peak_vals] = findconvpeaks(lat_data, Kernel, peak_est_locs,
 % surf(convfield(Y, 2, 0.1, 2))
 % findconvpeaks(Y, 2, [1,1;4,4]')
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport.
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 Ldim = size(lat_data);
 D = length(Ldim);
 if Ldim(2) == 1
@@ -110,7 +109,7 @@ if nargin < 4 || isequal(mask, NaN)
     end
 end
 if nargin < 6
-    truncation = 0;
+    truncation = -1;
 end
 
 if isnan(sum(lat_data(:)))
@@ -146,6 +145,7 @@ if ~isequal(xvals_vecs_dims, Ldim)
 end
 
 field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
+% warning('need masking here! and for the maximization!! though mahel')
 
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
@@ -168,9 +168,9 @@ if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_lo
         else
             error('Not yet ready for 4D or larger images')
         end
-        max_indices = lmindices_new(smoothed_data, top, mask);
+        max_indices = lmindices(smoothed_data, top, mask);
     else
-        max_indices = lmindices_new(lat_data, top, mask); %In 3D may need to use spm_smooth for this bit!
+        max_indices = lmindices(lat_data, top, mask); %In 3D may need to use spm_smooth for this bit!
     end
     top = size(max_indices, 2);  
     peak_est_locs = zeros(D, top);
