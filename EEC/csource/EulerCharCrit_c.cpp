@@ -22,7 +22,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   mwSize i, j, k, n, n_nobound;
   // get pointer array with dimensions of input matrix
   const mwSize* DimMatrix = mxGetDimensions(prhs[0]);
-  
+    
   /******************************************************************
    * Check number of input and output arguments
    ******************************************************************/
@@ -33,14 +33,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgIdAndTxt( "MATLAB:timestwoalt:maxlhs",
             "Too many output arguments."); 
   }
-  
+    
   /******************************************************************
    * save pointers/variables for input
    ******************************************************************/
   z  = (double *)mxGetPr(prhs[0]); // get pointer to input (z)
   cc = mxGetScalar(prhs[1]);       // get scalar input cc
   
-  if(mxGetNumberOfDimensions(prhs[0]) == 3){
+  if( mxGetNumberOfDimensions(prhs[0]) == 3 ){
         // get dimensions of the matrix
         i = DimMatrix[0];
         j = DimMatrix[1];
@@ -59,9 +59,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         /******************************************************************
         * call the C subroutine
         ******************************************************************/
-        ECcrit3D(z, cc, out, i, j, k);
+         ECcrit3D(z, cc, out, i, j, k);
         
-  } else if(mxGetNumberOfDimensions(prhs[0]) == 2) {
+  } else if( mxGetNumberOfDimensions(prhs[0]) == 2 && DimMatrix[1] != 1 ) {
           // get dimensions of the matrix
           i = DimMatrix[0];
           j = DimMatrix[1];
@@ -69,18 +69,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
           n_nobound = (i-2) * (j-2); // number of elements in input array without padding
 
           // create an output matrix of size 2 x nvoxel of not padded image
-          plhs[0] = mxCreateDoubleMatrix(2, n_nobound, mxREAL);
+          plhs[0] = mxCreateDoubleMatrix( 2, n_nobound, mxREAL );
 
           /******************************************************************
            * create a C pointer to a copy of the output matrix 
            ******************************************************************/
-          out = mxGetPr(plhs[0]);
+           out = mxGetPr( plhs[0] );
 
           /******************************************************************
            * call the C subroutine
            ******************************************************************/  
-            ECcrit2D(z, cc, out, i, j);
-  } else if(mxGetNumberOfDimensions(prhs[0]) == 1) {
+           ECcrit2D(z, cc, out, i, j);
+  } else if( mxGetNumberOfDimensions(prhs[0]) == 2 && DimMatrix[1] == 1 ) {
           // get dimensions of the matrix
           i = DimMatrix[0];
 
@@ -92,7 +92,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
           /******************************************************************
            * create a C pointer to a copy of the output matrix 
            ******************************************************************/
-          out = mxGetPr(plhs[0]);
+           out = mxGetPr(plhs[0]);
 
           /******************************************************************
            * call the C subroutine
