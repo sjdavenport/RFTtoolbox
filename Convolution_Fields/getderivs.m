@@ -1,5 +1,6 @@
 function [fprime, fprime2] = getderivs( f, D, h)
-% NEWFUN serves as a function template.
+% GETDERIVS(f, D, h) returns function handles for the first and second
+% derivatives of f (with spacing h).
 %--------------------------------------------------------------------------
 % ARGUMENTS
 %
@@ -8,16 +9,10 @@ function [fprime, fprime2] = getderivs( f, D, h)
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% [fprime, fprime2] = getderivs( @(x) x^2, 1)
-% evalfprime = zeros(1,10);
-% evalfprime2 = zeros(1,10);
-% for x = 1:10
-%   evalfprime(x) = fprime(x);
-%   evalfprime2(x) = fprime2(x);
-% end
-% plot(1:10, evalfprime)
-% hold on
-% plot(1:10, evalfprime2)
+% [fprime, fprime2] = getderivs( @(x) x.^2, 1)
+% tvals = 1:10;
+% plot(tvals, fprime(tvals))
+% plot(tvals, fprime2(tvals))
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 if nargin < 2

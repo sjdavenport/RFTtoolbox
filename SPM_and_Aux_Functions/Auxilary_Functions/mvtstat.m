@@ -31,8 +31,8 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % sqrt(nsubj)*mu/sigmatilde
 % tstat(vox)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport.
-% warning('Have changed nsubj by D to D by nsubj, so may cause errors!')
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 2
     Dim = NaN;
 end
