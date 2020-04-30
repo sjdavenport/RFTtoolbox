@@ -61,7 +61,7 @@ if exist( 'mask', 'var' )
     % Check whether mask has the correct size and set values outside the
     % mask to -oo
     if( ( ~all( size( mask ) == sY( 1 : D ) ) && D ~= 1 ) || ...
-           (sY( 1 : D ) ~= max( size( mask ) ) && D == 1 ) )
+           (sY( 1 ) ~= max( size( mask ) ) && D == 1 ) )
         error( 'Incompatible input: The mask needs to have the same size as the first D dimensions of Y.' )
     else
         for i = 1 : N
