@@ -58,10 +58,10 @@ void ECcrit1D(double *z, double *out, mwSize i)
              * compute the change in dec by checking which nD-faces are created
              ******************************************************************/
             // minima increase EC by one
-            if(x[0] > x[1] && x[2] > x[1])
+            if(x[1] > x[0] && x[1] < x[2])
                 dec = 1;
             // maxima decrease EC by one
-            if(x[0] > x[1] && x[2] > x[1])
+            if(x[0] < x[1] && x[1] > x[2])
                 dec = -1;
             
             // save the dec in the odd out locations
@@ -69,7 +69,7 @@ void ECcrit1D(double *z, double *out, mwSize i)
             // increase counter moving through dec saving locations
             nn += 1;
             // reset dec to be 1
-            dec = 1;
+            dec = 0;
         }
 }
 
