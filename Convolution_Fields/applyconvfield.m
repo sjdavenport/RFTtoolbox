@@ -122,7 +122,11 @@ if isnumeric(Kernel)
         truncation = round(4*sigma);
     end
     Kernel = @(x) GkerMV(x,Kernel);
-elseif truncation == -1
+else
+%     5 evaluate kernel here to ensure that it has the right dimension!
+end
+
+if truncation == -1
     truncation = 0; %-1 selection only set up for isotropic Gaussian kernels
 end
 

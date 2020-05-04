@@ -1,4 +1,4 @@
-function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
+function [ lmarrayindices, lmInd ] = lmindices( Y, top, mask, CC )
 % lmindices_new( Y, top, CC, mask ) finds the top local maxima of an image,
 % given a conectivity criterion CC, that lie within a specified mask.
 %--------------------------------------------------------------------------
@@ -17,15 +17,15 @@ function [ lmarrayindices, lmInd ] = lmindices_new( Y, top, mask, CC )
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
 % a(10,50,35) = 3;
-% lmindices_new(a,2)
+% lmindices(a,2)
 %
 % %1D example 
-% lmindices_new([1,2,1])
-% lmindices_new([1,2,1,2,1],2)
+% lmindices([1,2,1])
+% lmindices([1,2,1,2,1],2)
 %
 % %2D example
 % [ lmarrayindices, lmInd ] = lmindices_new([1,1,1;1,2,1;1,1,1])
-% lmindices_new([1,1,1;1,2,1;1,1,1;1,1,2], 2)
+% lmindices([1,1,1;1,2,1;1,1,1;1,1,2], 2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 if nargin < 2

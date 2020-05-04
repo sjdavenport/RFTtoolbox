@@ -1,4 +1,4 @@
-function xvaluesatvoxels = xvals2voxels( xvals_vecs )
+function xvaluesatvoxels = xvals2voxels( xvals_vecs, D )
 % XVALS2VOXELS transforms the vectors giving the coordinates of the sides
 % of the lattice into values of all of the points within the lattice.
 %--------------------------------------------------------------------------
@@ -25,11 +25,16 @@ function xvaluesatvoxels = xvals2voxels( xvals_vecs )
 % xvaluesatvoxels = xvals2voxels({[1,2,3,4], [0,2,4,6]})
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
-
-D = length(xvals_vecs);
+%--------------------------------------------------------------------------
 
 if ~iscell(xvals_vecs)
-    error('Need it to be a cell array!')
+    xvals_vecs = {xvals_vecs};
+end
+
+if nargin < 2
+    D = length(xvals_vecs);
+else
+    xvals_vecs = repmat(xvals_vecs, 1, D);
 end
 
 if D == 1

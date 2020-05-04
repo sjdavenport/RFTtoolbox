@@ -72,9 +72,9 @@ function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, lat_data, Kernel, 
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if isnumeric(Kernel)
-    if Kernel < 1
-        warning('Are you sure the FWHM and increm have been written the right way around?')
-    end
+%     if Kernel < 1
+%         warning('Are you sure the FWHM and increm have been written the right way around?')
+%     end
 %     FWHM = Kernel;
 %     truncation = round(10*FWHM2sigma(FWHM));
     Kernel = @(x) GkerMV(x,Kernel);
@@ -135,9 +135,11 @@ end
 
 [T,mu,sigma,d] = mvtstat(Xcfields_at_tval);
 
-if D == 1
-    T = T';
-end
+% if D == 1
+%     T = T';
+% end
+
+T = T';
 
 end
 

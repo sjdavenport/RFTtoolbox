@@ -2,9 +2,11 @@ function smooth_data = convfield( lat_data, FWHM, spacing, D, derivtype )
 % CONVFIELD( lat_data, xvals_vecs, FWHM )
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% lat_data      the data on a lattice to be smoothed
+% lat_data      a Dim by nsubj array of data
 % FWHM          the FWHM of the kernel with which to do smoothing
-% spacing
+% spacing       the interval at which to compute the convolution field.
+%               I.e. if size(lat_data) = [10,20] and spacing = 0.1 the field 
+%               will be evaluated at the points 1:0.1:10
 % D             the dimension of the data, if this is left blank it is
 %               assumed that nsubj = 1 and that the convolution field has 
 %               the same numberof dimesions as lat_data

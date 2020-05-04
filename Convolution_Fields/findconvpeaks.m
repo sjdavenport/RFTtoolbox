@@ -1,4 +1,4 @@
-function [peak_locs, peak_vals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
+function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % FINDCONVPEAKS(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
@@ -66,9 +66,17 @@ function [peak_locs, peak_vals] = findconvpeaks(lat_data, Kernel, peak_est_locs,
 % fine_eval = convfield(Y, 2, 0.01, 2);
 % max(fine_eval(:))
 %
-% Y = [1,1,1;2,1,1;1,1,1] %I.e so the peak will be outside the mask!
-% mask = [0,1,1;0,1,1;0,1,1];
-% findconvpeaks(Y, 3, [2,2]', mask)
+% % With masking!
+% FWHM = 3;
+% Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
+% mask = [1,1,1;0,1,1;1,1,1];
+% findconvpeaks(Y, FWHM, [2,2]', mask)
+% field = @(tval) applyconvfield(tval, Y, FWHM, -1, xvals_vecs, mask);
+%
+% % View masked field:
+% masked_field = @(x) mask_field(x, mask).*field(x);
+% fieldeval = reshape(masked_field(xvaluesatvoxels), [length(xvals_fine),length(xvals_fine)]);
+% surf(fieldeval)
 %
 % Y = [1,1,1;10,1,1;1,1,1] %I.e so the peak will be outside the mask!
 % mask = [0,1,1;0,1,1;0,1,1];
@@ -144,7 +152,13 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
-field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs );
+field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs, mask );
+if ~isequal(mask, ones(Ldim)) && ~isequal(mask, ones([1, Ldim]))
+    masked_field = @(x) mask_field( x, mask, xvals_vecs ).*field(x);
+else
+    masked_field = field;
+end
+
 % warning('need masking here! and for the maximization!! though mahel')
 
 % At the moment this is just done on the initial lattice. Really need to
@@ -181,26 +195,29 @@ end
 if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
     peak_est_locs = peak_est_locs(2:end);
 end
-npeaks = size(peak_est_locs, 2);
-peak_vals = zeros(1,npeaks);
-peak_locs = zeros(D, npeaks);
 
-A = [eye(D);-eye(D)];
-% b = [Ldim(:)+0.5;ones(D,1)-0.5];
-b = zeros(2*D,1);
-for d = 1:D
-    b(d) = xvals_vecs{d}(end);
-end
-for d = 1:D
-    b(d+D) = -xvals_vecs{d}(1);
-end
-%Need to discuss which boundary to use with Fabian!!!
+[ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, 1.5 );
 
-options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
-for peakI = 1:npeaks
-    peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
-    peak_vals(peakI) = field(peak_locs(:, peakI));
-end
+% npeaks = size(peak_est_locs, 2);
+% peak_vals = zeros(1,npeaks);
+% peak_locs = zeros(D, npeaks);
+% 
+% A = [eye(D);-eye(D)];
+% % b = [Ldim(:)+0.5;ones(D,1)-0.5];
+% b = zeros(2*D,1);
+% for d = 1:D
+%     b(d) = xvals_vecs{d}(end);
+% end
+% for d = 1:D
+%     b(d+D) = -xvals_vecs{d}(1);
+% end
+% %Need to discuss which boundary to use with Fabian!!!
+% 
+% options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
+% for peakI = 1:npeaks
+%     peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
+%     peak_vals(peakI) = field(peak_locs(:, peakI));
+% end
 
 end
 

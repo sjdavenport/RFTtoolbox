@@ -10,8 +10,8 @@ function vec = nan2zero( vec )
 % EXAMPLES
 % nan2zero([1,5.1,0, nan, 0.0001])
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
-
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 vec(isnan(vec)) = 0;
 
 end

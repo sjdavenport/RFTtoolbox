@@ -1,4 +1,4 @@
-function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, box_size )
+ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, box_size )
 % FINDLMS( fn, initial_estimates, box_size ) finds the local maxima of 
 % function by searching within boxes centred at the initial estimates
 %--------------------------------------------------------------------------
@@ -44,6 +44,34 @@ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, box_size )
 % findconvpeaks(Y, 2, [1,1;4,4]')
 % cfield = @(tval) applyconvfield(tval, Y, 2)
 % findlms( cfield, [1,1;4,4]', 4 )
+%
+% % Works with functions that take NaN values so long as the initial
+% % estimate is well defined!
+% mask = [0,1,1];
+% mask2 = [0,1,0];
+% Y = 3:-1:1;
+% FWHM = 4;
+% mfield = @(x) zero2nan(mask_field( x, mask2 ));
+% cfield = @(x) applyconvfield(x, Y, FWHM, -1, 1:3, mask)
+% masked_field = @(x) -mfield(x).*cfield(x);
+% xvals_fine = 1:0.1:3;
+% plot(xvals_fine, masked_field(xvals_fine))
+% xlim([1,3])
+% findlms( masked_field, 2, 2 )
+%
+% mask = [0,1,1,0,1,1];
+% mask2 = [0,1,0,0,1,0];
+% Y = [3:-1:1, 3:-1:1];
+% nvox = length(Y);
+% FWHM = 4;
+% mfield = @(x) zero2nan(mask_field( x, mask2 ));
+% cfield = @(x) applyconvfield(x, Y, FWHM, -1, 1:nvox, mask)
+% masked_field = @(x) -mfield(x).*cfield(x);
+% xvals_fine = 1:0.1:nvox;
+% plot(xvals_fine, masked_field(xvals_fine))
+% xlim([1,nvox])
+% findlms( masked_field, 2, 2 )
+% findlms( masked_field, 5, 10 ) % Note that it fails to search beyond the NaNs!!
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -58,6 +86,10 @@ try
     fn(ones(D,1));
 catch
     error('The dimensions of the initial esimates do not match the dimension of the function')
+end
+
+if any(isnan(fn(initial_estimates)))
+   error('All initial estimates must be well defined and lie within the mask')
 end
 
 if isequal(size(box_size), [1,1])

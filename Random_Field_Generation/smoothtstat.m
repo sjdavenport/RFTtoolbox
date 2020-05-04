@@ -1,5 +1,5 @@
 function [ tstat, xbar, setof_smoothed_fields ] = smoothtstat( lat_data, FWHM )
-% SMOOTHTSTAT( lat_data ) takes in lattice data, smoothes it with a certain
+% SMOOTHTSTAT( lat_data, FWHM ) takes in lattice data, smoothes it with a certain
 % FWHM and returns the t-statistic evaluated on the lattice.
 %--------------------------------------------------------------------------
 % ARGUMENTS
