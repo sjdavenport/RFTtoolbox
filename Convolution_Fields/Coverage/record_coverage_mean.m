@@ -1,4 +1,4 @@
-function coverage = record_coverage( spfn, sample_size, FWHM, mask, niters, usehpe )
+function coverage = record_coverage_mean( spfn, sample_size, FWHM, mask, niters, usehpe )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -109,7 +109,7 @@ for b = 1:niters
     
     peak_est_locs = lmindices(boot_smoothtfield_lat, 3, mask);
     
-    top_lmlocs = findconvpeaks_t(boot_lat_data, FWHM, peak_est_locs, mask);
+    top_lmlocs = findconvpeaks(mean(boot_lat_data,D+1), FWHM, peak_est_locs, mask);
     
     max_tfield_lat = max(boot_smoothtfield_lat(:).*zero2nan(mask(:)));
     max_tfield_at_lms = max(tcf(top_lmlocs));
