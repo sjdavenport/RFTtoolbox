@@ -1,10 +1,12 @@
-function coverage = record_coverage( spfn, sample_size, FWHM, mask, niters, usehpe )
+function coverage = record_coverage( latspfn, sample_size, FWHM, mask, spacing, niters, usehpe )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data          a Dim by sample_size array of data. D = length(Dim) must be <= 3
+% latspfn       a function handle taking in a number of subjects that
+%               gives the observed sample paths of the unsmoothed data on a
+%               lattice
 % sample_size   the size of each sample to be sampled from the data
 % FWHM          the applied FWHM of the Gaussian Kernel in each direction
 %          (we smooth with an istropic Kernel as is commonly done in practice)
@@ -25,10 +27,13 @@ function coverage = record_coverage( spfn, sample_size, FWHM, mask, niters, useh
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if nargin < 5
+    spacing = 1;
+end
+if nargin < 6
     niters = 1000;
 end
 
-sample_image_size = size(spfn(1));
+sample_image_size = size(latspfn(1));
 % Dim = sample_image_size(1:end-1); %This returns the image dimension by construction.
 if sample_image_size(1) == 1 
     D = 1;
@@ -57,7 +62,7 @@ end
 
 if nargin < 6
     if D == 3
-        usehpe = 1;
+        usehpe = 1; 
     else
         usehpe = 0;
         Gker_param = FWHM2sigma(FWHM);
@@ -71,19 +76,27 @@ nabovethresh_spm = 0;
 nabovethresh_lat_spm = 0;
 for b = 1:niters
     b
-    boot_lat_data = spfn(sample_size);
+    boot_lat_data = latspfn(sample_size);
     
-    [ boot_smoothtfield_lat, ~, smoothed_boot_data ] = smoothtstat( boot_lat_data, FWHM );
+    %     boot_smoothtfield_lat = smoothtstat( boot_lat_data, FWHM, 1, 1 ); %lattice evaluation!
+    [ boot_smoothtfield, smoothed_boot_data ] = smoothtstat( boot_lat_data, FWHM, spacing, 1 ); %uses spm here (okay so long as spacing is small enough)
+    dlat = floor(1/spacing);
+    if D == 1
+        boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*Dim(1)+1));
+    elseif D == 2
+        boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*Dim(1)+1),1:dlat:(dlat*Dim(2)+1) );
+    elseif D == 3
+        boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*Dim(1)+1),1:dlat:(dlat*Dim(2)+1), 1:dlat:(dlat*Dim(3)+1) );
+    end
+    warning('Need to test the above with line 81')
     
-%     tcf = @(x) tcfield( x, boot_lat_data, FWHM, -1, xvals, mask );
     tcf = @(x) tcfield( x, boot_lat_data, FWHM, -1, xvals, mask );
-
     
     if usehpe == 1
         HPE  = LKCestim_HPE( smoothed_boot_data, D, mask, 1 );
         L = HPE.hatn;
     elseif usehpe == 2
-        bHPE  = LKCestim_HPE( smooth_fields, D, mask, 200);
+        bHPE  = LKCestim_HPE( smoothed_boot_data, D, mask, 200);
         L = bHPE.hatn;
     else
         L = LKC_GaussConv( boot_lat_data, Gker_param, D, resadd );

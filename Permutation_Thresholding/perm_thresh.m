@@ -67,9 +67,9 @@ else
 end
 
 random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
-
 for iter = start:niters
-%     iter
+    %     iter
+    iter
     if mod(iter, 100) == 0
         iter
     end

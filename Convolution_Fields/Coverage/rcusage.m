@@ -14,7 +14,7 @@ record_coverage( spfn, sample_size, FWHM, ones(Dim), 10000)
 % (with the extra mask you get more like 0.08
 
 %%
-FWHM = 3;
+FWHM = 6;
 sample_size = 10;
 
 Dim = [5,5,5];
