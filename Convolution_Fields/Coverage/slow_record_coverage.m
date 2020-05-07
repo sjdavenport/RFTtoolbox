@@ -1,10 +1,12 @@
-function coverage = record_coverage_orig( spfn, sample_size, FWHM, mask, niters, usehpe )
+function coverage = record_coverage( latspfn, sample_size, FWHM, mask, spacing, niters, usehpe )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data          a Dim by sample_size array of data. D = length(Dim) must be <= 3
+% latspfn       a function handle taking in a number of subjects that
+%               gives the observed sample paths of the unsmoothed data on a
+%               lattice
 % sample_size   the size of each sample to be sampled from the data
 % FWHM          the applied FWHM of the Gaussian Kernel in each direction
 %          (we smooth with an istropic Kernel as is commonly done in practice)
@@ -25,12 +27,15 @@ function coverage = record_coverage_orig( spfn, sample_size, FWHM, mask, niters,
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if nargin < 5
+    spacing = 1;
+end
+if nargin < 6
     niters = 1000;
 end
 
-sample_image_size = size(spfn(1));
+sample_image_size = size(latspfn(1));
 % Dim = sample_image_size(1:end-1); %This returns the image dimension by construction.
-if sample_image_size(1) == 1 
+if sample_image_size(1) == 1
     D = 1;
     Dim = sample_image_size(2);
 elseif sample_image_size(2) == 1
@@ -55,14 +60,17 @@ if D == 1
     Dim = [1,Dim];
 end
 
-if nargin < 6
+if nargin < 7
     if D == 3
         usehpe = 1;
     else
         usehpe = 0;
-        Gker_param = FWHM2sigma(FWHM);
-        resadd = 100;
     end
+end
+
+if usehpe == 0
+    Gker_param = FWHM2sigma(FWHM);
+    resadd = 100;
 end
 
 nabovethresh = 0;
@@ -71,19 +79,34 @@ nabovethresh_spm = 0;
 nabovethresh_lat_spm = 0;
 for b = 1:niters
     b
-    boot_lat_data = spfn(sample_size);
+    boot_lat_data = latspfn(sample_size);
     
-    [ boot_smoothtfield_lat, smoothed_boot_data ] = smoothtstat( boot_lat_data, FWHM );
+    %     boot_smoothtfield_lat = smoothtstat( boot_lat_data, FWHM, 1, 1 ); %lattice evaluation!
     
-%     tcf = @(x) tcfield( x, boot_lat_data, FWHM, -1, xvals, mask );
     tcf = @(x) tcfield( x, boot_lat_data, FWHM, -1, xvals, mask );
-
     
+    if usehpe > 0
+        [ boot_smoothtfield, smoothed_boot_data ] = smoothtstat( boot_lat_data, FWHM, spacing, 1 ); %uses spm here (okay so long as spacing is small enough)
+        dlat = floor(1/spacing);
+        if D == 1
+            smoothed_boot_data_lat = smoothed_boot_data(1:dlat:(dlat*(Dim(1)-1)+1), :);
+            boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*(Dim(1)-1)+1));
+        elseif D == 2
+            smoothed_boot_data_lat = smoothed_boot_data(1:dlat:(dlat*(Dim(1)-1)+1), 1:dlat:(dlat*(Dim(2)-1)+1), :);
+            
+            boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*(Dim(1)-1)+1),1:dlat:(dlat*(Dim(2)-1)+1) );
+        elseif D == 3
+            boot_smoothtfield_lat = boot_smoothtfield(1:dlat:(dlat*(Dim(1)-1)+1),1:dlat:(dlat*(Dim(2)-1)+1), 1:dlat:(dlat*(Dim(3)-1)+1) );
+            smoothed_boot_data_lat = smoothed_boot_data(1:dlat:(dlat*(Dim(1)-1)+1), 1:dlat:(dlat*(Dim(2)-1)+1), 1:dlat:(dlat*(Dim(3)-1)+1), :);
+        end
+    else
+        [ boot_smoothtfield_lat, smoothed_boot_data_lat ] = smoothtstat( boot_lat_data, FWHM, 1, 1 ); %uses spm here (in 3D)
+    end
     if usehpe == 1
         HPE  = LKCestim_HPE( smoothed_boot_data, D, mask, 1 );
         L = HPE.hatn;
     elseif usehpe == 2
-        bHPE  = LKCestim_HPE( smooth_fields, D, mask, 200);
+        bHPE  = LKCestim_HPE( smoothed_boot_data, D, mask, 200);
         L = bHPE.hatn;
     else
         L = LKC_GaussConv( boot_lat_data, Gker_param, D, resadd );
@@ -92,15 +115,15 @@ for b = 1:niters
     threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
     
     if D == 3
-        lat_FWHM_est = est_smooth(smoothed_boot_data, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+        lat_FWHM_est = est_smooth(smoothed_boot_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
         spm_resel_vec = spm_resels_vol(mask,lat_FWHM_est);
         do_spm = 1;
     elseif D == 2 && isequal( mask, ones(Dim) )
-        lat_FWHM_est = est_smooth(smoothed_boot_data, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+        lat_FWHM_est = est_smooth(smoothed_boot_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
         spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
         do_spm = 1;
-    elseif D == 1 && isequal( mask, ones([1, Dim])) 
-        lat_FWHM_est = est_smooth(smoothed_boot_data, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+    elseif D == 1 && isequal( mask, ones([1, Dim]))
+        lat_FWHM_est = est_smooth(smoothed_boot_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
         spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
         do_spm = 1;
     else
@@ -113,9 +136,6 @@ for b = 1:niters
     
     max_tfield_lat = max(boot_smoothtfield_lat(:).*zero2nan(mask(:)));
     max_tfield_at_lms = max(tcf(top_lmlocs));
-%     if max_tfield_at_lms < 0
-%         disp('wait')
-%     end
     
     max_tfield_at_lms = max(max_tfield_lat, max_tfield_at_lms);
     

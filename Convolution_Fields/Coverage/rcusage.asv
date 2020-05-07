@@ -62,5 +62,5 @@ spfn = @(nsubj) normrnd(0,1,[Dim, nsubj]);
 
 mask = ones(Dim);
 
-record_coverage( spfn, sample_size, FWHM, mask, 1000) 
+record_coverage( spfn, sample_size, FWHM, mask, 1, 1000) 
  
