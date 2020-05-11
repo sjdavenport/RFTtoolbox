@@ -15,7 +15,7 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, D, resAdd, remove )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 %   Y       data array T_1 x ... x T_D x N. Last index enumerates the
-%           samples
+%           samples. Note that N > 1 is required!
 %   FWHM    array 1x1 or 1xD containing the FWHM for different directions
 %           for smoothing with a Gaussian kernel, if numeric an isotropic
 %           kernel is assumed
@@ -66,7 +66,7 @@ if nargin < 5
 end
 
 % Check mask input (this need to be coded carefully until know only boxes are )
-mask = boolean(ones(domDim));
+mask = logical(ones(domDim));
 
 
 %------------ compute further constants and allocate variables ------------
@@ -83,6 +83,9 @@ L = NaN * ones( [ 1 length(domDim) ] );
 % sturcture to output the different computed fields for debugging purposes
 geom = struct();
 
+% range for which the kernel is almost zero. kernel will be truncated here.
+siz = ceil( 1.7 * FWHM );
+
 %------------ estimate the LKCs -------------------------------------------
 switch D
     case 1
@@ -91,7 +94,6 @@ switch D
         Y2( 1:(resAdd + 1):end, : ) = Y;
         
         % grid for convolution kernel
-        siz = ceil( 4*FWHM2sigma(FWHM) );
         x   = -siz:dx:siz;
         
         % convolution kernel and derivatives to be used with convn
@@ -132,7 +134,6 @@ switch D
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel
-        siz = ceil( 4*FWHM2sigma(FWHM) );
         [x,y] = meshgrid( -siz:dx:siz, -siz:dx:siz );
         xvals = [x(:), y(:)]';
         
@@ -143,7 +144,7 @@ switch D
         dyh = reshape( dh(2,:), size(x) );
         
         % get the convolutional field
-        smY  = convn( Y2, h, 'same' );
+        smY  = convn( Y2(:,:,:,1), h, 'same' );
         % get the derivative of the convolutional field
         smYx = convn( Y2, dxh, 'same' );
         smYy = convn( Y2, dyh, 'same' );
@@ -206,11 +207,10 @@ switch D
             1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel
-        siz = ceil( 4*FWHM2sigma(FWHM) );
         [x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
         xvals = [x(:), y(:), z(:)]';
         
-        % convolution kernels to be used ith convn
+        % convolution kernels to be used with convn
         h   = reshape( GkerMV( xvals, FWHM ), size(x) );
         dh  = GkerMVderiv( xvals, FWHM );
         dxh = reshape( dh(1,:), size(x) );
@@ -225,7 +225,7 @@ switch D
         smYz = convn( Y2, dzh, 'same' );
         
         % Get the estimates of the covariances
-        VY    = var( smY,  0, D+1 );
+        VY   = var( smY,  0, D+1 );
         VdxY = var( smYx, 0, D+1 );
         VdyY = var( smYy, 0, D+1 );
         VdzY = var( smYy, 0, D+1 );
@@ -244,25 +244,108 @@ switch D
         CYdzY = sum( ( smYz - mean( smYz, D+1 ) ) .* ...
                      ( smY  - mean( smY,  D+1 ) ), D+1 ) / (nsubj-1);
                  
-        % entries of riemanian metric
-        g_xx = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
-        g_yy = -CYdyY.^2 ./ VY.^2 + VdyY ./ VY;
-        g_zz = -CYdzY.^2 ./ VY.^2 + VdzY ./ VY;
-        g_xy = -CYdyY .* CYdxY ./ VY.^2 + CdxYdyY ./ VY;
-        g_xz = -CYdzY .* CYdxY ./ VY.^2 + CdxYdzY ./ VY;
-        g_yz = -CYdzY .* CYdyY ./ VY.^2 + CdyYdzY ./ VY;
+        % entries of riemanian metric/ Lambda matrix from neuroimaging
+        g_xx = ( -CYdxY.^2 + VdxY .* VY ) ./ VY.^2;
+        g_yy = ( -CYdyY.^2 + VdyY .* VY ) ./ VY.^2;
+        g_zz = ( -CYdzY.^2 + VdzY .* VY ) ./ VY.^2;
+        g_xy = ( -CYdyY .* CYdxY + CdxYdyY .* VY ) ./ VY.^2;
+        g_xz = ( -CYdzY .* CYdxY + CdxYdzY .* VY ) ./ VY.^2;
+        g_yz = ( -CYdzY .* CYdyY + CdyYdzY .* VY ) ./ VY.^2;
         
         % cut it down to the valid part of the domain
-        g_xx = max( g_xx( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) ), 0 );
-        g_yy = max( g_yy( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) ), 0 );
-        g_zz = max( g_zz( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) ), 0 );
-        g_xy = g_xy( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) );
-        g_xz = g_xz( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) );
-        g_yz = g_yz( (remove2 + 1):(end-remove2), (remove2 + 1):(end-remove2) );
-
+        g_xx = max( g_xx( (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2) ), 0 );
+        g_yy = max( g_yy( (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2) ), 0 );
+        g_zz = max( g_zz( (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2),...
+                          (remove2 + 1):(end-remove2) ), 0 );
+        g_xy = g_xy( (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2) );
+        g_xz = g_xz( (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2) );
+        g_yz = g_yz( (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2),...
+                     (remove2 + 1):(end-remove2) );
+        %------------------------------------------------------------------
+        %   compute L3
+        %------------------------------------------------------------------
         % get the volume form, max intorduced for stability
-        vol_form = sqrt( max(   g_xx.*g_yy.*g_zz + g_xy.*g_yz.*g_xz + g_xz.*g_xy.*g_yz...
-                              - g_xz.*g_yy.*g_xz - g_xy.*g_xy.*g_zz - g_xx.*g_yz.*g_yz, 0 ) );
+        vol_form = sqrt( max(   g_xx.*g_yy.*g_zz...
+                              + g_xy.*g_yz.*g_xz...
+                              + g_xz.*g_xy.*g_yz...
+                              - g_xz.^2.*g_yy...
+                              - g_xy.^2.*g_zz...
+                              - g_xx.*g_yz.^2, 0 ) );
                           
+        % get meshgrid of domain and delaunay triangulation for integration
+        % over the domain
+        [ Xgrid, Ygrid, Zgrid ] = meshgrid( 1:dx:(sY(1)-2*remove), ...
+                                     1:dx:(sY(2)-2*remove), ...
+                                     1:dx:(sY(3)-2*remove) );   
+        DT = delaunayTriangulation( [ Xgrid(:), Ygrid(:), Zgrid(:) ] );
+        
+        L(3) = integrateTriangulation( DT, vol_form(:) );
+        %------------------------------------------------------------------
+        %   compute L2
+        %------------------------------------------------------------------
+        sG = size(g_xx);
+        % compute the volume form of the faces
+        ind_xy_b = { ':', ':', 1 };
+        ind_xy_t = { ':', ':', sG(3) };
+        ind_xz_b = { ':', 1, ':' };
+        ind_xz_t = { ':', sG(3), ':' };
+        ind_yz_b = { 1 ,':', ':' };
+        ind_yz_t = { sG(3), ':', ':' };
+        
+        % integrate xy_b face volume form
+        vol_form = sqrt( max( g_xx(ind_xy_b{:}).*g_yy(ind_xy_b{:})...
+                              - g_xy(ind_xy_b{:}).^2, 0 ) );
+        [ Xgrid, Ygrid ] = meshgrid( 1:dx:(sY(1)-2*remove), ...
+                                     1:dx:(sY(2)-2*remove) ); 
+        DT = delaunayTriangulation( [ Xgrid(:), Ygrid(:) ] );
+        L(2) = integrateTriangulation( DT, vol_form(:) );
+        
+        % integrate xy_t face volume form
+        vol_form = sqrt( max( g_xx(ind_xy_t{:}).*g_yy(ind_xy_t{:})...
+                              - g_xy(ind_xy_t{:}).^2, 0 ) );
+        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
+        
+        % integrate xz_b face volume form
+        vol_form = sqrt( max( g_xx(ind_xz_b{:}).*g_zz(ind_xz_b{:})...
+                              - g_xz(ind_xz_b{:}).^2, 0 ) );
+        [ Xgrid, Zgrid ] = meshgrid( 1:dx:(sY(1)-2*remove), ...
+                                     1:dx:(sY(3)-2*remove) ); 
+        DT = delaunayTriangulation( [ Xgrid(:), Zgrid(:) ] );
+        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
+        
+        % integrate xz_t face volume form
+        vol_form = sqrt( max( g_xx(ind_xz_t{:}).*g_zz(ind_xz_t{:})...
+                              - g_xz(ind_xz_t{:}).^2, 0 ) );
+        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
+        
+        % integrate yz_b face volume form
+        vol_form = sqrt( max( g_yy(ind_yz_b{:}).*g_zz(ind_yz_b{:})...
+                              - g_yz(ind_yz_b{:}).^2, 0 ) );
+        [ Ygrid, Zgrid ] = meshgrid( 1:dx:(sY(2)-2*remove), ...
+                                     1:dx:(sY(3)-2*remove) ); 
+        DT = delaunayTriangulation( [ Ygrid(:), Zgrid(:) ] );
+        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
+        
+        % integrate yz_t face volume form
+        vol_form = sqrt( max( g_yy(ind_yz_t{:}).*g_zz(ind_yz_t{:})...
+                              - g_yz(ind_yz_t{:}).^2, 0 ) );
+        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
+        
+        %------------------------------------------------------------------
+        %   compute L1 by regression from GKF and plugging in the already
+        %   estimated L2 and L3
+        %------------------------------------------------------------------
+        % probably not necessary, since it might not perform better than
+        % the simple HPE.
 end    
 end
