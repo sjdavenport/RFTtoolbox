@@ -127,7 +127,11 @@ if( Mboot > 1 )
 
     for i = 1:Mboot
         % get the bootstrapped process
-        mY = reshape( Y * multiplier( :, i ), sY(1:end-1) );
+        if D~=1
+            mY = reshape( Y * multiplier( :, i ), sY(1:end-1) );
+        else
+            mY = Y * multiplier( :, i );
+        end
 
         % Get the EC stepfunctions
         EC = EulerCharCrit( mY, D, mask, version );
