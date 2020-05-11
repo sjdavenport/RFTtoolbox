@@ -85,7 +85,7 @@ switch D
 
     case 2
         % initialize output array
-        Ltheory = NaN * [1 1];
+        Ltheory = NaN * ones( 1, D );
         % increase the resolution of the raw data by introducing zeros
         onesField = zeros( domDimhr );
         onesField( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end ) = 1;
@@ -143,6 +143,62 @@ switch D
         Ltheory(2) = integrateTriangulation( DT, vol_form(:) );
 
      case 3
-        % needs to be implemented
+        % initialize output array
+        Ltheory = NaN * ones( 1, D );
+        % increase the resolution of the raw data by introducing zeros
+        onesField = zeros( domDimhr );
+        onesField( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end ) = 1;
+        
+        % grid for convolution kernel
+        if pad == 0
+            siz = ceil( 1.7*FWHM );
+        else
+            siz = pad;
+        end
+        [x,y] = meshgrid( -siz:dx:siz, -siz:dx:siz );
+        xvals = [x(:), y(:)]';
+        
+        % convolution kernels to be used ith convn
+        h   = reshape( GkerMV( xvals, FWHM ), size(x) );
+        dh  = GkerMVderiv( xvals, FWHM );
+        dxh = reshape( dh(1,:), size(x) );
+        dyh = reshape( dh(2,:), size(x) );
+
+        VY      = convn( onesField, h.^2, 'same' );
+        VdxY    = convn( onesField, dxh.^2, 'same' );
+        VdyY    = convn( onesField, dyh.^2, 'same' );
+        CYdyY   = convn( onesField, dyh.*h, 'same' );
+        CYdxY   = convn( onesField, dxh.*h, 'same' );
+        CdxYdyY = convn( onesField, dxh.*dyh, 'same' );
+
+        % entries of riemanian metric
+        g_xx = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
+        g_yy = -CYdyY.^2 ./ VY.^2 + VdyY ./ VY;
+        g_xy = -CYdyY .* CYdxY ./ VY.^2 + CdxYdyY ./ VY;
+        
+        % cut it down to the valid part of the domain
+        if pad ~= 0
+            g_xx = max( g_xx( (padhr+1):(end-padhr), (padhr+1):(end-padhr) ), 0 );
+            g_yy = max( g_yy( (padhr+1):(end-padhr), (padhr+1):(end-padhr) ), 0 );
+            g_xy = g_xy( (padhr+1):(end-padhr), (padhr+1):(end-padhr) );
+        end
+        % get the volume form, max intorduced for stability
+        vol_form = sqrt( max( g_xx.*g_yy - g_xy.*g_xy, 0 ) );
+
+        %%%% calculate the Lipschitz killing curvatures
+        Ltheory(1) = sum(...
+                    sqrt(g_xx(1,1:end-1)')     + sqrt(g_xx(1,2:end)') + ...
+                    sqrt(g_yy(1:end-1,1))      + sqrt(g_yy(2:end,1) ) + ...
+                    sqrt(g_xx(end-1,1:end-1)') + sqrt(g_xx(end-1,2:end)' )+ ...
+                    sqrt(g_yy(1:end-1,end-1))  + sqrt(g_yy(2:end,end-1) )...
+                   ) * dx / 2 / 2;
+
+        % get meshgrid of domain and delaunay triangulation for integration
+        % over the domain
+        [ Xgrid, Ygrid ] = meshgrid( 1:dx:domDim(1), ...
+                                     1:dx:domDim(2) );   
+        DT = delaunayTriangulation( [ Xgrid(:), Ygrid(:) ] );
+
+        Ltheory(2) = integrateTriangulation( DT, vol_form(:) );
 end
 end
