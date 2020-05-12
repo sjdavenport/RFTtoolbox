@@ -1,10 +1,10 @@
 function [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM,... 
                                             FWHMcor, voxelmap, shape_of_array,...
                                             rimFWHM )
-% noisegen_nonstat( Dim, nSubj, FWHM, shape_of_array ) generates an array of
-% smoothed N(0,1) noise shuffles it using voxelmap and smoothes this with a
-% gaussian kernel with a certain FWHM and scales  so that the resulting 
-% field has variance 1. By default this array is Dim 
+% noisegen_nonstat( Dim, nSubj, FWHM, FWHMcor, shape_of_array, rimFWHM )
+% generates an array of smoothed N(0,1) noise shuffles it using voxelmap
+% and smoothes this with a gaussian kernel with a certain FWHM and scales
+% so that the resulting field has variance 1. By default this array is Dim
 % by nSubj, but this can be changed using the shape_of_array parameter.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -12,8 +12,9 @@ function [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM,...
 % nSubj     The number of subjects.
 % FWHM      The FWHM of the kernel for smoothing noise
 % FWHMcor   The FWHM of the kernel for introducing dependence in the voxels
-% voxelmap  A permutation of the vector 1:prod(Dim) indicating where which
-%           voxel belongs to.
+% voxelmap  A permutation of the vector
+%           1:prod(Dim + 2*ceil(rimFWHM*FWHM)*ones(1,length(Dim)))
+%           indicating where which voxel should be mapped at.
 % shape_of_array   0/1/2, default is 0. Determines the shape of the array.
 %           If 0 data is Dim by nSubj,
 %           If 1 data is nSubj by Dim,
@@ -21,13 +22,21 @@ function [ data, RawNoise, TrnInd ] = noisegen_nonstat( Dim, nSubj, FWHM,...
 %           nSubj by Dim. 
 %           If 3 data is nSubj by prod(Dim) instead of
 %           Dim by nSubj.
+% rimFWHM   The factor of FWHM for padding voxels to the boundary to
+%           circumvent boundayr effects. Default 1.7.
 %--------------------------------------------------------------------------
 % OUTPUT
-% data      an array of size Dim by nSubj where the first
+% data      an array of size Dim by nSubj where the last index runs over
+%           the number of subjects: for each subject giving
+%           an image, points of which are identified by the rest of the
+%           indices. (Note that the shape of the array can be changed using
+%           the shape of array parameter.)
+% RawNoise  an array of size Dim by nSubj where the last
 %           index runs over the number of subjects: for each subject giving
 %           an image, points of which are identified by the rest of the
 %           indices. (Note that the shape of the array can be changed using
 %           the shape of array parameter.)
+% TrnInd    !!!!!!!!Sam/Tom please fill in a valid description!!!!!!!
 %--------------------------------------------------------------------------
 % EXAMPLES
 % noise = noisegen(160,20,6);
@@ -116,8 +125,12 @@ indexD  = repmat( {':'}, 1, nDim );
 for subj = 1:nSubj
     % permute labels of raw noise spatial area
     tmp = RawNoise( indexD{:}, subj );
-    RawNoise( indexD{:}, subj ) = reshape( tmp( voxelmap ), wDim );
-    
+    if length(wDim)==1
+        RawNoise( indexD{:}, subj ) = reshape( tmp( voxelmap ), [1 wDim] );
+    else
+        RawNoise( indexD{:}, subj ) = reshape( tmp( voxelmap ), wDim );
+    end
+        
     % Smooth noise
     if FWHM == 0 %Ie if no smoothing is to be applied.
         if (nDim==1)
