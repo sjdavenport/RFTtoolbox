@@ -33,6 +33,7 @@ function cov_array = vectcov( array1, array2, dimension, normalize )
 % data = mvnrnd(mu,Sigma,nsubj*prod(Dim))';
 % mate1 = reshape(data(1,:), [Dim, nsubj]); mate2 = reshape(data(2,:), [Dim, nsubj]);
 % vectcov(mate1, mate2, 3)
+% 
 % Sigma1 = [1,0.5;0.5,1]; Sigma2 = [1,3/4;3/4,1];
 % voxel1 = mvnrnd(mu,Sigma1,nsubj)'; voxel2 = mvnrnd(mu,Sigma2,nsubj)';
 % voxel3 = mvnrnd(mu,Sigma2,nsubj)'; voxel4 = mvnrnd(mu,Sigma1,nsubj)';

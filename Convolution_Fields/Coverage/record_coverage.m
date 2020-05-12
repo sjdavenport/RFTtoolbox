@@ -1,4 +1,4 @@
-function coverage = record_coverage_orig( spfn, sample_size, FWHM, mask, niters, usehpe )
+function coverage = record_coverage( spfn, sample_size, FWHM, mask, niters, usehpe )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.

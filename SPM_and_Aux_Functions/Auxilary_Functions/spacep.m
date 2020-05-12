@@ -1,5 +1,5 @@
 function point_out = spacep( point, spacing )
-% SPACEP( POINT, SPACING) records the values of a the location of points in
+% SPACEP( POINT, SPACING ) records the values of a the location of points in
 % a convolution field that has been evaluated on a lattice with given
 % spacing
 %--------------------------------------------------------------------------

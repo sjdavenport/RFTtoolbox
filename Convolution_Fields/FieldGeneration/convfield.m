@@ -1,4 +1,4 @@
-function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, derivtype, usespm, adjust_kernel)
+function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, usespm, truncation, adjust_kernel)
 % CONVFIELD( lat_data, FWHM, spacing, D, derivtype ) generates a
 % convolution field (at a given spacing) derived from lattice data smoothed 
 % with an isotropic Gaussian kernel with specified FWHM.
@@ -76,11 +76,11 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, de
 % %% 2D
 % Dim = [50,50];
 % lat_data = normrnd(0,1,Dim)
-% cfield = spm_conv(lat_data, FWHM)
+% cfield = spm_conv(lat_data, FWHM);
 % surf(cfield)
-% smooth_data = convfield( lat_data, FWHM, 1, 2) %Same as spm_conv
+% smooth_data = convfield( lat_data, FWHM, 1, 2); %Same as spm_conv
 % surf(smooth_data)
-% fine_data = convfield( lat_data, FWHM, 0.25, 2) %Convolution eval
+% fine_data = convfield( lat_data, FWHM, 0.25, 2); %Convolution eval
 % surf(fine_data)
 % 
 % % Matching to applyconvfield
@@ -105,12 +105,12 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, de
 % % note that it's still not perfect because it's still a discrete
 % % approximation, but that's why we want to use derivfield in the first
 % % place!!
-%
+% 
 % % 2D derivatives (multiple subjects)
 % Dim = [5,5]; nsubj = 20;
 % lat_data = normrnd(0,1,[Dim, nsubj]);
 % derivfield = convfield( lat_data, FWHM, 1, 2, 1)
-%
+% 
 % %% 3D
 % %Compare to SPM
 % Dim = [10,10,10];
@@ -125,7 +125,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, de
 % cfield = convfield( lat_data, FWHM, 1, 3); %Convolution eval
 % surf(cfield(:,:,5))
 % title('Convolution Field Eval (no smoothing)')
-%
+% 
 % % Fine evaluation
 % Dim = [10,10,10];
 % spacing = 0.1; D = length(Dim); FWHM = 3; 
@@ -156,16 +156,16 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, de
 % acfield([5,5,5]')
 % cfield(5,5,5)
 % cfield_withspm(5,5,5) %Even within the image the spm_smooth version is
-% off ( as SPM does something weird in the z-direction)
+% % off ( as SPM does something weird in the z-direction)
 % acfield([1,1,10]')
 % cfield(1,1,10)
 % cfield_withspm(1,1,10) %SPM_smooth version is quite off on the boundary!
-%
+% 
 % % Note that the differneces in spm_smooth appear to go away as the FWHM or the
 % % spacing increases, so the spm_smooth version does well to evaluate ifne
 % % convolution fields and does so very efficiently. So the difference could 
 % % be caused by a truncation issue in spm_smooth?
-%
+% 
 % % % 3D derivatives (1 subject)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3;
 % lat_data = normrnd(0,1,Dim);
@@ -183,7 +183,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, FWHM, spacing, D, de
 % derivx = (plusxeval - pointeval)/spacing
 % derivy = (plusyeval - pointeval)/spacing
 % derivz = (pluszeval - pointeval)/spacing
-%
+% 
 % % 3D derivatives (Multiple subjects)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3; nsubj = 2;
 % lat_data = normrnd(0,1,[Dim,nsubj]);
@@ -203,10 +203,19 @@ end
 if nargin < 6
     usespm = 1;
 end
-if nargin == 7
-   if size(adjust_kernel,1) == 1
-       adjust_kernel = adjust_kernel';
-   end
+
+if nargin < 8
+    use_adjust = 0;
+else
+    if any(adjust_kernel)
+        use_adjust = 1;
+    end
+    if size(adjust_kernel,1) == 1
+        adjust_kernel = adjust_kernel';
+    end
+    if length(adjust_kernel) ~= D
+        error('The kernel adjustment must be of the right dimension')
+    end
 end
 
 slatdata = size(lat_data);
@@ -215,6 +224,36 @@ D_latdata = length(slatdata);
 if nargin < 4
     D = D_latdata;
 end
+
+% Default Kernel
+if isnumeric(Kernel)
+    FWHM = Kernel;
+    if nargin < 7
+        truncation = -1;
+    end
+    if truncation == -1
+        sigma = FWHM2sigma(FWHM);
+        truncation = ceil(4*sigma);
+    end
+    
+    if derivtype == 0
+        Kernel = @(x) GkerMV(x,FWHM);
+    elseif derivtype == 1
+        Kernel = @(x) GkerMVderiv(x,FWHM);
+    elseif derivtype == 2
+        Kernel = @(x) GkerMVderiv2(x,FWHM);
+    else
+        error('This setting has not been coded yet')
+    end
+else
+    % Need a default for truncation for no gaussian kernels!
+    if derivtype == 1
+        Kernel = @(x) getderivs( Kernel(x), D );
+    elseif derivtype > 1
+        error('derivtype > 1 for non-isotropic or non-Gaussian kernels has not been implemented yet')
+    end
+end
+
 
 if D > 1
     if D_latdata == D
@@ -250,7 +289,7 @@ resAdd = floor(1/spacing-1); %Ensures that the spacing fits between the voxels b
 dx = 1/(resAdd+1); %Gives the difference between voxels (basically dx = spacing if spacing evenly divides the voxel)
 
 xvals_vecs  = cell(1,D);
-if nargin > 6
+if use_adjust
     for d = 1:D
         xvals_vecs{d} = (1:dx:Dim(d)) + adjust_kernel(d);
     end
@@ -263,7 +302,6 @@ end
 % Dimensions for field with increased resolution
 Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
 
-truncation = ceil( 4*FWHM2sigma(FWHM) );
 gridside  = -truncation:dx:truncation;
 
 % convolution kernel and derivatives to be used with convn
@@ -272,21 +310,12 @@ if D == 1
     expanded_lat_data = zeros( [ Dimhr, nsubj] );
     expanded_lat_data( 1:(resAdd + 1):end, : ) = lat_data;
      
-    if nargin == 7
+    if use_adjust
         gridside = gridside + adjust_kernel;
     end
-    if derivtype == 0
-        h = Gker( gridside, FWHM );
-        smooth_data = convn( expanded_lat_data', h, 'same' )'; %Hmmm 2 transpose possibly not needed here oh well
-    elseif derivtype == 1
-        [ ~, dxh ] = Gker( gridside, FWHM );
-        smooth_data = convn( expanded_lat_data', dxh, 'same' )';
-    elseif derivtype == 2
-        [ ~, ~, d2xh ] = Gker( gridside, FWHM );
-        smooth_data = convn( expanded_lat_data', d2xh, 'same' )';
-    else
-        error('Higher derivatives are not supported')
-    end
+    
+    h = Kernel(gridside);
+    smooth_data = convn( expanded_lat_data', h, 'same' )';
     
     if vert2horz && nsubj == 1
         smooth_data = smooth_data';
@@ -299,20 +328,23 @@ elseif D == 2
     [x,y] = meshgrid( gridside, gridside );
     xvals = [x(:), y(:)]';
     
-    if nargin == 7
+    if use_adjust
         xvals = xvals + adjust_kernel;
     end
     % convolution kernels to be used with convn
     if derivtype == 0
-        h   = reshape( GkerMV( xvals, FWHM ), size(x) );
+        h   = reshape( Kernel(xvals), size(x) );
         smooth_data  = convn( expanded_lat_data, h, 'same' );
     elseif derivtype == 1
         smooth_data = zeros( [D, size(expanded_lat_data)]);
-        dh  = GkerMVderiv( xvals, FWHM );
+        dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );
         dyh = reshape( dh(2,:), size(x) );
-        smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
-        smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
+        
+%         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
+%         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
+        smooth_data(1,:,:,:)  = convn( expanded_lat_data, dyh, 'same' );
+        smooth_data(2,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
     else
         error('Higher derivatives are not supported')  
     end
@@ -324,7 +356,7 @@ elseif D == 3
     [x,y,z] = meshgrid( gridside, gridside, gridside );
     xvals = [x(:), y(:), z(:)]';
     
-    if nargin == 7
+    if use_adjust
         xvals = xvals + adjust_kernel;
     end
     % convolution kernels to be used with convn
@@ -338,12 +370,12 @@ elseif D == 3
             end
             smooth_data = smooth_data/spacing^3;
         else
-            h   = reshape( GkerMV( xvals, FWHM ), size(x) );
+            h   = reshape( Kernel(xvals), size(x) );
             smooth_data  = convn( expanded_lat_data, h, 'same' );
         end
     elseif derivtype == 1 % Need to modify the spm_ccode in order to get this to work faster!
         smooth_data = zeros( [D, size(expanded_lat_data)]);
-        dh  = GkerMVderiv( xvals, FWHM );
+        dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );
         dyh = reshape( dh(2,:), size(x) );
         dzh = reshape( dh(3,:), size(x) );
