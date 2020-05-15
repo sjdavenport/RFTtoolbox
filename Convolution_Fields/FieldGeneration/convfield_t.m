@@ -1,5 +1,5 @@
-function tcout = convfield_t( lat_data, FWHM, spacing, D)
-% CONVFIELD_T( lat_data, FWHM, spacing, D ) computes a convolution t field
+function [tcout, xvals_vecs] = convfield_t( lat_data, FWHM, spacing)
+% CONVFIELD_T( lat_data, FWHM, spacing) computes a convolution t field
 % with specified FWHM at points given by spacing
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -8,20 +8,18 @@ function tcout = convfield_t( lat_data, FWHM, spacing, D)
 % spacing       the interval at which to compute the convolution field.
 %               I.e. if size(lat_data) = [10,20] and spacing = 0.1 the field 
 %               will be evaluated at the points 1:0.1:10
-% D             the dimension of the data, if this is left blank it is
-%               assumed that nsubj = 1 and that the convolution field has 
-%               the same numberof dimesions as lat_data
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% tcout         the convolution tfield
 %--------------------------------------------------------------------------
 % EXAMPLES
 % 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+D = length(size(lat_data)) - 1;
 
-setofconvfields = convfield( lat_data, FWHM, spacing, D );
+[setofconvfields, xvals_vecs] = convfield( lat_data, FWHM, spacing, D );
 
 tcout = mvtstat(setofconvfields);
 

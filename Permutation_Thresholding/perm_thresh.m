@@ -24,7 +24,8 @@ function [threshold, vec_of_maxima] = perm_thresh( data, stat, niters, include_o
 % data = normrnd(0,1, 100, 5);
 % threshold = perm_thresh(data)
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport.
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 2
     stat = 'T';
 end

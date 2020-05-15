@@ -37,9 +37,12 @@ function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array
 % noise_mean = mean(noise,1);
 %
 % %Resulting variance is 1:
-% noise = noisegen([95,95],100, 4, 1);
+% noise = noisegen([300,300],100, 4, 0);
 % [~, ~, std_est] = mvtstat( noise );
 % mean(std_est)
+%
+% % 3D example
+% tic; noise = noisegen([100,100,100],100, 4, 0); toc
 %--------------------------------------------------------------------------
 % AUTHORS: Samuel Davenport and Thomas E. Nichols
 %--------------------------------------------------------------------------
@@ -54,6 +57,7 @@ nDim    = length(Dim); %The number of dimensions.
 
 if nargin < 5
     rimFWHM = 1.7; %The number of standard deviations or something like that in either direction.
+%     rimFWHM  = 4;
 end
 wDim    = Dim + 2*ceil(rimFWHM*FWHM)*ones(1,nDim);  %The increased dimension, needed to deal with the edge effect.
 
@@ -116,7 +120,8 @@ for subj = 1:nSubj
         elseif nDim == 2
             [Noises,tt] = spm_conv_mod(RawNoise(:,:,subj),FWHM,FWHM);
         else
-            tt       = spm_smooth_mod(RawNoise(:,:,:,subj),Noises,FWHM);
+%             tt       = spm_smooth_mod(RawNoise(:,:,:,subj),Noises,FWHM);
+            [Noises,tt] = fconv(RawNoise(:,:,:,subj),FWHM);
         end
         Noises    = Noises/sqrt(tt); %Done to standardize.
     end

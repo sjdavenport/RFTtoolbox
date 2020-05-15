@@ -34,11 +34,8 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % xvals_fine = 1:0.01:nvox;
 % FWHM = 3;
 % lat_data = normrnd(0,1,1,nvox);
-% cfield = inter_conv1D( lat_data, FWHM, 0.01);
-% plot(xvals_fine,cfield)
-% hold on
 % smooth_data = convfield( lat_data, FWHM, 0.01, 1);
-% plot(xvals_fine,smooth_data + 0.5)
+% plot(xvals_fine,smooth_data)
 % 
 % %% Smoothing with the same resolution
 % lat_data = normrnd(0,1,1,nvox);
@@ -311,7 +308,9 @@ if D == 1
     expanded_lat_data( 1:(resAdd + 1):end, : ) = lat_data;
      
     if use_adjust
-        gridside = gridside + adjust_kernel;
+%         gridside = gridside + adjust_kernel; 
+        gridside = fliplr(gridside - adjust_kernel);
+        %Note need to flip here as convn flips h around before dragging it across the data!
     end
     
     h = Kernel(gridside);
@@ -333,7 +332,8 @@ elseif D == 2
     end
     % convolution kernels to be used with convn
     if derivtype == 0
-        h   = reshape( Kernel(xvals), size(x) );
+        h = reshape( Kernel(xvals), size(x) )';
+%         h = fliplr(h); h = flipud(h);
         smooth_data  = convn( expanded_lat_data, h, 'same' );
     elseif derivtype == 1
         smooth_data = zeros( [D, size(expanded_lat_data)]);

@@ -22,7 +22,7 @@ if ~(norm(round( point/mod_spacing ) -  point/mod_spacing) < 10^(-5))
     error('This point is not contained in the spaced lattice')
 end
 
-point_out = (point - 1)*inverse_spacing + 1;
+point_out = round((point - 1)*inverse_spacing + 1);
 
 end
 
