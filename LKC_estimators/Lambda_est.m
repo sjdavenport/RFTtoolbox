@@ -89,7 +89,7 @@ if D == 1
     
     Lambda_array = vectcov(derivs, derivs);
     clear derivs
-else
+elseif D == 2
     derivs = zeros( [D, s_lat_data] );
     for d = 1:D
         fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, 0, -1, h*sbasis(d,D) );
@@ -106,6 +106,8 @@ else
             Lambda_array(d1,d2,index{:}) = vectcov(derivs(d1, index{:}, :), derivs(d2, index{:}, :), D+2);
         end
     end
+elseif D == 3
+    error('Not working in 3D yet')
 end
 
 end

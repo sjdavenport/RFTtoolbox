@@ -16,6 +16,21 @@ function [tcout, xvals_vecs] = convfield_t( lat_data, FWHM, spacing)
 % 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
+% % 1D convolution field
+% nvox = 10; nsubj = 20; spacing = 0.05; FWHM = 2;
+% lat_data = normrnd(0,1,[nvox,nsubj]);
+% [tconvfield, xvals_vecs] = convfield_t(lat_data, FWHM, spacing);
+% xvals_fine = xvals_vecs{1};
+% lattice_tfield = convfield_t(lat_data, FWHM, 1);
+% plot(1:nvox, lattice_tfield, 'o-')
+% hold on
+% plot(xvals_fine, tconvfield)
+% title('1D convolution t fields')
+% legend('Convolution field', 'Lattice Evaluation')
+% xlabel('voxels')
+% ylabel('t field')
+%
+% % 2D convolution field
 %--------------------------------------------------------------------------
 D = length(size(lat_data)) - 1;
 
