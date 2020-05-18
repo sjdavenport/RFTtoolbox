@@ -1,5 +1,5 @@
-function [L, geom] = LKCestim_GaussConv( Y, FWHM, D, resAdd, remove )
-% LKCestim_GaussConv( Y, nu, D, resAdd, remove )
+function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
+% LKCestim_GaussConv( Y, nu, mask, resAdd, remove )
 % estimates the Lipschitz Killing curvatures for a convolution process.
 % It uses the fact that derivatives can be represented as convolutions
 % with the derivative kernel.
@@ -23,10 +23,12 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, D, resAdd, remove )
 %           to the region of interest. (not yet implemented!)
 %   resAdd  integer denoting the amount of voxels padded between existing
 %           voxels to increase resolution
-%   remove  (only for theoretical simulations) integer of booundary voxels
-%           to remove for estimation. It is used to remove boundary effects
-%           in simulations. Default=0. Only touch, if you are simulating
-%           theoretical processes.
+%   remove  (only for theoretical simulations) integer amount of boundary
+%           voxels, which are removed from the boundary.
+%           This is only neccessary to handle boundary effects in
+%           simulations. Default = 0 (no voxels removed).
+%           Only touch, if you are simulating theoretical processes and you
+%           want to compare to processes derived from an enlarged domain.
 %--------------------------------------------------------------------------
 % OUTPUT
 %   L       1xD array of estimated LKCs
@@ -34,6 +36,11 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, D, resAdd, remove )
 %           of the random field.
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %1D
+% rf   = noisegen( [35 35], 50, 6 );
+% mask = ones([35 35);
+% L = LKCestim_GaussConv( rf, 3, mask, 1 );
+%
 % %2D
 % rf   = noisegen( [35 35], 50, 6 );
 % mask = ones([35 35);
