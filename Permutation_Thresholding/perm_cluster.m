@@ -10,7 +10,8 @@ function [ out ] = perm_cluster( data, stat, niters, include_original, subject_m
 % EXAMPLES
 % 
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 2
     stat = 'T';
 end
