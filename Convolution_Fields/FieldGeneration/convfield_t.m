@@ -32,11 +32,16 @@ function [tcout, xvals_vecs] = convfield_t( lat_data, FWHM, spacing)
 %
 % % 2D convolution field
 %--------------------------------------------------------------------------
-D = length(size(lat_data)) - 1;
+sld = size(lat_data);
+D = length(sld) - 1;
 
 [setofconvfields, xvals_vecs] = convfield( lat_data, FWHM, spacing, D );
 
-tcout = mvtstat(setofconvfields);
+if D > 1
+    tcout = mvtstat(setofconvfields, spacep(sld(1:end-1),spacing));
+else
+    tcout = mvtstat(setofconvfields);
+end
 
 end
 % 

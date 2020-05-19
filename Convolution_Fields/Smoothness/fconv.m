@@ -4,10 +4,12 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation )
 % kernel).
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data
-% sep_kern      a function handle giving a separable kernel
+% data          a Dim by nsubj array of data
+% sep_kern      a function handle giving a separable kernel. If this is 
+%               instead numeric fconv smoothes with an isotropic Gaussian 
+%               kernel with sep_kern as the FWHM (see EXAMPLES section)
 % D             the dimension
-% truncation
+% truncation    the truncation of the Kernel to use (if using a the
 %--------------------------------------------------------------------------
 % OUTPUT
 % smoothed_data     the smoothed data
@@ -15,12 +17,23 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation )
 %                   variance 1 isotropic fields
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 1D
-% lat_data = normrnd(0,1,1,10); FWHM = 3;
+% %1D
+% lat_data = normrnd(0,1,1,100); FWHM = 3;
 % smoothed_fconv = fconv(lat_data, FWHM);
-% soomthed_spm = spm_conv(lat_data,FWHM);
-% plot(smoothed_fconv); hold on; plot(soomthed_spm)
+% smoothed_spm = spm_conv(lat_data,FWHM);
+% plot(smoothed_spm); hold on; plot(smoothed_fconv)
+% legend('spm\_conv', 'fconv') 
 %
+% %1D multiple subjects
+% nvox = 100; nsubj = 2; lat_data = normrnd(0,1,nvox,nsubj); FWHM = 3; D = 1;
+% smoothed_fconv = fconv(lat_data, FWHM, D)
+% smoothed_spm = zeros(nvox, nsubj);
+% for n = 1:nsubj
+%     smoothed_spm(:,n) = spm_conv(lat_data(:,n),FWHM);
+% end
+% plot(smoothed_spm, 'color',[0.85 0.325 0.0980]); hold on;
+% plot(smoothed_fconv, 'color',[0 0.447 0.7410]);
+% 
 % % 2D 
 % lat_data = normrnd(0,1,25,25); FWHM = 3;
 % smoothed_fconv = fconv(lat_data, FWHM); 
@@ -60,6 +73,7 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+s_data = size(data);
 if nargin < 3
     s_data = size(data);
     D = length(s_data);
@@ -79,6 +93,9 @@ if isnumeric(sep_kern)
     truncation = ceil(4*sigma);
 else
     Kernel = sep_kern;
+    if nargin < 4
+        error('Need to specify truncation')
+    end
 end
 % dx = 1;
 
@@ -93,9 +110,17 @@ else
 end
 % sum(gridside)
 
+if (D < length(s_data) && D > 1) || (D == 1 && all(s_data > [1,1]))
+    smoothed_data = zeros(s_data); nsubj = s_data(end);
+    index  = repmat( {':'}, 1, D );
+    for J = 1:nsubj
+        smoothed_data(index{:}, J) = fconv(squeeze(data(index{:},J)), Kernel, D, truncation);
+    end
+    return
+end
+
 if D == 1
     smoothed_data = conv(data, gridside,'same');
-    
     ss = sum(gridside.^2);
 elseif D == 2
     udside = gridside';

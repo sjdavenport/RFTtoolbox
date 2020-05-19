@@ -6,7 +6,7 @@ function resel_vec = LKC2resel( LKCs, L_0 )
 % LKCs      a vector of the LKCs such that L(i) is L_i i.e. the ith LKC for
 %           i = 1:D. Note that L_0 is not included!
 % L_0       the 0th LKC i.e. L_0. If this is not provided as an input it is
-%           taken to be zero
+%           taken to be 1
 %--------------------------------------------------------------------------
 % OUTPUT
 % resel_vec     the vector of resels

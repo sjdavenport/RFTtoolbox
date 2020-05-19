@@ -197,10 +197,10 @@ if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
 end
 
 [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, 1.5 );
-
+% 
 % npeaks = size(peak_est_locs, 2);
-% peak_vals = zeros(1,npeaks);
-% peak_locs = zeros(D, npeaks);
+% peakvals = zeros(1,npeaks);
+% peaklocs = zeros(D, npeaks);
 % 
 % A = [eye(D);-eye(D)];
 % % b = [Ldim(:)+0.5;ones(D,1)-0.5];
@@ -215,8 +215,8 @@ end
 % 
 % options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
 % for peakI = 1:npeaks
-%     peak_locs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
-%     peak_vals(peakI) = field(peak_locs(:, peakI));
+%     peaklocs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
+%     peakvals(peakI) = field(peaklocs(:, peakI));
 % end
 
 end
