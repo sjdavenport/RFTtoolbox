@@ -1,4 +1,4 @@
-function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
+function LKC = LKCestim_GaussConv( Y, mask, FWHM, resAdd, remove )
 % LKCestim_GaussConv( Y, nu, mask, resAdd, remove )
 % estimates the Lipschitz Killing curvatures for a convolution process.
 % It uses the fact that derivatives can be represented as convolutions
@@ -14,13 +14,16 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
+% Mandatory
 %   Y       data array T_1 x ... x T_D x N. Last index enumerates the
 %           samples. Note that N > 1 is required!
+%   mask    a logical array of dimension T_1 x...x T_D. Not that the domain
+%           domain needs to be only one connected component currently in
+%           D=1. (Not yet implemented!!!!) 
 %   FWHM    array 1x1 or 1xD containing the FWHM for different directions
 %           for smoothing with a Gaussian kernel, if numeric an isotropic
-%           kernel is assumed
-%   mask    boolean array T_1 x ... x T_D indicating which voxels belong to
-%           to the region of interest. (not yet implemented!)
+%           kernel is assumed.
+% Optional
 %   resAdd  integer denoting the amount of voxels padded between existing
 %           voxels to increase resolution
 %   remove  (only for theoretical simulations) integer amount of boundary
@@ -31,9 +34,15 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
 %           want to compare to processes derived from an enlarged domain.
 %--------------------------------------------------------------------------
 % OUTPUT
-%   L       1xD array of estimated LKCs
-%   geom    structure containing geometric quantities of the induced metric
-%           of the random field.
+%   LKC     structure containing fields:
+%           - hatL: D x 1 vector of estimates of LKC for the sample Y. It
+%                   is the average of hatL1.
+%           - L0:   integer containing the Euler characteristic of the mask
+%                   equivalently the zeroth LKC of the random fields.
+%           - geom: structure containing geometric quantities of the
+%                   induced metric of the random field.
+% -------------------------------------------------------------------------
+% AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %1D
@@ -47,57 +56,95 @@ function [L, geom] = LKCestim_GaussConv( Y, FWHM, mask, resAdd, remove )
 % L = LKCestim_GaussConv( rf, 3, mask, 1 );
 % 
 % %3D
-% thresh = 1;
-% sims = randn(10,10,10)
-% clusters = clusterloc(sims, thresh);
-% sims > thresh
-% clusters
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
-%--------------------------------------------------------------------------
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%------------ get parameters from the random field input ------------------
-% Dimension of the input
-sY     = size( Y );
-% Dimension of the domain
-domDim = sY( 1 : end-1 );
-% dimension of the domain
-D = length( domDim );
-% number of samples
-nsubj = sY( end );
+%%%% Check input and get important constants from the mandatory input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Get constants from the mandatory input
+% size of the domain
+sY = size( Y );
+% !!!currently hard coded!!!
+mask = logical( ones( [ sY(1:end-1) 1 ] ) );
+sM = size( mask );
 
-%------------ check input and set default values --------------------------
-if nargin < 5
-    remove = 0;
+% dimension of the domain, since matlab is not consistent for D<1, we need
+% to catch this case 
+if sM( 2 ) == 1 && length( sM ) == 2
+    D = 1;
+else
+    D = length(sM);
 end
 
-% Check mask input (this need to be coded carefully until know only boxes are )
-mask = logical(ones(domDim));
+% check whether more than one sample is provided, else reject the input.
+if length( sY ) <= D
+    error("You need to provide at least 2 samples of your random field!");
+elseif length(sY) > D+1
+    error("Y needs to have only one dimension more than mask!");
+else
+    % get number of subjects/samples
+    nsubj = sY( D + 1 );
+end
+
+% get variable domain counter
+index  = repmat( {':'}, 1, D );
+
+%%%% check validity of mask input
+if ~all( sM == sY( 1:end-1 ) ) && ~all( sM == sY ) && ...
+   ~( D == 1 && sM( 1 ) == sY( 1 ) )
+   error( 'The mask needs to have the same size as Y. Note that realisations are stored as columns.' )
+end
+
+% check that method is implemented for dimension D
+if D > 3
+    error( 'D must be < 4. Higher dimensional domains have not been implemented')
+end
 
 
-%------------ compute further constants and allocate variables ------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% add/check optional values
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if ~exist( 'resAdd', 'var' )
+   % default number of resolution increasing voxels between observed voxels
+   resAdd = 0;
+end
+
+if ~exist( 'remove', 'var' )
+   % default number of voxels removed from the boundary prior to estimation
+   % note that this is only required for theoretical simulation studies to
+   % remove boundary effects! Don't touch, if you do not exactly know what
+   % you are doing!!!
+   remove = 0;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% main function
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% further important constants
 % stepsize for inbetween voxel resolution increase
-dx = 1/(resAdd+1);
+dx   = 1/(resAdd+1);
 % Dimensions for field with increased resolution
-domDimhr = ( domDim - 1 ) * resAdd + domDim;
+sMhr = ( sM - 1 ) * resAdd + sM;
 % number of points which needs to be removed from increased resolution
 % image, since they don't belong into the estimation regime
 remove2 = remove * ( 1 + resAdd);
-
-% allocate vector for Lipschitz Killing curvature
-L = NaN * ones( [ 1 length(domDim) ] );
-% sturcture to output the different computed fields for debugging purposes
-geom = struct();
-
 % range for which the kernel is almost zero. kernel will be truncated here.
 siz = ceil( 1.7 * FWHM );
 
-%------------ estimate the LKCs -------------------------------------------
+%%%% allocate variables
+% allocate vector for Lipschitz Killing curvature
+L = NaN * ones( [ 1 length(sM) ] );
+% structure to output the different computed fields for debugging purposes
+geom = struct();
+
+%%%%%%%% BEGIN estimate the LKCs in different dimensions
+%%%% Compute 0th LKC
+L0 = EulerChar( mask, 0.5, D );
+
+%%%% compute LKCs for 0 < d < D
 switch D
     case 1
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, nsubj ] );
+        Y2 = zeros( [ sMhr, nsubj ] );
         Y2( 1:(resAdd + 1):end, : ) = Y;
         
         % grid for convolution kernel
@@ -137,7 +184,7 @@ switch D
 
     case 2
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, nsubj ] );
+        Y2 = zeros( [ sMhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = Y;
         
         % grid for convolution kernel
@@ -209,7 +256,7 @@ switch D
         
     case 3
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ domDimhr, nsubj ] );
+        Y2 = zeros( [ sMhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end,...
             1:( resAdd + 1 ):end, : ) = Y;
         
@@ -354,5 +401,14 @@ switch D
         %------------------------------------------------------------------
         % probably not necessary, since it might not perform better than
         % the simple HPE.
-end    
 end
+%%%%%%%% END estimate the LKCs in different dimensions
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Prepare output as a structure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Summarize output
+LKC  = struct(  L_hat, 'hatL', L, 'L0', L0, 'geomQuants',...
+                geom );
+return
