@@ -6,12 +6,12 @@ close all
 
 Dim = [30 30 30];
 nSubj = 15;
-FWHM = 2;
+FWHM = 3;
 FWHMcor = 15;
 
 % different choices for voxelmaps
 rng(1)
-Nwvox = 54872;
+Nwvox = 74088;
 wd1 = round((Nwvox)^(1/3));
 
 %voxelmap = 1:Nwvox; % identity
@@ -70,7 +70,7 @@ figure(16)
 imagesc(squeeze(data2(:,14,:,12))), colorbar
 
 %% approximating isotropic fields by multiplier bootstrap
-data3 = noisegen( Dim, 1000, FWHM );
+data3 = noisegen_nonstat( Dim, nSubj, FHWM, FWHMcor, voxelmap );
 data4 = multiplier_field( data3, 4 );
 
 figure(17)
