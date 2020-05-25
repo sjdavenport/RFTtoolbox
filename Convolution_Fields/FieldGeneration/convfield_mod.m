@@ -1,4 +1,4 @@
-function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, truncation, adjust_kernel)
+function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, usespm, truncation, adjust_kernel)
 % CONVFIELD( lat_data, FWHM, spacing, D, derivtype ) generates a
 % convolution field (at a given spacing) derived from lattice data smoothed 
 % with an isotropic Gaussian kernel with specified FWHM.
@@ -197,17 +197,12 @@ end
 if nargin < 5
     derivtype = 0;
 end
-
-slatdata = size(lat_data);
-D_latdata = length(slatdata);
-
-if nargin < 4
-    D = D_latdata;
+if nargin < 6
+    usespm = 1;
 end
 
-if nargin < 7
+if nargin < 8
     use_adjust = 0;
-    adjust_kernel = zeros(D,1);
 else
     if any(adjust_kernel)
         use_adjust = 1;
@@ -220,10 +215,17 @@ else
     end
 end
 
+slatdata = size(lat_data);
+D_latdata = length(slatdata);
+
+if nargin < 4
+    D = D_latdata;
+end
+
 % Default Kernel
 if isnumeric(Kernel)
     FWHM = Kernel;
-    if nargin < 6
+    if nargin < 7
         truncation = -1;
     end
     if truncation == -1
@@ -232,7 +234,7 @@ if isnumeric(Kernel)
     end
     
     if derivtype == 0
-        Kernel = @(x) Gker(x,FWHM);
+        Kernel = @(x) GkerMV(x,FWHM);
     elseif derivtype == 1
         Kernel = @(x) GkerMVderiv(x,FWHM);
     elseif derivtype == 2
@@ -301,7 +303,7 @@ gridside  = -truncation:dx:truncation;
 
 % convolution kernel and derivatives to be used with convn
 if D == 1
-    % Increase the resolution of the raw data by introducing zeros
+    % increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj] );
     expanded_lat_data( 1:(resAdd + 1):end, : ) = lat_data;
      
@@ -318,52 +320,60 @@ if D == 1
         smooth_data = smooth_data';
     end
 elseif D == 2
-    % Increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
-
-    % Run the smoothing
+    
+    % grid for convolution kernel
+    [x,y] = meshgrid( gridside, gridside );
+    xvals = [x(:), y(:)]';
+    
+    if use_adjust
+        xvals = xvals + adjust_kernel;
+    end
+    % convolution kernels to be used with convn
     if derivtype == 0
-        %Only set up for Gaussian kernels atm!
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^2;
+        h = reshape( Kernel(xvals), size(x) )';
+%         h = fliplr(h); h = flipud(h);
+        smooth_data  = convn( expanded_lat_data, h, 'same' );
     elseif derivtype == 1
-        % Grid for convolution kernel
-        [x,y] = meshgrid( gridside, gridside );
-        xvals = [x(:), y(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
-        end
         smooth_data = zeros( [D, size(expanded_lat_data)]);
         dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );
         dyh = reshape( dh(2,:), size(x) );
         
-        %         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
-        %         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
+%         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
+%         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dyh, 'same' );
         smooth_data(2,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
     else
         error('Higher derivatives are not supported')  
     end
 elseif D == 3
-    % Increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
     
+    % grid for convolution kernel
+    [x,y,z] = meshgrid( gridside, gridside, gridside );
+    xvals = [x(:), y(:), z(:)]';
+    
+    if use_adjust
+        xvals = xvals + adjust_kernel;
+    end
     % convolution kernels to be used with convn
     if derivtype == 0
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^3;
-    elseif derivtype == 1 % Need to modify the spm_ccode in order to get this to work faster!
-        % grid for convolution kernel
-        [x,y,z] = meshgrid( gridside, gridside, gridside );
-        xvals = [x(:), y(:), z(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
+        if usespm == 1
+            smooth_data = zeros(size(expanded_lat_data));
+            for L = 1:nsubj
+                smooth_subj_data = zeros(Dimhr);
+                spm_smooth(expanded_lat_data(:,:,:,L), smooth_subj_data, FWHM/spacing)
+                smooth_data(:,:,:,L) = smooth_subj_data;
+            end
+            smooth_data = smooth_data/spacing^3;
+        else
+            h   = reshape( Kernel(xvals), size(x) );
+            smooth_data  = convn( expanded_lat_data, h, 'same' );
         end
+    elseif derivtype == 1 % Need to modify the spm_ccode in order to get this to work faster!
         smooth_data = zeros( [D, size(expanded_lat_data)]);
         dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );

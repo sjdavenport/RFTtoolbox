@@ -1,4 +1,4 @@
-function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, adjust_kernel )
+function [ smoothed_data, ss ] = fconv( data, sep_kern, D, adjust_kernel, truncation )
 % FCONV( data, sep_kern, truncation ) provides a faster implementation for
 % smoothing data using a separable kernel (e.g. an isotropic Gaussian
 % kernel).
@@ -47,12 +47,12 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, adjust_ke
 % 
 % % 3D
 % Dim = [50,50,50]; lat_data = normrnd(0,1,Dim); halfDim = Dim(1)/2;
-% D = length(Dim); FWHM = 3; D = 3;
+% D = length(Dim);
 % smoothed_spm = zeros(Dim);
 % spm_smooth(lat_data, smoothed_spm, FWHM);
 % smoothed_fconv = fconv(lat_data, FWHM);
 % sigma = FWHM2sigma(FWHM); truncation = ceil(6*sigma);
-% smoothed_fconv_spmkern = fconv(lat_data, @(x) spm_smoothkern(FWHM, x), D, truncation );
+% smoothed_fconv_spmkern = fconv(lat_data, @(x) spm_smoothkern(FWHM, x), 3, truncation );
 % smoothed_cfield = convfield( lat_data, FWHM, 1, D, 0, 0);
 % plot(1:Dim(1),smoothed_fconv(:,halfDim,halfDim))
 % hold on 
@@ -92,17 +92,17 @@ end
 
 if isnumeric(sep_kern)
     FWHM = sep_kern;
-    Kernel = @(x) Gker(x, FWHM);
+    Kernel = @(x) GkerM(x, FWHM);
     sigma = FWHM2sigma(FWHM);
     truncation = ceil(4*sigma);
 else
     Kernel = sep_kern;
-    if nargin < 4
+    if nargin < 5
         error('Need to specify truncation')
     end
 end
 
-if nargin < 5 || isnan(sum(adjust_kernel(:))) % Allows adjust_kernel to be set as a NaN
+if nargin < 4 || isnan(adjust_kernel) % Allows adjust_kernel to be set as a NaN
     adjust_kernel = zeros(1,D)';
 elseif length(adjust_kernel) ~= D
     error('The kernel adjustment must be of the same dimension as the data')
@@ -137,26 +137,24 @@ end
 % Main body, running convolution with a separable kernel in each direction
 if D == 1
     smoothed_data = conv(data, kernel_in_direction(1,:),'same');
-    ss = sum(dthdirectionvector(1,:).^2); % Calculates the sum of the squares of the kernel
+    ss = sum(dthdirectionvector(1,:).^2);
 elseif D == 2
-    udside = kernel_in_direction(2,:)'; % The kernel in the up down direction
-    smoothed_data = convn(data, kernel_in_direction(1,:), 'same'); %Smooth in the left right direction
-    smoothed_data = convn(smoothed_data, udside, 'same');  %Smooth in the up down direction
+    udside = kernel_in_direction(2,:)';
+    smoothed_data = convn(data, kernel_in_direction(1,:), 'same');
+    smoothed_data = convn(smoothed_data, udside, 'same');
     
-    [sx,sy] = meshgrid(dthdirectionvector(1,:),dthdirectionvector(2,:)); % Calulate the kernel values everywhere
-    ss = sum((sx(:).*sy(:)).^2); % This is the sum of the squares of the kernel in 
-                            % the truncation box, since the kernel is by assumption separable.
+    [sx,sy] = meshgrid(dthdirectionvector(1,:),dthdirectionvector(2,:));
+    ss = sum((sx(:).*sy(:)).^2);
 elseif D == 3
-    udside = kernel_in_direction(2,:)'; % The kernel in the up down direction
-    inside = zeros(1,1,length(kernel_in_direction(3,:))); 
-    inside(1,1,:) = kernel_in_direction(3,:); %The kernel in the in out direction
-    smoothed_data = convn(data, kernel_in_direction(1,:), 'same'); %Smooth in the left right direction
-    smoothed_data = convn(smoothed_data, udside, 'same'); %Smooth in the up down direction
-    smoothed_data = convn(smoothed_data, inside, 'same'); %Smooth in the in out direction
+    udside = kernel_in_direction(2,:)';
+    inside = zeros(1,1,length(kernel_in_direction(3,:)));
+    inside(1,1,:) = kernel_in_direction(3,:);
+    smoothed_data = convn(data, kernel_in_direction(1,:), 'same');
+    smoothed_data = convn(smoothed_data, udside, 'same');
+    smoothed_data = convn(smoothed_data, inside, 'same');
      
     [sx,sy,sz] = meshgrid(dthdirectionvector(1,:),dthdirectionvector(2,:),dthdirectionvector(3,:));
-    ss = sum((sx(:).*sy(:).*sz(:)).^2); % This is the sum of the squares of the kernel in 
-                            % the truncation box, since the kernel is by assumption separable.
+    ss = sum((sx(:).*sy(:).*sz(:)).^2);
 else
     error('fconv not coded for dimension > 3')
 end
