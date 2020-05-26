@@ -133,22 +133,18 @@ end
 % including an adjustment if this has been specified)
 dthdirectionvector = zeros(D, length(truncation_vector));
 kernel_in_direction = zeros(D, length(truncation_vector));
-if iscell(Kernel) % This allows the kernels to be different in the x,y and z directions
+if iscell(Kernel) % This allows the kernels 
     if length(Kernel) < D
         error('A Kernel must be specified for each direction or 1 that will be the same for all')
     end
     for d = 1:D
-        Kernel_d = Kernel{d}; %get the kernel in the dth direction
-%         dthdirectionvector(d,:) = fliplr(truncation_vector - adjust_kernel(d)); 
-        dthdirectionvector(d,:) = truncation_vector;
+        Kernel_d = Kernel{d};
+        dthdirectionvector(d,:) = fliplr(truncation_vector - adjust_kernel(d));
         kernel_in_direction(d,:) = Kernel_d(dthdirectionvector(d,:));
     end
 else
     for d = 1:D
-        % Need to fliplr below because that's how convn drags the vector
-        % along the data (needed when the kernel is not symmetric) (subject
-        % to change!!)
-        dthdirectionvector(d,:) = truncation_vector + adjust_kernel(d);
+        dthdirectionvector(d,:) = fliplr(truncation_vector - adjust_kernel(d));
         kernel_in_direction(d,:) = Kernel(dthdirectionvector(d,:));
     end
 end

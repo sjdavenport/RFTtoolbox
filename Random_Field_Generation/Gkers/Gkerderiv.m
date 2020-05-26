@@ -4,7 +4,10 @@ function out = Gkerderiv(x, FHWM)
 % h = 0.00001;
 % valplushx = GkerMV(1+h, 3);
 % (valplushx - val)/h
-
+% 
+% %Compare to GkerMVderiv
+% GkerMVderiv(0.5, 3)
+% Gkerderiv(0.5, 3)
 sigma2 = FWHM2sigma(FHWM)^2;
 out = (-x/sigma2).*exp(-x.^2/(2*sigma2))/sqrt(2*pi*sigma2);
 end
