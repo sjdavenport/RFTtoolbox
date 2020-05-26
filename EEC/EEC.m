@@ -22,22 +22,24 @@ function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, D, LKC0, type 
 %--------------------------------------------------------------------------
 % EXAMPLES
 % dim   = [50 50 50];
-% nsubj = 30;
+% nsubj = 70;
 % D     = length( dim );
 % uvals = -6 : 0.1 : 6;
 % mask  = true(dim);
-%
-% Y    = noisegen( dim, nsubj, 5*2*sqrt(2*log(2)), 0 );
-% HPE  = LKCestim_HPE( Y, D, mask, 1, "C" );
-% bHPE = LKCestim_HPE( Y, D, mask, 5e3, "C" );
 % 
-% [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, HPE.hat1, D,...
+% Y    = noisegen( dim, nsubj, 5*2*sqrt(2*log(2)), 0 );
+% HPE  = LKCestim_HPE( Y, mask, 1 );
+% bHPE = LKCestim_HPE( Y, mask, 5e3 );
+% 
+% [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, HPE.hatL1, D,...
 %                                             HPE.L0, "gaussian" );
-%
+% 
 % figure(1)                                         
 % plot(uvals, EEC_vals, 'Color', ones([1 3])*0.75)
 % line(uvals, mEEC', 'Color', 'blue', 'LineWidth', 1.5)
-% line(uvals, mEEC'+ 1.96* [EEC_se_hat, -EEC_se_hat]', 'Color', 'blue', 'LineWidth', 1.5, 'LineStyle', '--')
+% line(uvals, mEEC'+ 1.96* [EEC_se_hat, -EEC_se_hat]', 'Color', 'blue',...
+% 'LineWidth', 1.5, 'LineStyle', '--')
+% title("HPE estimates of expected EC curve with pointwise CI's")
 %
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
