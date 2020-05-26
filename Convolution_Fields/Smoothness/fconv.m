@@ -113,7 +113,7 @@ if (D < length(s_data) && D > 1) || (D == 1 && all(s_data > [1,1]))
     smoothed_data = zeros(s_data); nsubj = s_data(end);
     index  = repmat( {':'}, 1, D );
     for J = 1:nsubj
-        smoothed_data(index{:}, J) = fconv(squeeze(data(index{:},J)), Kernel, D, adjust_kernel, truncation);
+        smoothed_data(index{:}, J) = fconv(squeeze(data(index{:},J)), Kernel, D, truncation, adjust_kernel);
     end
     return
 end
@@ -139,20 +139,23 @@ if D == 1
     smoothed_data = conv(data, kernel_in_direction(1,:),'same');
     ss = sum(dthdirectionvector(1,:).^2); % Calculates the sum of the squares of the kernel
 elseif D == 2
-    udside = kernel_in_direction(2,:)'; % The kernel in the up down direction
-    smoothed_data = convn(data, kernel_in_direction(1,:), 'same'); %Smooth in the left right direction
-    smoothed_data = convn(smoothed_data, udside, 'same');  %Smooth in the up down direction
+    xside = kernel_in_direction(1,:)'; %The kernel is the x direction (x corresponds to the rows of the matrix)
+    yside = kernel_in_direction(2,:); % The kernel in the y direction (y corresponds to the rows of the matrix)
+    smoothed_data = convn(data, xside, 'same'); %Smooth in the x direction
+    smoothed_data = convn(smoothed_data, yside, 'same'); %Smooth in the y direction
+%     smoothed_data = convn(udside, smoothed_data, 'same');  %Smooth in the up down direction
     
     [sx,sy] = meshgrid(dthdirectionvector(1,:),dthdirectionvector(2,:)); % Calulate the kernel values everywhere
     ss = sum((sx(:).*sy(:)).^2); % This is the sum of the squares of the kernel in 
                             % the truncation box, since the kernel is by assumption separable.
 elseif D == 3
-    udside = kernel_in_direction(2,:)'; % The kernel in the up down direction
-    inside = zeros(1,1,length(kernel_in_direction(3,:))); 
-    inside(1,1,:) = kernel_in_direction(3,:); %The kernel in the in out direction
-    smoothed_data = convn(data, kernel_in_direction(1,:), 'same'); %Smooth in the left right direction
-    smoothed_data = convn(smoothed_data, udside, 'same'); %Smooth in the up down direction
-    smoothed_data = convn(smoothed_data, inside, 'same'); %Smooth in the in out direction
+    xside = kernel_in_direction(1,:)'; %The kernel is the x direction
+    yside = kernel_in_direction(2,:); %The kernel is the y direction
+    zside = zeros(1,1,length(kernel_in_direction(3,:)));  
+    zside(1,1,:) = kernel_in_direction(3,:); %The kernel is the z direction
+    smoothed_data = convn(data, xside, 'same'); %Smooth in the x direction
+    smoothed_data = convn(smoothed_data, yside, 'same'); %Smooth in the y direction
+    smoothed_data = convn(smoothed_data, zside, 'same'); %Smooth in the z direction
      
     [sx,sy,sz] = meshgrid(dthdirectionvector(1,:),dthdirectionvector(2,:),dthdirectionvector(3,:));
     ss = sum((sx(:).*sy(:).*sz(:)).^2); % This is the sum of the squares of the kernel in 

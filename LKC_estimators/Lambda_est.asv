@@ -48,11 +48,10 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if nargin < 4
-   resAdd = 1; %Default is a resolution of 1, i.e. a spacing of 0.5
+   resAdd = 1; 
 end
 if nargin < 5
-    h = 0.00001; % Note don't take h to be substantially lower than this 
-                 %or there will be numerical precision issues
+    h = 0.00001;
 end
 s_lat_data = size(lat_data);
 
@@ -61,7 +60,6 @@ if length(Dim) ~= D
     error('Incorrect dimension')
 end
 
-% Define spacing in terms of the resolution
 if resAdd > 1 || resAdd == 0
     spacing = 1/(1+resAdd);
 else
@@ -72,14 +70,11 @@ end
 fieldseval = convfield( lat_data, FWHM, spacing, D );
 fields_std = sqrt(var(fieldseval, 0, D+1)); % Get the standard derivation of the fields everywhere
 
-%Obtain a variance 1 field
-fieldseval = fieldseval./fields_std; 
+fieldseval = fieldseval./fields_std; %Obtain a variance 1 field
 clear fields_std
 
-% Get variable domain counter
-index  = repmat( {':'}, 1, D );     
+index  = repmat( {':'}, 1, D );     % get variable domain counter
 
-% Main loop
 if D == 1
     % Obtain the variance 1 field at an offset of h everywhere
     fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h );
@@ -87,14 +82,14 @@ if D == 1
     fieldsplush = fieldsplush./fieldsplush_std;
     clear fieldsplush_std
     
-    % Calculate the derivatives of the variance 1 fields
+    % Estimate the derivatives of the variance 1 fields
     derivs = (fieldsplush - fieldseval)/h;
     clear fieldsplush fieldseval
     
     % Calculate Lambda
     Lambda_array = vectcov(derivs, derivs);
     clear derivs
-elseif D == 2 || D == 3
+elseif D == 2
     derivs = zeros( [D, s_lat_data] );
     for d = 1:D
         % Obtain the variance 1 field at an offset of h*e_d everywhere
@@ -104,20 +99,19 @@ elseif D == 2 || D == 3
         fieldsplush = fieldsplush./fieldsplush_std;
         clear fieldsplush_std
         
-        % Calculate the partial derivatives in the e_d th direction
+        % Estimate partial 
         derivs( d, index{:}, :) = (fieldsplush - fieldseval)/h;
     end
     clear fieldsplush fieldseval
 
-    % Calculate Lambda
     Lambda_array = zeros([D,D,Dim]);
     for d1 = 1:D
         for d2 = 1:D
             Lambda_array(d1,d2,index{:}) = vectcov(derivs(d1, index{:}, :), derivs(d2, index{:}, :), D+2);
         end
     end
-else
-    error('Not working in D > 3 yet')
+elseif D == 3
+    error('Not working in 3D yet')
 end
 
 end

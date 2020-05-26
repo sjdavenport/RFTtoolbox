@@ -23,19 +23,17 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 %               derivatives numerically. Default is not to use this feature.
 %--------------------------------------------------------------------------
 % OUTPUT
-% smooth_data   an array of dimension D + 1, where the length of the dth
-%               dimension for d = 1,...,D is length(1:spacing:Dim(d)) and the
-%               length of the last dimension is nsubj
-%--------------------------------------------------------------------------
-% EXAMPLES
 % %%% 1D
 % %% Smoothing with increased resolution
 % nvox = 100; xvals = 1:nvox;
 % xvals_fine = 1:0.01:nvox;
 % FWHM = 3;
 % lat_data = normrnd(0,1,1,nvox);
+% cfield = inter_conv1D( lat_data, FWHM, 0.01);
+% plot(xvals_fine,cfield)
+% hold on
 % smooth_data = convfield( lat_data, FWHM, 0.01, 1);
-% plot(xvals_fine,smooth_data)
+% plot(xvals_fine,smooth_data + 0.5)
 % 
 % %% Smoothing with the same resolution
 % lat_data = normrnd(0,1,1,nvox);
@@ -66,44 +64,75 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % 
 % % 1D derivative (multiple subjects)
 % nvox = 100; FWHM = 3; xvals = 1:nvox; lat_data = normrnd(0,1,1,nvox);
-% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM) )
+% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM) );
 % deriv = convfield( lat_data, FWHM, h, 1, 1 );
 % deriv(1), aderiv(1)
 % 
 % %% 2D
-% Dim = [50,50];
-% lat_data = normrnd(0,1,Dim)
-% cfield = spm_conv(lat_data, FWHM);
-% surf(cfield)
-% smooth_data = convfield( lat_data, FWHM, 1, 2); %Same as spm_conv
-% surf(smooth_data)
+% Dim = [25,25];
+% lat_data = normrnd(0,1,Dim);
+% spmlatfield = spm_conv(lat_data, FWHM);
+% smooth_data = convfield( lat_data, FWHM, 1, 2); %Same as spm_conv (except for boundary differences)
 % fine_data = convfield( lat_data, FWHM, 0.25, 2); %Convolution eval
-% surf(fine_data)
 % 
-% % Matching to applyconvfield
+% zlimits = [min(fine_data(:))-0.1, max(fine_data(:))+0.1];
+% 
+% subplot(1,2,1)
+% surf(smooth_data)
+% zlim(zlimits)
+% title('Lattice Evaluation')
+% subplot(1,2,2)
+% surf(fine_data)
+% zlim(zlimits)
+% title('Convolution Field')
+% 
+% %% Matching to applyconvfield
 % cfield = @(x) applyconvfield(x, lat_data, FWHM);
 % smooth_data(20,20)
 % cfield([20,20]')
 % smooth_data(1,10)
 % cfield([1,10]')
 % 
-% % 2D derivatives
-% Dim = [50,50];
-% lat_data = normrnd(0,1,Dim);
-% derivfield = convfield( lat_data, FWHM, 1, 2, 1)
-% surf(reshape(derivfield(1,:), Dim))
-% spacing = 0.01; resAdd = floor(1/spacing-1);
-% smoothfield100 = convfield( lat_data, FWHM, spacing, 2, 0);
-% derivfield100 = convfield( lat_data, FWHM, spacing, 2, 1);
-% point = [500,500]
-% ((smoothfield100(point(1), point(2) + 1) - smoothfield100(point(1),point(2)))/(1/(resAdd +1)))
-% ((smoothfield100(point(1)+1, point(2)) - smoothfield100(point(1),point(2)))/(1/(resAdd +1)))
-% derivfield100(:,point(1), point(2))
-% % note that it's still not perfect because it's still a discrete
-% % approximation, but that's why we want to use derivfield in the first
-% % place!!
+% %% 2D derivatives
+% Dim = [25,25];
+% lat_data = normrnd(0,1,Dim); spacing = 1;
+% derivfield = convfield( lat_data, FWHM, spacing, 2, 1);
+% surf(reshape(derivfield(1,:), spacep(Dim,spacing)))
+% title('2D 1st partial derivative of the convolution field')
 % 
-% % 2D derivatives (multiple subjects)
+% %% Showing that the derivatives work
+% Dim = [5,5];
+% lat_data = normrnd(0,1,Dim);
+% 
+% point = [3,3]';
+% spacing = 0.01;
+% 
+% spaced_point = spacep(point,spacing);
+% derivfield = convfield( lat_data, FWHM, spacing, 2, 1);
+% 
+% % convolution derivatives
+% derivfield(:,spaced_point(1), spaced_point(2))
+% 
+% % Derivative using applyconvfield
+% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM)  );
+% aderiv(point)
+% 
+% % Illustration on a fine lattice (not to be used in practice)
+% smoothfield100 = convfield_dep( lat_data, FWHM, spacing, 2, 0);
+% partialderiv_finelat(1) = (smoothfield100(spaced_point(1)+1, spaced_point(2)) - smoothfield100(spaced_point(1),spaced_point(2)))/spacing;
+% partialderiv_finelat(2) = (smoothfield100(spaced_point(1), spaced_point(2) + 1) - smoothfield100(spaced_point(1),spaced_point(2)))/spacing;
+% partialderiv_finelat'
+% % note that it doesn't match perfectly because it's still a discrete
+% % approximation, but that's why we want to use derivfield in the first
+% % place!
+% 
+% % SPM (i.e. lattice) estimates of the derivative (quite off!)
+% smoothfield_spm = convfield( lat_data, FWHM, 1, 2, 0);
+% spm_derivs(1) = (smoothfield_spm(point(1)+1, point(2)) - smoothfield_spm(point(1),point(2)));
+% spm_derivs(2) = (smoothfield_spm(point(1), point(2) + 1) - smoothfield_spm(point(1),point(2)));
+% spm_derivs'
+% 
+% %% 2D derivatives (multiple subjects)
 % Dim = [5,5]; nsubj = 20;
 % lat_data = normrnd(0,1,[Dim, nsubj]);
 % derivfield = convfield( lat_data, FWHM, 1, 2, 1)
@@ -123,7 +152,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % surf(cfield(:,:,5))
 % title('Convolution Field Eval (no smoothing)')
 % 
-% % Fine evaluation
+% %% Fine evaluation
 % Dim = [10,10,10];
 % spacing = 0.1; D = length(Dim); FWHM = 3; 
 % slice = Dim(end)/2; fine_slice = Dim(end)/2/spacing;
@@ -143,7 +172,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % title('Convolution Field Eval (SPM\_smooth)')
 % 
 % 
-% % Compare to applyconvfield
+% %% Compare to applyconvfield
 % lat_data = normrnd(0,1,Dim);
 % acfield = @(x) applyconvfield(x, lat_data, FWHM);
 % Dim = [10,10,10];
@@ -163,7 +192,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % % convolution fields and does so very efficiently. So the difference could 
 % % be caused by a truncation issue in spm_smooth?
 % 
-% % % 3D derivatives (1 subject)
+% %% % 3D derivatives (1 subject)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3;
 % lat_data = normrnd(0,1,Dim);
 % derivfield = convfield( lat_data, FWHM, 1, D, 1)
@@ -181,13 +210,44 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % derivy = (plusyeval - pointeval)/spacing
 % derivz = (pluszeval - pointeval)/spacing
 % 
-% % 3D derivatives (Multiple subjects)
+% %% 3D derivatives (Multiple subjects)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3; nsubj = 2;
 % lat_data = normrnd(0,1,[Dim,nsubj]);
 % derivfields = convfield( lat_data, FWHM, 1, D, 1)
 % aderiv = @(x) applyconvfield( x, lat_data(:,:,:,2), @(y) GkerMVderiv(y, FWHM)  )
 % dfeval = derivfields(:,3,3,3,2)
 % aceval = aderiv([3,3,3]')
+% 
+% %% Adjusting the field (1D)
+% nvox = 10; D = 1; FWHM = 2; lat_data = normrnd(0,1,1,nvox);
+% spacing = 0.1; adjust_kernel = 0.1';
+% [smoothfield, xvals_vecs] =  convfield( lat_data, FWHM, spacing, D, 0, -1);
+% 
+% [adjust_field, xvals_vecs_adjust] = convfield( lat_data, FWHM, 1, D, 0, -1, adjust_kernel );
+% 
+% plot(xvals_vecs{1}, smoothfield)
+% hold on
+% plot(xvals_vecs_adjust{1},adjust_field)
+% 
+% acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+% adjust_field(3)
+% acfield(3.1)
+% 
+% %% Adjusting the field (3D)
+% Dim = [10,10,10]; D = length(Dim); FWHM = 1.5;
+% lat_data = normrnd(0,1,Dim); spacing = 0.1;
+% [smoothfield, xvals_vecs] = convfield( lat_data, FWHM, spacing, D, 0, -1);
+% 
+% adjust_kernel = [0.1,0,0]';
+% [adjust_field, xvals_vecs_adjust] = convfield( lat_data, FWHM, 1, D, 0, -1, adjust_kernel );
+% 
+% point = [1.1,1,1]'; spaced_point = spacep(point, spacing);
+% plot(xvals_vecs{1}, smoothfield(:,spaced_point(2), spaced_point(3)))
+% hold on
+% plot(xvals_vecs_adjust{1},adjust_field(:,point(2),point(3)))
+% acfield = @(tval) applyconvfield(tval, lat_data, FWHM) 
+% adjust_field(1,1)
+% acfield(point)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
