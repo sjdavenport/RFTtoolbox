@@ -56,15 +56,12 @@ function [ tstat, setof_smoothed_fields, xbar, std_dev ] = smoothtstat( lat_data
 if nargin < 3
     spacing = 1;
 end
-if nargin < 4
-    usespm = 1;
-end
 s_lat_data = size(lat_data);
 Dim = s_lat_data(1:end-1);
 D = length(Dim);
 Dim = (Dim-1)/spacing + 1;
 
-setof_smoothed_fields = convfield( lat_data, FWHM, spacing, D, 0, usespm );
+setof_smoothed_fields = convfield( lat_data, FWHM, spacing, D, 0 );
 
 if D == 1
     Dim = [1,Dim];

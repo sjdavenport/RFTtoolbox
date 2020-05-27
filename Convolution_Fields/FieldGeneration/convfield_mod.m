@@ -1,4 +1,4 @@
-function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, truncation, adjust_kernel)
+function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, usespm, truncation, adjust_kernel)
 % CONVFIELD( lat_data, FWHM, spacing, D, derivtype ) generates a
 % convolution field (at a given spacing) derived from lattice data smoothed 
 % with an isotropic Gaussian kernel with specified FWHM.
@@ -16,29 +16,26 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 %               and 2 it's second derivative (at all points). Default is 0
 %               i.e to return the field! Note if D > 1 then  derivtype = 2
 %               has not been implemented yet.
-% truncation    a window around the points at which to evaluate the kernel
-%               setting this parameter allows for quicker computation of
-%           the convolution field and has very litle effect on the values
-%           of the field for kernels that have light tails such as the
-%           Gaussian kernel. Default (which is recorded by setting
-%           truncation = -1 or not including it) results in a truncation of 
-%           4*FWHM2sigma(Kernel). 
+% usespm        0/1. Whether to use spm_smooth or the inbuilt matlab
+%               function convn. This is only relevant in 3D.
 % adjust_kernel    a D by 1 vector that allows you to compute the
 %               convolution field at an offset. This is useful for computing 
 %               derivatives numerically. Default is not to use this feature.
 %--------------------------------------------------------------------------
 % OUTPUT
+% smooth_data   an array of dimension D + 1, where the length of the dth
+%               dimension for d = 1,...,D is length(1:spacing:Dim(d)) and the
+%               length of the last dimension is nsubj
+%--------------------------------------------------------------------------
+% EXAMPLES
 % %%% 1D
 % %% Smoothing with increased resolution
 % nvox = 100; xvals = 1:nvox;
 % xvals_fine = 1:0.01:nvox;
 % FWHM = 3;
 % lat_data = normrnd(0,1,1,nvox);
-% cfield = inter_conv1D( lat_data, FWHM, 0.01);
-% plot(xvals_fine,cfield)
-% hold on
 % smooth_data = convfield( lat_data, FWHM, 0.01, 1);
-% plot(xvals_fine,smooth_data + 0.5)
+% plot(xvals_fine,smooth_data)
 % 
 % %% Smoothing with the same resolution
 % lat_data = normrnd(0,1,1,nvox);
@@ -69,75 +66,44 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % 
 % % 1D derivative (multiple subjects)
 % nvox = 100; FWHM = 3; xvals = 1:nvox; lat_data = normrnd(0,1,1,nvox);
-% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM) );
+% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM) )
 % deriv = convfield( lat_data, FWHM, h, 1, 1 );
 % deriv(1), aderiv(1)
 % 
 % %% 2D
-% Dim = [25,25];
-% lat_data = normrnd(0,1,Dim);
-% spmlatfield = spm_conv(lat_data, FWHM);
-% smooth_data = convfield( lat_data, FWHM, 1, 2); %Same as spm_conv (except for boundary differences)
-% fine_data = convfield( lat_data, FWHM, 0.25, 2); %Convolution eval
-% 
-% zlimits = [min(fine_data(:))-0.1, max(fine_data(:))+0.1];
-% 
-% subplot(1,2,1)
+% Dim = [50,50];
+% lat_data = normrnd(0,1,Dim)
+% cfield = spm_conv(lat_data, FWHM);
+% surf(cfield)
+% smooth_data = convfield( lat_data, FWHM, 1, 2); %Same as spm_conv
 % surf(smooth_data)
-% zlim(zlimits)
-% title('Lattice Evaluation')
-% subplot(1,2,2)
+% fine_data = convfield( lat_data, FWHM, 0.25, 2); %Convolution eval
 % surf(fine_data)
-% zlim(zlimits)
-% title('Convolution Field')
 % 
-% %% Matching to applyconvfield
+% % Matching to applyconvfield
 % cfield = @(x) applyconvfield(x, lat_data, FWHM);
 % smooth_data(20,20)
 % cfield([20,20]')
 % smooth_data(1,10)
 % cfield([1,10]')
 % 
-% %% 2D derivatives
-% Dim = [25,25];
-% lat_data = normrnd(0,1,Dim); spacing = 1;
-% derivfield = convfield( lat_data, FWHM, spacing, 2, 1);
-% surf(reshape(derivfield(1,:), spacep(Dim,spacing)))
-% title('2D 1st partial derivative of the convolution field')
-% 
-% %% Showing that the derivatives work
-% Dim = [5,5];
+% % 2D derivatives
+% Dim = [50,50];
 % lat_data = normrnd(0,1,Dim);
-% 
-% point = [3,3]';
-% spacing = 0.01;
-% 
-% spaced_point = spacep(point,spacing);
-% derivfield = convfield( lat_data, FWHM, spacing, 2, 1);
-% 
-% % convolution derivatives
-% derivfield(:,spaced_point(1), spaced_point(2))
-% 
-% % Derivative using applyconvfield
-% aderiv = @(x) applyconvfield( x, lat_data, @(y) GkerMVderiv(y, FWHM)  );
-% aderiv(point)
-% 
-% % Illustration on a fine lattice (not to be used in practice)
-% smoothfield100 = convfield_dep( lat_data, FWHM, spacing, 2, 0);
-% partialderiv_finelat(1) = (smoothfield100(spaced_point(1)+1, spaced_point(2)) - smoothfield100(spaced_point(1),spaced_point(2)))/spacing;
-% partialderiv_finelat(2) = (smoothfield100(spaced_point(1), spaced_point(2) + 1) - smoothfield100(spaced_point(1),spaced_point(2)))/spacing;
-% partialderiv_finelat'
-% % note that it doesn't match perfectly because it's still a discrete
+% derivfield = convfield( lat_data, FWHM, 1, 2, 1)
+% surf(reshape(derivfield(1,:), Dim))
+% spacing = 0.01; resAdd = floor(1/spacing-1);
+% smoothfield100 = convfield( lat_data, FWHM, spacing, 2, 0);
+% derivfield100 = convfield( lat_data, FWHM, spacing, 2, 1);
+% point = [500,500]
+% ((smoothfield100(point(1), point(2) + 1) - smoothfield100(point(1),point(2)))/(1/(resAdd +1)))
+% ((smoothfield100(point(1)+1, point(2)) - smoothfield100(point(1),point(2)))/(1/(resAdd +1)))
+% derivfield100(:,point(1), point(2))
+% % note that it's still not perfect because it's still a discrete
 % % approximation, but that's why we want to use derivfield in the first
-% % place!
+% % place!!
 % 
-% % SPM (i.e. lattice) estimates of the derivative (quite off!)
-% smoothfield_spm = convfield( lat_data, FWHM, 1, 2, 0);
-% spm_derivs(1) = (smoothfield_spm(point(1)+1, point(2)) - smoothfield_spm(point(1),point(2)));
-% spm_derivs(2) = (smoothfield_spm(point(1), point(2) + 1) - smoothfield_spm(point(1),point(2)));
-% spm_derivs'
-% 
-% %% 2D derivatives (multiple subjects)
+% % 2D derivatives (multiple subjects)
 % Dim = [5,5]; nsubj = 20;
 % lat_data = normrnd(0,1,[Dim, nsubj]);
 % derivfield = convfield( lat_data, FWHM, 1, 2, 1)
@@ -157,7 +123,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % surf(cfield(:,:,5))
 % title('Convolution Field Eval (no smoothing)')
 % 
-% %% Fine evaluation
+% % Fine evaluation
 % Dim = [10,10,10];
 % spacing = 0.1; D = length(Dim); FWHM = 3; 
 % slice = Dim(end)/2; fine_slice = Dim(end)/2/spacing;
@@ -177,7 +143,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % title('Convolution Field Eval (SPM\_smooth)')
 % 
 % 
-% %% Compare to applyconvfield
+% % Compare to applyconvfield
 % lat_data = normrnd(0,1,Dim);
 % acfield = @(x) applyconvfield(x, lat_data, FWHM);
 % Dim = [10,10,10];
@@ -197,7 +163,7 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % % convolution fields and does so very efficiently. So the difference could 
 % % be caused by a truncation issue in spm_smooth?
 % 
-% %% % 3D derivatives (1 subject)
+% % % 3D derivatives (1 subject)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3;
 % lat_data = normrnd(0,1,Dim);
 % derivfield = convfield( lat_data, FWHM, 1, D, 1)
@@ -215,44 +181,13 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 % derivy = (plusyeval - pointeval)/spacing
 % derivz = (pluszeval - pointeval)/spacing
 % 
-% %% 3D derivatives (Multiple subjects)
+% % 3D derivatives (Multiple subjects)
 % Dim = [5,5,5]; D = length(Dim); FWHM = 3; nsubj = 2;
 % lat_data = normrnd(0,1,[Dim,nsubj]);
 % derivfields = convfield( lat_data, FWHM, 1, D, 1)
 % aderiv = @(x) applyconvfield( x, lat_data(:,:,:,2), @(y) GkerMVderiv(y, FWHM)  )
 % dfeval = derivfields(:,3,3,3,2)
 % aceval = aderiv([3,3,3]')
-% 
-% %% Adjusting the field (1D)
-% nvox = 10; D = 1; FWHM = 2; lat_data = normrnd(0,1,1,nvox);
-% spacing = 0.1; adjust_kernel = 0.1';
-% [smoothfield, xvals_vecs] =  convfield( lat_data, FWHM, spacing, D, 0, -1);
-% 
-% [adjust_field, xvals_vecs_adjust] = convfield( lat_data, FWHM, 1, D, 0, -1, adjust_kernel );
-% 
-% plot(xvals_vecs{1}, smoothfield)
-% hold on
-% plot(xvals_vecs_adjust{1},adjust_field)
-% 
-% acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
-% adjust_field(3)
-% acfield(3.1)
-% 
-% %% Adjusting the field (3D)
-% Dim = [10,10,10]; D = length(Dim); FWHM = 1.5;
-% lat_data = normrnd(0,1,Dim); spacing = 0.1;
-% [smoothfield, xvals_vecs] = convfield( lat_data, FWHM, spacing, D, 0, -1);
-% 
-% adjust_kernel = [0.1,0,0]';
-% [adjust_field, xvals_vecs_adjust] = convfield( lat_data, FWHM, 1, D, 0, -1, adjust_kernel );
-% 
-% point = [1.1,1,1]'; spaced_point = spacep(point, spacing);
-% plot(xvals_vecs{1}, smoothfield(:,spaced_point(2), spaced_point(3)))
-% hold on
-% plot(xvals_vecs_adjust{1},adjust_field(:,point(2),point(3)))
-% acfield = @(tval) applyconvfield(tval, lat_data, FWHM) 
-% adjust_field(1,1)
-% acfield(point)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
@@ -262,20 +197,12 @@ end
 if nargin < 5
     derivtype = 0;
 end
-
-slatdata = size(lat_data);
-D_latdata = length(slatdata);
-
-% If no dimension is specfied it is assumed that nsubj = 1 and you just
-% want to smooth a single field
-if nargin < 4
-    D = D_latdata;
+if nargin < 6
+    usespm = 1;
 end
 
-% Determine default kernel adjustments
-if nargin < 7
+if nargin < 8
     use_adjust = 0;
-    adjust_kernel = zeros(D,1);
 else
     if any(adjust_kernel)
         use_adjust = 1;
@@ -288,21 +215,26 @@ else
     end
 end
 
+slatdata = size(lat_data);
+D_latdata = length(slatdata);
+
+if nargin < 4
+    D = D_latdata;
+end
+
 % Default Kernel
 if isnumeric(Kernel)
     FWHM = Kernel;
-    if nargin < 6
+    if nargin < 7
         truncation = -1;
     end
-
     if truncation == -1
-        sigma = FWHM2sigma(FWHM);   % Obtain the parameter of kernel in from the FWHM
-        truncation = ceil(4*sigma); % Set default truncation
-
+        sigma = FWHM2sigma(FWHM);
+        truncation = ceil(4*sigma);
     end
     
     if derivtype == 0
-        Kernel = @(x) Gker(x,FWHM); %Default kernel
+        Kernel = @(x) GkerMV(x,FWHM);
     elseif derivtype == 1
         Kernel = @(x) GkerMVderiv(x,FWHM);
     elseif derivtype == 2
@@ -328,8 +260,8 @@ if D > 1
         nsubj = slatdata(end);
         Dim = slatdata( 1 : end-1 );
     end
-else % This loop is included to find Dim in 1D and to allow for different types of 1D data input 
-    vert2horz = 0; % A parameter that will determine whether to transpose the data or not
+else
+    vert2horz = 0;
     if D_latdata == 2 && slatdata(1) == 1
         nsubj = 1;
         Dim = slatdata(slatdata > 1);
@@ -353,7 +285,6 @@ end
 resAdd = floor(1/spacing-1); %Ensures that the spacing fits between the voxels by rounding if necessary
 dx = 1/(resAdd+1); %Gives the difference between voxels (basically dx = spacing if spacing evenly divides the voxel)
 
-% Setting up the default xvals_vecs
 xvals_vecs  = cell(1,D);
 if use_adjust
     for d = 1:D
@@ -368,74 +299,81 @@ end
 % Dimensions for field with increased resolution
 Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
 
-% Points at which to evaluate the Kernel
 gridside  = -truncation:dx:truncation;
 
-% Main loop: Calculation of convolution fields
+% convolution kernel and derivatives to be used with convn
 if D == 1
-    % Increase the resolution of the raw data by introducing zeros
+    % increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj] );
     expanded_lat_data( 1:(resAdd + 1):end, : ) = lat_data;
      
-    % Field adjustment if that is specified (note default is to bypass this loop)
     if use_adjust
-        gridside = gridside + adjust_kernel;
-%       gridside = fliplr(gridside - adjust_kernel);
+%         gridside = gridside + adjust_kernel; 
+        gridside = fliplr(gridside - adjust_kernel);
+        %Note need to flip here as convn flips h around before dragging it across the data!
     end
     
-    h = Kernel(gridside); %Evaluates the kernel
-    smooth_data = convn( expanded_lat_data', h, 'same' )'; % Performs convolution
+    h = Kernel(gridside);
+    smooth_data = convn( expanded_lat_data', h, 'same' )';
     
     if vert2horz && nsubj == 1
-        smooth_data = smooth_data'; % Transpose the data to return a horizontal output
+        smooth_data = smooth_data';
     end
 elseif D == 2
-    % Increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
-
-    % Run the smoothing
-    if derivtype == 0 %Calculates the convolution field
-        %Only set up for Gaussian kernels atm!
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^2;
-    elseif derivtype == 1 %Calculates the derivatives of the convolution field
-        % Grid for convolution kernel
-        [x,y] = meshgrid( gridside, gridside );
-        xvals = [x(:), y(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
-        end
+    
+    % grid for convolution kernel
+    [x,y] = meshgrid( gridside, gridside );
+    xvals = [x(:), y(:)]';
+    
+    if use_adjust
+        xvals = xvals + adjust_kernel;
+    end
+    % convolution kernels to be used with convn
+    if derivtype == 0
+        h = reshape( Kernel(xvals), size(x) )';
+%         h = fliplr(h); h = flipud(h);
+        smooth_data  = convn( expanded_lat_data, h, 'same' );
+    elseif derivtype == 1
         smooth_data = zeros( [D, size(expanded_lat_data)]);
         dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );
         dyh = reshape( dh(2,:), size(x) );
         
-        %         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
-        %         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
+%         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
+%         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dyh, 'same' );
         smooth_data(2,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
     else
         error('Higher derivatives are not supported')  
     end
 elseif D == 3
-    % Increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
     
-    if derivtype == 0 %Calculates the convolution field
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^3;
-    elseif derivtype == 1 %Calculates the derivatives of the convolution field
-        % Need to implement with fconv
-        % grid for convolution kernel
-        [x,y,z] = meshgrid( gridside, gridside, gridside );
-        xvals = [x(:), y(:), z(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
+    % grid for convolution kernel
+    [x,y,z] = meshgrid( gridside, gridside, gridside );
+    xvals = [x(:), y(:), z(:)]';
+    
+    if use_adjust
+        xvals = xvals + adjust_kernel;
+    end
+    % convolution kernels to be used with convn
+    if derivtype == 0
+        if usespm == 1
+            smooth_data = zeros(size(expanded_lat_data));
+            for L = 1:nsubj
+                smooth_subj_data = zeros(Dimhr);
+                spm_smooth(expanded_lat_data(:,:,:,L), smooth_subj_data, FWHM/spacing)
+                smooth_data(:,:,:,L) = smooth_subj_data;
+            end
+            smooth_data = smooth_data/spacing^3;
+        else
+            h   = reshape( Kernel(xvals), size(x) );
+            smooth_data  = convn( expanded_lat_data, h, 'same' );
         end
+    elseif derivtype == 1 % Need to modify the spm_ccode in order to get this to work faster!
         smooth_data = zeros( [D, size(expanded_lat_data)]);
         dh  = Kernel(xvals);
         dxh = reshape( dh(1,:), size(x) );

@@ -18,31 +18,27 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 %               voxel
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D 
-% nvox = 50; D = 1; FWHM = 3; nsubj = 100;
-% lat_data = normrnd(0,1,nvox, nsubj);
-% Lambda_est( lat_data, FWHM, D )
-%
-% % % Stationary evaluation
+% % 1D (stationary example)
 % FWHM = 10; D = 1; sigma = FWHM2sigma(FWHM); nvox = 100; nsubj = 10000;
 % Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,nvox,nsubj);
 % Lambda_estimates = Lambda_est( lat_data, FWHM, D );
+% Lambda_theory
+% mean(Lambda_estimates(5:95)) % Not the ends because of edge effects
 % plot(Lambda_estimates); hold on; abline('h', Lambda_theory);
 %
-% % 2D
-% Dim = [10,10]; D = 2; FWHM = 3; nsubj = 20;
-% lat_data = normrnd(0,1,[Dim, nsubj]);
-% Lambda_est( lat_data, FWHM, D)
-%
-% FWHM = 10; sigma = FWHM2sigma(FWHM); Dim = [100,100]; D = length(Dim); nsubj = 500;
+% % 2D (stationary example)
+% FWHM = 5; sigma = FWHM2sigma(FWHM); Dim = [100,100]; D = length(Dim); nsubj = 500;
 % Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
 % Lambda_estimates = Lambda_est( lat_data, FWHM, D );
-% first_entry = Lambda_estimates(1,1,:,:);
+% first_entry = Lambda_estimates(1,1,5:95,5:95);
+% Lambda_theory(1,1)
+% mean(first_entry(:))
+% onetwo_entry = Lambda_estimates(1,2,5:95,5:95);
+% Lambda_theory(1,2)
+% mean(onetwo_entry(:))
 % plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
-% onetwo_entry = Lambda_estimates(1,2,:,:);
-% plot(onetwo_entry(:)) % should be around zero!
 %
-% % 3D
+% % 3D (stationary example)
 % FWHM = 6; sigma = FWHM2sigma(FWHM); Dim = [5,5,5]; D = length(Dim); nsubj = 100;
 % Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
 % tic; Lambda_estimates = Lambda_est( lat_data, FWHM, D ); toc
@@ -52,10 +48,11 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if nargin < 4
-   resAdd = 1; 
+   resAdd = 1; %Default is a resolution of 1, i.e. a spacing of 0.5
 end
 if nargin < 5
-    h = 0.00001;
+    h = 0.00001; % Note don't take h to be substantially lower than this 
+                 %or there will be numerical precision issues
 end
 s_lat_data = size(lat_data);
 
@@ -64,50 +61,63 @@ if length(Dim) ~= D
     error('Incorrect dimension')
 end
 
+% Define spacing in terms of the resolution
 if resAdd > 1 || resAdd == 0
     spacing = 1/(1+resAdd);
 else
     spacing = resAdd;
 end
 
+% Evaluate the value of the convolution field
 fieldseval = convfield( lat_data, FWHM, spacing, D );
-fields_std = sqrt(var(fieldseval, 0, D+1));
+fields_std = sqrt(var(fieldseval, 0, D+1)); % Get the standard derivation of the fields everywhere
 
-fieldseval = fieldseval./fields_std;
+%Obtain a variance 1 field
+fieldseval = fieldseval./fields_std; 
 clear fields_std
 
-index  = repmat( {':'}, 1, D );     % get variable domain counter
+% Get variable domain counter
+index  = repmat( {':'}, 1, D );     
 
+% Main loop
 if D == 1
-    fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, 1, -1, h );
+    % Obtain the variance 1 field at an offset of h everywhere
+    fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h );
     fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
     fieldsplush = fieldsplush./fieldsplush_std;
     clear fieldsplush_std
     
+    % Calculate the derivatives of the variance 1 fields
     derivs = (fieldsplush - fieldseval)/h;
     clear fieldsplush fieldseval
     
+    % Calculate Lambda
     Lambda_array = vectcov(derivs, derivs);
     clear derivs
-elseif D == 2
+elseif D == 2 || D == 3
     derivs = zeros( [D, s_lat_data] );
     for d = 1:D
-        fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, 0, -1, h*sbasis(d,D) );
+        % Obtain the variance 1 field at an offset of h*e_d everywhere
+        % where e_d is the standard basis vector in the dth direction
+        fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h*sbasis(d,D) );
         fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
         fieldsplush = fieldsplush./fieldsplush_std;
         clear fieldsplush_std
+        
+        % Calculate the partial derivatives in the e_d th direction
         derivs( d, index{:}, :) = (fieldsplush - fieldseval)/h;
     end
     clear fieldsplush fieldseval
 
+    % Calculate Lambda
     Lambda_array = zeros([D,D,Dim]);
     for d1 = 1:D
         for d2 = 1:D
             Lambda_array(d1,d2,index{:}) = vectcov(derivs(d1, index{:}, :), derivs(d2, index{:}, :), D+2);
         end
     end
-elseif D == 3
-    error('Not working in 3D yet')
+else
+    error('Not working in D > 3 yet')
 end
 
 end
