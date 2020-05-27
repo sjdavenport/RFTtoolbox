@@ -51,7 +51,7 @@ if nargin < 3
     dimension = length(s1);
 end
 if nargin < 4
-    normalize = 1;
+    normalize = 0;
 end
 
 if ~isequal(s1, s2)

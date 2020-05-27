@@ -27,7 +27,7 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 % plot(Lambda_estimates); hold on; abline('h', Lambda_theory);
 %
 % % 2D (stationary example)
-% FWHM = 5; sigma = FWHM2sigma(FWHM); Dim = [100,100]; D = length(Dim); nsubj = 500;
+% FWHM = 5; sigma = FWHM2sigma(FWHM); Dim = [100,100]; D = length(Dim); nsubj = 50;
 % Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
 % Lambda_estimates = Lambda_est( lat_data, FWHM, D );
 % first_entry = Lambda_estimates(1,1,5:95,5:95);
@@ -39,10 +39,15 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 % plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
 %
 % % 3D (stationary example)
-% FWHM = 6; sigma = FWHM2sigma(FWHM); Dim = [5,5,5]; D = length(Dim); nsubj = 100;
+% FWHM = 10; sigma = FWHM2sigma(FWHM); Dim = [50,50,50]; D = length(Dim); nsubj = 50;
 % Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
-% tic; Lambda_estimates = Lambda_est( lat_data, FWHM, D ); toc
-% first_entry = Lambda_estimates(1,1,:,:);
+% Lambda_estimates = Lambda_est( lat_data, FWHM, D );
+% first_entry = Lambda_estimates(1,1,5:45,5:45,5:45);
+% Lambda_theory(1,1)
+% mean(first_entry(:))
+% onetwo_entry = Lambda_estimates(1,2,5:45,5:45,5:45);
+% Lambda_theory(1,2)
+% mean(onetwo_entry(:))
 % plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
@@ -113,6 +118,8 @@ elseif D == 2 || D == 3
     Lambda_array = zeros([D,D,Dim]);
     for d1 = 1:D
         for d2 = 1:D
+            % Calculate the covariance between the d1th partial derivative
+            % and the d2th partial derivative
             Lambda_array(d1,d2,index{:}) = vectcov(derivs(d1, index{:}, :), derivs(d2, index{:}, :), D+2);
         end
     end
