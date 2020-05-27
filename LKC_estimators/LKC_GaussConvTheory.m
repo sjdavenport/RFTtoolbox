@@ -60,7 +60,7 @@ switch D
         if pad==0
            x = -ceil(1.7*FWHM):dx:ceil(1.7*FWHM);
         else
-            x = -pad:dx:pad;
+           x = -pad:dx:pad;
         end  
         [ h, dxh ] = Gker( x, FWHM, 1 );   
 
