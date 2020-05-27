@@ -121,7 +121,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% further important constants
 % stepsize for inbetween voxel resolution increase
-dx   = 1/(resAdd+1);
+dx   = 1 / ( resAdd + 1 );
 % Dimensions for field with increased resolution
 sMhr = ( sM - 1 ) * resAdd + sM;
 % number of points which needs to be removed from increased resolution
@@ -132,7 +132,7 @@ siz = ceil( 1.7 * FWHM );
 
 %%%% allocate variables
 % allocate vector for Lipschitz Killing curvature
-L = NaN * ones( [ 1 length(sM) ] );
+L = NaN * ones( [ 1 D ] );
 % structure to output the different computed fields for debugging purposes
 geom = struct();
 
@@ -144,7 +144,7 @@ L0 = EulerChar( mask, 0.5, D );
 switch D
     case 1
         % increase the resolution of the raw data by introducing zeros
-        Y2 = zeros( [ sMhr, nsubj ] );
+        Y2 = zeros( [ sMhr(1), nsubj ] );
         Y2( 1:(resAdd + 1):end, : ) = Y;
         
         % grid for convolution kernel
@@ -194,14 +194,24 @@ switch D
         % convolution kernels to be used ith convn
         h   = reshape( GkerMV( xvals, FWHM ), size(x) );
         dh  = GkerMVderiv( xvals, FWHM );
-        dxh = reshape( dh(1,:), size(x) );
-        dyh = reshape( dh(2,:), size(x) );
+        dxh = reshape( dh(2,:), size(x) );
+        dyh = reshape( dh(1,:), size(x) );
         
-        % get the convolutional field
-        smY  = convn( Y2(:,:,:,1), h, 'same' );
+        % get the convolutional field (old)
+        smY  = convn( Y2, h, 'same' );
         % get the derivative of the convolutional field
         smYx = convn( Y2, dxh, 'same' );
         smYy = convn( Y2, dyh, 'same' );
+
+%         % get the convolution field
+%         smY  = fconv( Y2, @(x) GkerMV( x, FWHM ), D, siz );
+%         % get the derivative of the convolutional field
+%         smYx = fconv( Y2,...
+%                       { @(x) Gkerderiv( x, FWHM ), @(y) Gker( y, FWHM ) },...
+%                       D, siz );
+%         smYy = fconv( Y2,...
+%                       { @(x) Gker( x, FWHM ), @(y) Gkerderiv( y, FWHM ) },...
+%                       D, siz );
         
         % Get the estimates of the covariances
         VY   = var( smY,  0, D+1 );
@@ -259,24 +269,34 @@ switch D
         Y2 = zeros( [ sMhr, nsubj ] );
         Y2( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end,...
             1:( resAdd + 1 ):end, : ) = Y;
-        
-        % grid for convolution kernel
-        [x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
-        xvals = [x(:), y(:), z(:)]';
-        
-        % convolution kernels to be used with convn
-        h   = reshape( GkerMV( xvals, FWHM ), size(x) );
-        dh  = GkerMVderiv( xvals, FWHM );
-        dxh = reshape( dh(1,:), size(x) );
-        dyh = reshape( dh(2,:), size(x) );
-        dzh = reshape( dh(3,:), size(x) );
-        
-        % get the convolutional field
-        smY  = convn( Y2, h, 'same' );
+
+        % get the convolution field
+        smY  = fconv( Y2, @(x) GkerMV( x, FWHM ), D, siz );
         % get the derivative of the convolutional field
-        smYx = convn( Y2, dxh, 'same' );
-        smYy = convn( Y2, dyh, 'same' );
-        smYz = convn( Y2, dzh, 'same' );
+        smYx = fconv( Y2,...
+                      { @(x) Gkerderiv( x, FWHM ), @(y) Gker( y, FWHM ) },...
+                      D, siz );
+        smYy = fconv( Y2,...
+                      { @(x) Gker( x, FWHM ), @(y) Gkerderiv( y, FWHM ) },...
+                      D, siz );
+
+%         % grid for convolution kernel
+%         [x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
+%         xvals = [x(:), y(:), z(:)]';
+%         
+%         % convolution kernels to be used with convn
+%         h   = reshape( GkerMV( xvals, FWHM ), size(x) );
+%         dh  = GkerMVderiv( xvals, FWHM );
+%         dxh = reshape( dh(1,:), size(x) );
+%         dyh = reshape( dh(2,:), size(x) );
+%         dzh = reshape( dh(3,:), size(x) );
+%         
+%         % get the convolutional field
+%         smY  = convn( Y2, h, 'same' );
+%         % get the derivative of the convolutional field
+%         smYx = convn( Y2, dxh, 'same' );
+%         smYy = convn( Y2, dyh, 'same' );
+%         smYz = convn( Y2, dzh, 'same' );
         
         % Get the estimates of the covariances
         VY   = var( smY,  0, D+1 );
@@ -409,6 +429,6 @@ end
 %%%% Prepare output as a structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Summarize output
-LKC  = struct(  L_hat, 'hatL', L, 'L0', L0, 'geomQuants',...
-                geom );
+LKC  = struct( 'hatL', L, 'L0', L0, 'geomQuants',...
+               geom );
 return
