@@ -303,17 +303,14 @@ if isnumeric(Kernel)
     
     if derivtype == 0
         Kernel = @(x) Gker(x,FWHM); %Default kernel
-    elseif derivtype == 1
-        Kernel = @(x) GkerMVderiv(x,FWHM);
-    elseif derivtype == 2
-        Kernel = @(x) GkerMVderiv2(x,FWHM);
-    else
+    elseif derivtype > 1
         error('This setting has not been coded yet')
     end
 else
     % Need a default for truncation for no gaussian kernels!
     if derivtype == 1
-        Kernel = @(x) getderivs( Kernel(x), D );
+        error('derivtype > 0 for non-isotropic or non-Gaussian kernels has not been implemented yet')
+%         Kernel = @(x) getderivs( Kernel(x), D );
     elseif derivtype > 1
         error('derivtype > 1 for non-isotropic or non-Gaussian kernels has not been implemented yet')
     end
@@ -393,29 +390,20 @@ elseif D == 2
     % Increase the resolution of the raw data by introducing zeros
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
-
+    
+    % Adjust the FWHM to account for the spacing
+    adjusted_FWHM = FWHM/spacing;
+    
     % Run the smoothing
     if derivtype == 0 %Calculates the convolution field
         %Only set up for Gaussian kernels atm!
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
+        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D, truncation, adjust_kernel );
         smooth_data = smooth_data/spacing^2;
     elseif derivtype == 1 %Calculates the derivatives of the convolution field
-        % Grid for convolution kernel
-        [x,y] = meshgrid( gridside, gridside );
-        xvals = [x(:), y(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
-        end
-        smooth_data = zeros( [D, size(expanded_lat_data)]);
-        dh  = Kernel(xvals);
-        dxh = reshape( dh(1,:), size(x) );
-        dyh = reshape( dh(2,:), size(x) );
-        
-        %         smooth_data(1,:,:,:)  = convn( expanded_lat_data, dxh, 'same' );
-        %         smooth_data(2,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
-        smooth_data(1,:,:,:)  = convn( expanded_lat_data, dyh, 'same' );
-        smooth_data(2,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
+        adjusted_FWHM = FWHM/spacing;
+        smooth_data(1,:,:,:) = fconv(expanded_lat_data, {@(x)Gkerderiv(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM)}, D, truncation);
+        smooth_data(2,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gkerderiv(y,adjusted_FWHM)}, D, truncation);
+        smooth_data = smooth_data/spacing^2;
     else
         error('Higher derivatives are not supported')  
     end
@@ -424,31 +412,18 @@ elseif D == 3
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
     
+    % Adjust the FWHM to account for the spacing
+    adjusted_FWHM = FWHM/spacing;
+    
+    % Run the smoothing
     if derivtype == 0 %Calculates the convolution field
-        smooth_data = fconv( expanded_lat_data, FWHM/spacing, D, truncation, adjust_kernel );
+        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D, truncation, adjust_kernel );
         smooth_data = smooth_data/spacing^3;
     elseif derivtype == 1 %Calculates the derivatives of the convolution field
-        % Need to implement with fconv
-        % grid for convolution kernel
-        [x,y,z] = meshgrid( gridside, gridside, gridside );
-        xvals = [x(:), y(:), z(:)]';
-        
-        if use_adjust
-            xvals = xvals + adjust_kernel;
-        end
-        smooth_data = zeros( [D, size(expanded_lat_data)]);
-        dh  = Kernel(xvals);
-        dxh = reshape( dh(1,:), size(x) );
-        dyh = reshape( dh(2,:), size(x) );
-        dzh = reshape( dh(3,:), size(x) );
-
-%         smooth_data(1,:,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
-%         smooth_data(2,:,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
-
-%       Needs to be this way round because of the way that meshgrid works!
-        smooth_data(1,:,:,:,:) = convn( expanded_lat_data, dyh, 'same' );
-        smooth_data(2,:,:,:,:) = convn( expanded_lat_data, dxh, 'same' );
-        smooth_data(3,:,:,:,:) = convn( expanded_lat_data, dzh, 'same' );
+        smooth_data(1,:,:,:) = fconv(expanded_lat_data, {@(x)Gkerderiv(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM), @(z)Gker(z,adjusted_FWHM)}, D, truncation);
+        smooth_data(2,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gkerderiv(y,adjusted_FWHM), @(z)Gker(z,adjusted_FWHM)}, D, truncation);
+        smooth_data(3,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM), @(z)Gkerderiv(z,adjusted_FWHM)}, D, truncation);
+        smooth_data = smooth_data/spacing^3;
     else
         error('Higher derivatives are not supported')
     end
