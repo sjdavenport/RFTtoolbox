@@ -1,4 +1,5 @@
-function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, derivtype, truncation, adjust_kernel)
+function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing,...
+                        D, derivtype, truncation, adjust_kernel)
 % CONVFIELD( lat_data, FWHM, spacing, D, derivtype ) generates a
 % convolution field (at a given spacing) derived from lattice data smoothed 
 % with an isotropic Gaussian kernel with specified FWHM.
@@ -256,15 +257,39 @@ function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing, D, 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Check input and get important constants from the mandatory input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% get size of the input data
+slatdata = size( lat_data );
+% get number of dimensions of input data
+D_latdata = length( slatdata );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% add/check optional values
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% add spacing if missing
 if nargin < 3
     spacing = 0.1;
 end
+
+% Ensures that the spacing fits between the voxels by rounding if necessary
+% !!!FT: Here I am not sure why you introduced spacing in the first place
+resAdd = floor(1/spacing-1);
+% Gives the difference between voxels with resolution icnrease
+% (basically dx = spacing if spacing evenly divides the voxel)
+dx = 1/(resAdd+1);
+
+% reject input, if spacing is to fine in 3D
+if D == 3 && ( spacing < 0.05 )
+    error( 'In 3D you shouldn''t use such high spacing for memory reasons' )
+end
+
+% add derivative type if missing
 if nargin < 5
     derivtype = 0;
 end
-
-slatdata = size(lat_data);
-D_latdata = length(slatdata);
 
 % If no dimension is specfied it is assumed that nsubj = 1 and you just
 % want to smooth a single field
@@ -272,89 +297,88 @@ if nargin < 4
     D = D_latdata;
 end
 
+% get size of the domain and number of subjects from lat_data
+if D > 1
+    if D_latdata == D
+        nsubj = 1;
+        Dim   = slatdata;
+    else
+        nsubj = slatdata( end );
+        Dim   = slatdata( 1 : end-1 );
+    end
+else
+    % This loop is included to find Dim in 1D and to allow for different 
+    % types of 1D data input
+    % A parameter that will determine whether to transpose the data or not
+    vert2horz = 0;
+    if D_latdata == 2 && slatdata(1) == 1
+        nsubj     = 1;
+        Dim       = slatdata( slatdata > 1 );
+        vert2horz = 1; % I.e. if a horizontal field is entered it returns one as well
+    elseif D_latdata == 2 && slatdata(2) == 1
+        nsubj = 1;
+        Dim   = slatdata( slatdata > 1 );
+    else %I.e. if D_lat_data == 2 and slatdata(1) and slatdata(2) are both > 1
+        % or if D_lat_data > 2 and there are some 1 dimensional dimensions
+        % hanging around for some reason.
+        slatdata_squeezed = size( squeeze( lat_data ) );
+        Dim   = slatdata_squeezed(1);
+        nsubj = slatdata_squeezed(2);
+    end
+end
+
 % Determine default kernel adjustments
 if nargin < 7
     use_adjust = 0;
-    adjust_kernel = zeros(D,1);
+    adjust_kernel = zeros( D, 1 );
 else
-    if any(adjust_kernel)
+    if any( adjust_kernel )
         use_adjust = 1;
     end
-    if size(adjust_kernel,1) == 1
+    if size( adjust_kernel, 1 ) == 1
         adjust_kernel = adjust_kernel';
     end
-    if length(adjust_kernel) ~= D
-        error('The kernel adjustment must be of the right dimension')
+    if length( adjust_kernel ) ~= D
+        error( 'The kernel adjustment must be of the right dimension' )
     end
 end
 
 % Default Kernel
-if isnumeric(Kernel)
+if isnumeric( Kernel )
     FWHM = Kernel;
     if nargin < 6
         truncation = -1;
     end
 
     if truncation == -1
-        sigma = FWHM2sigma(FWHM);   % Obtain the parameter of kernel in from the FWHM
-        truncation = ceil(4*sigma); % Set default truncation
-
+        % Obtain the parameter of kernel in form of the FWHM adjusted for
+        % the spacing
+        sigma = FWHM2sigma( FWHM / spacing );
+        % Set default truncation
+        truncation = ceil( 4*sigma );
     end
     
     if derivtype == 0
-        Kernel = @(x) Gker(x,FWHM); %Default kernel
+        % Default kernel is isotropic Gaussian kernel
+        Kernel = @(x) Gker( x, FWHM );
     elseif derivtype > 1
-        error('This setting has not been coded yet')
+        error( 'This setting has not been coded yet' )
     end
 else
     % Need a default for truncation for no gaussian kernels!
     if derivtype == 1
-        error('derivtype > 0 for non-isotropic or non-Gaussian kernels has not been implemented yet')
+        error( 'derivtype > 0 for non-isotropic or non-Gaussian kernels has not been implemented yet' )
 %         Kernel = @(x) getderivs( Kernel(x), D );
     elseif derivtype > 1
-        error('derivtype > 1 for non-isotropic or non-Gaussian kernels has not been implemented yet')
+        error( 'derivtype > 1 for non-isotropic or non-Gaussian kernels has not been implemented yet' )
     end
 end
-
-
-if D > 1
-    if D_latdata == D
-        nsubj = 1;
-        Dim = slatdata;
-    else
-        nsubj = slatdata(end);
-        Dim = slatdata( 1 : end-1 );
-    end
-else % This loop is included to find Dim in 1D and to allow for different types of 1D data input 
-    vert2horz = 0; % A parameter that will determine whether to transpose the data or not
-    if D_latdata == 2 && slatdata(1) == 1
-        nsubj = 1;
-        Dim = slatdata(slatdata > 1);
-        vert2horz = 1; % I.e. if a horizontal field is entered it returns one as well
-    elseif D_latdata == 2 && slatdata(2) == 1
-        nsubj = 1;
-        Dim = slatdata(slatdata > 1);
-    else %I.e. if D_lat_data == 2 and slatdata(1) and slatdata(2) are both > 1
-        % or if D_lat_data > 2 and there are some 1 dimensional dimensions
-        % hanging around for some reason.
-        slatdata_squeezed = size(squeeze(lat_data));
-        Dim = slatdata_squeezed(1);
-        nsubj = slatdata_squeezed(2);
-    end
-end
-
-if D == 3 && (spacing < 0.05)
-    error('In 3D you shouldn''t use such high spacing for memory reasons')
-end
-
-resAdd = floor(1/spacing-1); %Ensures that the spacing fits between the voxels by rounding if necessary
-dx = 1/(resAdd+1); %Gives the difference between voxels (basically dx = spacing if spacing evenly divides the voxel)
 
 % Setting up the default xvals_vecs
-xvals_vecs  = cell(1,D);
+xvals_vecs  = cell( 1, D );
 if use_adjust
     for d = 1:D
-        xvals_vecs{d} = (1:dx:Dim(d)) + adjust_kernel(d);
+        xvals_vecs{d} = ( 1:dx:Dim(d) ) + adjust_kernel(d);
     end
 else
     for d = 1:D
@@ -362,12 +386,15 @@ else
     end
 end
 
-% Dimensions for field with increased resolution
+% Dimensions for domain of the field with increased resolution
 Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
 
 % Points at which to evaluate the Kernel
 gridside  = -truncation:dx:truncation;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% main part of function
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Main loop: Calculation of convolution fields
 if D == 1
     % Increase the resolution of the raw data by introducing zeros
@@ -395,17 +422,23 @@ elseif D == 2
     adjusted_FWHM = FWHM/spacing;
     
     % Run the smoothing
-    if derivtype == 0 %Calculates the convolution field
-        %Only set up for Gaussian kernels atm!
-        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^2;
-    elseif derivtype == 1 %Calculates the derivatives of the convolution field
-        adjusted_FWHM = FWHM/spacing;
-        smooth_data(1,:,:,:) = fconv(expanded_lat_data, {@(x)Gkerderiv(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM)}, D, truncation);
-        smooth_data(2,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gkerderiv(y,adjusted_FWHM)}, D, truncation);
-        smooth_data = smooth_data/spacing^2;
+    if derivtype == 0 % Calculates the convolution field
+        % Only set up for Gaussian kernels atm!
+        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D,...
+                             truncation, adjust_kernel );
+        smooth_data = smooth_data / spacing^2;
+    elseif derivtype == 1 % Calculates the derivatives of the convolution field
+        smooth_data(1,:,:,:) = fconv( expanded_lat_data,...
+                                      { @(x) Gkerderiv( x, adjusted_FWHM ),...
+                                        @(y) Gker( y, adjusted_FWHM ) },...
+                                        D, truncation );
+        smooth_data(2,:,:,:) = fconv( expanded_lat_data,...
+                                      { @(x) Gker( x, adjusted_FWHM ),...
+                                        @(y) Gkerderiv( y, adjusted_FWHM ) },...
+                                        D, truncation );
+        smooth_data = smooth_data / spacing^3;
     else
-        error('Higher derivatives are not supported')  
+        error( 'Higher derivatives are not supported' )  
     end
 elseif D == 3
     % Increase the resolution of the raw data by introducing zeros
@@ -432,4 +465,3 @@ else
 end
 
 end
-
