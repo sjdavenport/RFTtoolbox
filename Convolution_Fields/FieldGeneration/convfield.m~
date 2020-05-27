@@ -274,13 +274,6 @@ if nargin < 3
     spacing = 0.1;
 end
 
-% Ensures that the spacing fits between the voxels by rounding if necessary
-% !!!FT: Here I am not sure why you introduced spacing in the first place
-resAdd = floor(1/spacing-1);
-% Gives the difference between voxels with resolution icnrease
-% (basically dx = spacing if spacing evenly divides the voxel)
-dx = 1/(resAdd+1);
-
 % reject input, if spacing is to fine in 3D
 if D == 3 && ( spacing < 0.05 )
     error( 'In 3D you shouldn''t use such high spacing for memory reasons' )
@@ -351,9 +344,8 @@ if isnumeric( Kernel )
     end
 
     if truncation == -1
-        % Obtain the parameter of kernel in form of the FWHM adjusted for
-        % the spacing
-        sigma = FWHM2sigma( FWHM / spacing );
+        % Obtain the parameter of kernel in form of the FWHM
+        sigma = FWHM2sigma( FWHM );
         % Set default truncation
         truncation = ceil( 4*sigma );
     end
@@ -374,11 +366,14 @@ else
     end
 end
 
+resAdd = floor(1/spacing-1); %Ensures that the spacing fits between the voxels by rounding if necessary
+dx = 1/(resAdd+1); %Gives the difference between voxels (basically dx = spacing if spacing evenly divides the voxel)
+
 % Setting up the default xvals_vecs
-xvals_vecs  = cell( 1, D );
+xvals_vecs  = cell(1,D);
 if use_adjust
     for d = 1:D
-        xvals_vecs{d} = ( 1:dx:Dim(d) ) + adjust_kernel(d);
+        xvals_vecs{d} = (1:dx:Dim(d)) + adjust_kernel(d);
     end
 else
     for d = 1:D
@@ -386,7 +381,7 @@ else
     end
 end
 
-% Dimensions for domain of the field with increased resolution
+% Dimensions for field with increased resolution
 Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
 
 % Points at which to evaluate the Kernel
@@ -395,6 +390,7 @@ gridside  = -truncation:dx:truncation;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% main part of function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Main loop: Calculation of convolution fields
 if D == 1
     % Increase the resolution of the raw data by introducing zeros
@@ -422,23 +418,17 @@ elseif D == 2
     adjusted_FWHM = FWHM/spacing;
     
     % Run the smoothing
-    if derivtype == 0 % Calculates the convolution field
-        % Only set up for Gaussian kernels atm!
-        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D,...
-                             truncation, adjust_kernel );
-        smooth_data = smooth_data / spacing^2;
-    elseif derivtype == 1 % Calculates the derivatives of the convolution field
-        smooth_data(1,:,:,:) = fconv( expanded_lat_data,...
-                                      { @(x) Gkerderiv( x, adjusted_FWHM ),...
-                                        @(y) Gker( y, adjusted_FWHM ) },...
-                                        D, truncation );
-        smooth_data(2,:,:,:) = fconv( expanded_lat_data,...
-                                      { @(x) Gker( x, adjusted_FWHM ),...
-                                        @(y) Gkerderiv( y, adjusted_FWHM ) },...
-                                        D, truncation );
-        smooth_data = smooth_data / spacing^3;
+    if derivtype == 0 %Calculates the convolution field
+        %Only set up for Gaussian kernels atm!
+        smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D, truncation, adjust_kernel );
+        smooth_data = smooth_data/spacing^2;
+    elseif derivtype == 1 %Calculates the derivatives of the convolution field
+        adjusted_FWHM = FWHM/spacing;
+        smooth_data(1,:,:,:) = fconv(expanded_lat_data, {@(x)Gkerderiv(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM)}, D, truncation);
+        smooth_data(2,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gkerderiv(y,adjusted_FWHM)}, D, truncation);
+        smooth_data = smooth_data/spacing^2;
     else
-        error( 'Higher derivatives are not supported' )  
+        error('Higher derivatives are not supported')  
     end
 elseif D == 3
     % Increase the resolution of the raw data by introducing zeros
