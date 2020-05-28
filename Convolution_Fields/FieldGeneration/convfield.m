@@ -278,6 +278,12 @@ end
 % Gives the difference between voxels with resolution increase
 dx = 1 / ( resAdd + 1 );
 
+% !!!small fix, such that old code still works, need to be removed at some
+% point
+if resAdd < 1 && 0 < resAdd
+    resAdd = 1;
+end
+
 % reject input, if resAdd is to large in 3D
 if D == 3 && ( resAdd > 18 )
     error( 'In 3D you shouldn''t use such high resolution for memory reasons' )
