@@ -1,29 +1,30 @@
-function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, spacing,...
+function [ smooth_data, xvals_vecs ] = convfield( lat_data, Kernel, resAdd,...
                         D, derivtype, truncation, adjust_kernel)
-% CONVFIELD( lat_data, FWHM, spacing, D, derivtype ) generates a
-% convolution field (at a given spacing) derived from lattice data smoothed 
-% with an isotropic Gaussian kernel with specified FWHM.
+% CONVFIELD( lat_data, Kernel, resAdd, D, derivtype ) generates a
+% convolution field evaluated on an equidistant grid with resolution
+% increased by adding resAdd voxels inbetween each voxel in each dimension.
+% The field is derived from lattice data smoothed with an seperable kernel
+% which can be specified.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% lat_data      a Dim by nsubj array of data
-% FWHM          the FWHM of the kernel with which to do smoothing
-% spacing       the interval at which to compute the convolution field.
-%               I.e. if size(lat_data) = [10,20] and spacing = 0.1 the field 
-%               will be evaluated at the points 1:0.1:10. Default is 0.1.
-% D             the dimension of the data, if this is left blank it is
-%               assumed that nsubj = 1 and that the convolution field has 
-%               the same numberof dimesions as lat_data
-% derivtype     0/1/2, 0 returns the convolution field, 1 it's derivative
-%               and 2 it's second derivative (at all points). Default is 0
-%               i.e to return the field! Note if D > 1 then  derivtype = 2
-%               has not been implemented yet.
-% truncation    a window around the points at which to evaluate the kernel
-%               setting this parameter allows for quicker computation of
-%           the convolution field and has very litle effect on the values
-%           of the field for kernels that have light tails such as the
-%           Gaussian kernel. Default (which is recorded by setting
-%           truncation = -1 or not including it) results in a truncation of 
-%           4*FWHM2sigma(Kernel). 
+% lat_data    a Dim by nsubj array of data
+% FWHM        the FWHM of the kernel with which to do smoothing
+% resAdd      the amount of voxels added equidistantly inbetween the
+%             existing voxels. Default is 1.
+% D           the dimension of the data, if this is left blank it is
+%             assumed that nsubj = 1 and that the convolution field has 
+%             the same numberof dimesions as lat_data
+% derivtype   0/1/2, 0 returns the convolution field, 1 it's derivative
+%             and 2 it's second derivative (at all points). Default is 0
+%             i.e to return the field! Note if D > 1 then  derivtype = 2
+%             has not been implemented yet.
+% truncation  a window around the points at which to evaluate the kernel
+%             setting this parameter allows for quicker computation of
+%             the convolution field and has very litle effect on the values
+%             of the field for kernels that have light tails such as the
+%             Gaussian kernel. Default (which is recorded by setting
+%             truncation = -1 or not including it) results in a truncation of 
+%             4*FWHM2sigma(Kernel). 
 % adjust_kernel    a D by 1 vector that allows you to compute the
 %               convolution field at an offset. This is useful for computing 
 %               derivatives numerically. Default is not to use this feature.
@@ -271,19 +272,15 @@ D_latdata = length( slatdata );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % add spacing if missing
 if nargin < 3
-    spacing = 0.1;
+    resAdd = 1;
 end
 
-% Ensures that the spacing fits between the voxels by rounding if necessary
-% !!!FT: Here I am not sure why you introduced spacing in the first place
-resAdd = floor(1/spacing-1);
-% Gives the difference between voxels with resolution icnrease
-% (basically dx = spacing if spacing evenly divides the voxel)
-dx = 1/(resAdd+1);
+% Gives the difference between voxels with resolution increase
+dx = 1 / ( resAdd + 1 );
 
-% reject input, if spacing is to fine in 3D
-if D == 3 && ( spacing < 0.05 )
-    error( 'In 3D you shouldn''t use such high spacing for memory reasons' )
+% reject input, if resAdd is to large in 3D
+if D == 3 && ( resAdd > 18 )
+    error( 'In 3D you shouldn''t use such high resolution for memory reasons' )
 end
 
 % add derivative type if missing
@@ -352,8 +349,8 @@ if isnumeric( Kernel )
 
     if truncation == -1
         % Obtain the parameter of kernel in form of the FWHM adjusted for
-        % the spacing
-        sigma = FWHM2sigma( FWHM / spacing );
+        % the dx
+        sigma = FWHM2sigma( FWHM / dx );
         % Set default truncation
         truncation = ceil( 4*sigma );
     end
@@ -361,7 +358,9 @@ if isnumeric( Kernel )
     if derivtype == 0
         % Default kernel is isotropic Gaussian kernel
         Kernel = @(x) Gker( x, FWHM );
-    elseif derivtype > 1
+    elseif derivtype == 1
+        Kernel =  @(x) Gkerderiv( x, FWHM );
+    else
         error( 'This setting has not been coded yet' )
     end
 else
@@ -418,15 +417,15 @@ elseif D == 2
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
     
-    % Adjust the FWHM to account for the spacing
-    adjusted_FWHM = FWHM/spacing;
+    % Adjust the FWHM to account for the dx
+    adjusted_FWHM = FWHM / dx;
     
     % Run the smoothing
     if derivtype == 0 % Calculates the convolution field
         % Only set up for Gaussian kernels atm!
         smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D,...
                              truncation, adjust_kernel );
-        smooth_data = smooth_data / spacing^2;
+        smooth_data = smooth_data / dx^2;
     elseif derivtype == 1 % Calculates the derivatives of the convolution field
         smooth_data(1,:,:,:) = fconv( expanded_lat_data,...
                                       { @(x) Gkerderiv( x, adjusted_FWHM ),...
@@ -436,7 +435,7 @@ elseif D == 2
                                       { @(x) Gker( x, adjusted_FWHM ),...
                                         @(y) Gkerderiv( y, adjusted_FWHM ) },...
                                         D, truncation );
-        smooth_data = smooth_data / spacing^3;
+        smooth_data = smooth_data / dx^3;
     else
         error( 'Higher derivatives are not supported' )  
     end
@@ -445,18 +444,18 @@ elseif D == 3
     expanded_lat_data = zeros( [ Dimhr, nsubj ] );
     expanded_lat_data( 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, 1:( resAdd + 1 ):end, : ) = lat_data;
     
-    % Adjust the FWHM to account for the spacing
-    adjusted_FWHM = FWHM/spacing;
+    % Adjust the FWHM to account for the dx
+    adjusted_FWHM = FWHM/dx;
     
     % Run the smoothing
     if derivtype == 0 %Calculates the convolution field
         smooth_data = fconv( expanded_lat_data, adjusted_FWHM, D, truncation, adjust_kernel );
-        smooth_data = smooth_data/spacing^3;
+        smooth_data = smooth_data/dx^3;
     elseif derivtype == 1 %Calculates the derivatives of the convolution field
         smooth_data(1,:,:,:) = fconv(expanded_lat_data, {@(x)Gkerderiv(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM), @(z)Gker(z,adjusted_FWHM)}, D, truncation);
         smooth_data(2,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gkerderiv(y,adjusted_FWHM), @(z)Gker(z,adjusted_FWHM)}, D, truncation);
         smooth_data(3,:,:,:) = fconv(expanded_lat_data, {@(x)Gker(x,adjusted_FWHM), @(y)Gker(y,adjusted_FWHM), @(z)Gkerderiv(z,adjusted_FWHM)}, D, truncation);
-        smooth_data = smooth_data/spacing^3;
+        smooth_data = smooth_data/dx^3; % this needs to be checked! I think the scaling is wrong!
     else
         error('Higher derivatives are not supported')
     end
