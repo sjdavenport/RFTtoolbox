@@ -121,7 +121,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'enlarge', 'var' )
    % default option of 'enlarge'
-   enlarge = ceil(resAdd/2);
+   enlarge = ceil( resAdd / 2 );
 end
 
 if ~isnumeric(enlarge)
