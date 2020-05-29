@@ -580,6 +580,10 @@ if D == 100 %@Sam: change back to 1 to see the error.
 %       gridside = fliplr(gridside - adjust_kernel);
     end
     
+    if derivtype == 1
+        Kernel = Kernel{1};
+    end
+    
     % Evaluates the kernel to get the filter for the convolution
     h = Kernel( gridside );
     % Performs convolution to get the convolution fields
