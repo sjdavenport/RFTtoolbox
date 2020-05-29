@@ -168,14 +168,8 @@ end
 % create index to fill the original mask at the correct voxels of the high
 % resolution mask
 index = cell( [ 1 D ] );
-if enlarge ~= 0
-    for d = 1:D
-        index{d} = ( enlarge + 1 ):( resAdd + 1 ):( s_hr(d) - enlarge );
-    end
-else
-    for d = 1:D
-        index{d} = 1:( resAdd + 1 ):s_hr(d);
-    end
+for d = 1:D
+    index{d} = ( enlarge + 1 ):( resAdd + 1 ):( s_hr(d) - enlarge );
 end
 
 % fill the resolution increased mask with the values from the original mask
@@ -196,7 +190,7 @@ if enlarge ~= ceil(resAdd/2)
     % number of voxels which the inverse mask or the normal mask needs to
     % be shifted in order to obtain the correct mask. If positiv mask is
     % dilated by that amount. If negative ~mask is dilated and then the
-    % negative is taken.
+    % negative is taken, since we need to erode voxels.
     denlarge = enlarge - ceil(resAdd/2);
     
     if denlarge < 0
@@ -208,6 +202,7 @@ if enlarge ~= ceil(resAdd/2)
     end
 end
 
+% show plots explaining the output
 if plot_switch
     if D == 1
         figure(1),clf,
