@@ -36,20 +36,20 @@ function [ smooth_data, xvals_vecs ] = convfield_struct( lat_data, Kernel, resAd
 %            derived from the Gaussian kernel with FWHM = Kernel.
 %            Truncation and adjust_kernel are set to be default values.
 % Optional
-% resAdd     the amount of voxels added equidistantly inbetween the
-%            existing voxels. Default is 1.
-% D          the dimension of the data, if this is left blank it is
-%            assumed that nsubj = 1 and that the convolution field has 
-%            the same numberof dimesions as lat_data
-% derivtype  0/1/2, 0 returns the convolution field, 1 it's derivative
-%            and 2 it's second derivative (at all points). Default is 0
-%            i.e to return the field! Note if D > 1 then  derivtype = 2
-%            has not been implemented yet.
-% enlarge    a numeric which must be a positive integer or zero. The
-%            convolution field is computed on a domain enlarged in each
-%            direction by 'enlarge' voxels. Note if resAdd ~=0 the voxels
-%            are in high resolution.
-%            Default 0.
+%  resAdd     the amount of voxels added equidistantly inbetween the
+%             existing voxels. Default is 1.
+%  D          the dimension of the data, if this is left blank it is
+%             assumed that nsubj = 1 and that the convolution field has 
+%             the same numberof dimesions as lat_data
+%  derivtype  0/1/2, 0 returns the convolution field, 1 it's derivative
+%             and 2 it's second derivative (at all points). Default is 0
+%             i.e to return the field! Note if D > 1 then  derivtype = 2
+%             has not been implemented yet.
+%  enlarge    a numeric which must be a positive integer or zero. The
+%             convolution field is computed on a domain enlarged in each
+%             direction by 'enlarge' voxels. Note if resAdd ~=0 the voxels
+%             are in high resolution.
+%             Default 0.
 %--------------------------------------------------------------------------
 % OUTPUT
 % %%% 1D
