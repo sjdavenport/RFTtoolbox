@@ -8,37 +8,37 @@ function LKC = LKCestim_HPE( Y, mask, Mboot, normalize, version )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory:
-%   Y      an array of dimension T_1 x...x T_D x N of N random
-%          fields over an T_1 x...x T_D rectangle.
-%   mask   a logical array of dimension T_1 x...x T_D. Not that the domain
-%          domain needs to be only one connected component currently in D=1. 
+%  Y      an array of dimension T_1 x...x T_D x N of N random
+%         fields over an T_1 x...x T_D rectangle.
+%  mask   a logical array of dimension T_1 x...x T_D. Not that the domain
+%         domain needs to be only one connected component currently in D=1. 
 %
 % Optional:
-%   Mboot     an integer specifying the number of bootstraps used for
-%             estimation of LKC. If "1" the HPE is used otherwise the
-%             bHPE. Default: Mboot 1.
-%   normalize logical indicating whether Y needs to be standardized. 
-%             Default 1, i.e., mean will be subtracted and data will be 
-%             standardized to have empirical variance 1, if N>1 else 0.
-%   version   if "C" (default), Euler characteristic is computed using a
-%             routine to compute critical values in C++, else a slow matlab
-%             only implementation is used, which is not recommended for D>2.
+%  Mboot     an integer specifying the number of bootstraps used for
+%            estimation of LKC. If "1" the HPE is used otherwise the
+%            bHPE. Default: Mboot 1.
+%  normalize logical indicating whether Y needs to be standardized. 
+%            Default 1, i.e., mean will be subtracted and data will be 
+%            standardized to have empirical variance 1, if N>1 else 0.
+%  version   if "C" (default), Euler characteristic is computed using a
+%            routine to compute critical values in C++, else a slow matlab
+%            only implementation is used, which is not recommended for D>2.
 %--------------------------------------------------------------------------
 % OUTPUT
-%   LKC     structure containing fields:
-%           - hatL1: D x N or D x Mboot array containing the LKC estimates
-%                    for each random field
-%           - hatL: D x 1 vector of estimates of LKC for the sample Y. It
-%                   is the average of hatL1.
-%           - L0: integer containing the Euler characteristic of the mask
-%                 equivalently the zeroth LKC of the random fields.
-%           - hatSIGMA: D x D estimate of the covariance matrix of the
-%                       estimate hatL. It is computed using the empirical
-%                       covariance of hatL1.
-%           - hatSE:    D x 1 vector of standard errors for components of
-%                       hatL based on the CLT. 
-%           - confInt95: approximate 95% confidence intervals for hatL
-%                        based on the standard CLT.
+%  LKC     structure containing fields:
+%          - hatL1: D x N or D x Mboot array containing the LKC estimates
+%                   for each random field
+%          - hatL: D x 1 vector of estimates of LKC for the sample Y. It
+%                  is the average of hatL1.
+%          - L0: integer containing the Euler characteristic of the mask
+%                equivalently the zeroth LKC of the random fields.
+%          - hatSIGMA: D x D estimate of the covariance matrix of the
+%                      estimate hatL. It is computed using the empirical
+%                      covariance of hatL1.
+%          - hatSE:    D x 1 vector of standard errors for components of
+%                      hatL based on the CLT. 
+%          - confInt95: approximate 95% confidence intervals for hatL
+%                       based on the standard CLT.
 % -------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
