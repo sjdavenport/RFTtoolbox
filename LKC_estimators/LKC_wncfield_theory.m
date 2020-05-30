@@ -1,7 +1,8 @@
-function Ltheory = LKC_GaussConvTheory( FWHM, D, resAdd, mask, pad )
+function Ltheory = LKC_wncfield_theory( FWHM, D, resAdd, mask, pad )
 % LKC_GaussConvTheory( FWHM, D, resAdd )
 % computes theoretical Lipschitz Killing curvatures for a convolution field
-% with underlying discrete independent gaussian white noise process.
+% derived from a seperable kernel with underlying discrete independent
+% gaussian white noise process.
 % It uses the fact that the voxels are independent and thereby double
 % convolutions become single convolutions.
 % Currently, only 1D and 2D is implemented. Moreover, the domain of
