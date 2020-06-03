@@ -1,4 +1,4 @@
-function bdry_voxels = bdry_voxels( mask, version )
+function bdry = bdry_voxels( mask, version )
 % This function computes a high resolution version of a given mask.
 % It has the option to enlarge the mask region by resAdd to use shifted
 % boundaries in LKC estimation. This is required in the interpretation of
@@ -44,18 +44,18 @@ end
 %%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if version == "full"
-    bdry_voxels = logical( imdilate( ~mask, ones( ones(1, D)*3 ) ) ) & ...
+    bdry = logical( imdilate( ~mask, ones( ones(1, D)*3 ) ) ) & ...
                             mask;
 elseif D==2 || D==3
 
     switch D
         case 2
             if version == "y"
-                bdry_voxels = logical( imdilate( ~mask,...
+                bdry = logical( imdilate( ~mask,...
                                     [[0 0 0];[1 1 1];[0 0 0]] ) ) & ...
                                         mask;
             elseif version == "x"
-                bdry_voxels = logical( imdilate( ~mask,...
+                bdry = logical( imdilate( ~mask,...
                                     [[0 1 0];[0 1 0];[0 1 0]] ) ) & ...
                                         mask;
             else
@@ -68,15 +68,15 @@ elseif D==2 || D==3
             if version == "xy"
                 h( 2, 2, 1 ) = 1;
                 h( 2, 2, 3 ) = 1;
-                bdry_voxels = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~mask, h ) ) &  mask;
             elseif version == "yz"
                 h( 2, 1, 2 ) = 1;
                 h( 2, 3, 2 ) = 1;
-                bdry_voxels = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~mask, h ) ) &  mask;
             elseif version == "xz"
                 h( 1,2,  2 ) = 1;
                 h( 3,2,  2 ) = 1;
-                bdry_voxels = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~mask, h ) ) &  mask;
             else
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
@@ -86,6 +86,5 @@ else
     error( strcat( "For D not equal to 2 or 3 only the full",...
                    "boundary estimate is implemented" ) );
 end
-
 
 return
