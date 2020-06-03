@@ -1,5 +1,5 @@
 function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
-                                                  shift_bdry )
+                                                  enlarge )
 % This function calculates an estimate of the induced Riemannian metric
 % from a convolution field or also known as Lambda matrix in neuroimaging
 % by using the exact formula from taking the derivatives of the kernels.
@@ -18,8 +18,8 @@ function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
 % Optional
 %   resAdd   integer denoting the amount of voxels padded between existing
 %            voxels to increase resolution
-%   shift_bdry integer denoting the amount of voxels padded between existing
-%              voxels to increase resolution
+%   enlarge  integer denoting the amount of voxels padded between existing
+%            voxels to increase resolution
 %--------------------------------------------------------------------------
 % OUTPUT
 %   Lambda_est  an array of size hrT_1 x ... x hrT_D x D x D. Containing
@@ -28,7 +28,6 @@ function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
 %   xvals       the grid values of the high resolution grid.
 % -------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - add same input as convfield as soon as convfield is finalized
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -75,17 +74,24 @@ if ~exist( 'resAdd', 'var' )
    resAdd = 1;
 end
 
+if ~exist( 'enlarge', 'var' )
+   % default number of resolution increasing voxels between observed voxels
+   enlarge = 0;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% get the convolution fields and their derivatives
-[ convY, xvals ] = convfield( lat_data, Kernel, D, resAdd, shift_bdry );
-DconvY           = convfield( lat_data, Kernel, D, resAdd, 1, shift_bdry );
+[ convY, xvals ] = convfield_struct( lat_data, Kernel, resAdd, D, 0,...
+                                     enlarge );
+                                                     
+DconvY = convfield_struct( lat_data, Kernel, resAdd, D, 1, enlarge );
 
 sY = size( convY );
 
 %%%% allocate output the entries of the Riemannian metric
-Lambda_est = NaN * ones( [ sY(1:end-1)  D D ] );
+Lambda_est = zeros( [ sY(1:end-1)  D D ] );
 
 %%%%%%%% BEGIN compute the Riemannian metric
 switch D
@@ -101,8 +107,8 @@ switch D
         Lambda_est( index{:}, 1 ) = ( VdxY .* VY - CYdxY.^2 ) ./ VY.^2;
     case 2
         % rename the partial derivatives of the convolution field
-        convYx = squeeze( DconvY( 1, index{:}, : ) );
-        convYy = squeeze( DconvY( 2, index{:}, : ) );
+        convYx = squeeze( DconvY( index{:}, :, 1 ) );
+        convYy = squeeze( DconvY( index{:}, :, 2 ) );
         clear DconvY
         
         % Get the estimates of the variances and covariances required to
@@ -129,9 +135,9 @@ switch D
         Lambda_est( index{:}, 2, 2 ) = g_yy;
     case 3
         % rename the partial derivatives of the convolution field
-        convYx = squeeze( DconvY( 1, index{:}, : ) );
-        convYy = squeeze( DconvY( 2, index{:}, : ) );
-        convYz = squeeze( DconvY( 3, index{:}, : ) );
+        convYx = squeeze( DconvY( index{:}, :, 1 ) );
+        convYy = squeeze( DconvY( index{:}, :, 2 ) );
+        convYz = squeeze( DconvY( index{:}, :, 3 ) );
         clear DconvY
         
         % Get the estimates of the covariances
@@ -173,5 +179,8 @@ switch D
         Lambda_est( index{:}, 3, 2 ) = g_yz;
         Lambda_est( index{:}, 3, 3 ) = g_zz;
 end
+
+% remove NaNs and repalce with zero
+Lambda_est = nan2zero( Lambda_est );
 %%%%%%%% END compute the Riemannian metric
 return
