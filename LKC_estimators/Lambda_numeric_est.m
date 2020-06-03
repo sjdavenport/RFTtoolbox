@@ -1,5 +1,5 @@
-function Lambda_array = Lambda_numeric_est( lat_data, Kernel, resAdd,...
-                                                  enlarge, h )
+function [Lambda_array, xvals ] = Lambda_numeric_est( lat_data, Kernel,...
+                                                      resAdd, enlarge, h )
 % LAMBDA_EST( lat_data, FWHM, D, spacing, h ) calculates an estimate of 
 % Lambda(v) = cov(\nabla X(v)) at each voxel
 %--------------------------------------------------------------------------
@@ -71,12 +71,6 @@ s_lat_data = size( lat_data );
 % dimension of the domain
 D = length( s_lat_data( 1:end-1 ) );
 
-% size of domain
-Dim = s_lat_data( 1:end-1 );
-
-% get number of subjects/samples
-nsubj = s_lat_data( D + 1 );
-
 % get variable domain counter
 index  = repmat( {':'}, 1, D );
 
@@ -108,7 +102,7 @@ end
 %%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Evaluate the value of the convolution field
-[ fieldseval, ~, Kernel ] = convfield_struct( lat_data, Kernel, resAdd,...
+[ fieldseval, xvals, Kernel ] = convfield_struct( lat_data, Kernel, resAdd,...
                                               D, 0, enlarge ); 
 % Get the standard derivation of the fields everywhere                                 
 fields_std = sqrt( var( fieldseval, 0, D+1 ) );
@@ -117,50 +111,60 @@ fields_std = sqrt( var( fieldseval, 0, D+1 ) );
 fieldseval = fieldseval ./ fields_std; 
 clear fields_std
 
-% Define the shifted kernel
-Kernelh = struct();
-Kernelh.adjust_kernel = ;
-
-
+% get size of high resolution field
+Dimhr = size( fieldseval );
 
 % Main loop
 if D == 1
+    % Define the shifted kernel
+    Kernelh = Kernel;
+    Kernelh.adjust_kernel = h;
+
     % Obtain the variance 1 field at an offset of h everywhere
     fieldsplush = convfield_struct( lat_data, Kernelh, resAdd, D, 0,...
                                      enlarge );
-    fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
-    fieldsplush = fieldsplush./fieldsplush_std;
+    fieldsplush_std = sqrt( var( fieldsplush, 0, D+1 ) );
+    fieldsplush     = fieldsplush ./ fieldsplush_std;
     clear fieldsplush_std
     
     % Calculate the derivatives of the variance 1 fields
-    derivs = (fieldsplush - fieldseval)/h;
+    derivs = ( fieldsplush - fieldseval ) / h;
     clear fieldsplush fieldseval
     
     % Calculate Lambda
-    Lambda_array = vectcov(derivs, derivs);
+    Lambda_array = vectcov( derivs, derivs );
     clear derivs
+    
 elseif D == 2 || D == 3
-    derivs = zeros( [D, s_lat_data] );
+    % allocate variable for the derivatives of the fields
+    derivs = zeros( [ Dimhr, D ] );
+    
     for d = 1:D
+        % define the Kernel object to be for shifted h along an offset of
+        % the d-th standard direction or R^D
+        Kernel.adjust_kernel = h*sbasis( d, D );
+
         % Obtain the variance 1 field at an offset of h*e_d everywhere
-        % where e_d is the standard basis vector in the dth direction
-        fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h*sbasis(d,D) );
-        fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
-        fieldsplush = fieldsplush./fieldsplush_std;
+        fieldsplush = convfield_struct( lat_data, Kernel, resAdd,...
+                                              D, 0, enlarge );                                          
+        fieldsplush_std = sqrt( var( fieldsplush, 0, D+1 ) );
+        fieldsplush = fieldsplush ./ fieldsplush_std;
         clear fieldsplush_std
         
         % Calculate the partial derivatives in the e_d th direction
-        derivs( d, index{:}, :) = (fieldsplush - fieldseval)/h;
+        derivs( index{:}, :, d ) = ( fieldsplush - fieldseval ) / h;
     end
     clear fieldsplush fieldseval
 
     % Calculate Lambda
-    Lambda_array = zeros([D,D,Dim]);
+    Lambda_array = zeros( [ Dimhr(1:end-1),  D, D ] );
     for d1 = 1:D
         for d2 = 1:D
             % Calculate the covariance between the d1th partial derivative
             % and the d2th partial derivative
-            Lambda_array(d1,d2,index{:}) = vectcov(derivs(d1, index{:}, :), derivs(d2, index{:}, :), D+2);
+            Lambda_array( index{:}, d1, d2 ) = vectcov( ...
+                   derivs( index{:}, :, d1), derivs( index{:}, :, d2 ),...
+                                                                      D+1);
         end
     end
 else
@@ -168,4 +172,3 @@ else
 end
 
 end
-
