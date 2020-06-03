@@ -521,13 +521,15 @@ elseif isstruct( Kernel )
             end            
         end 
     end
+else
+    error( "The 'Kernel' must be either a numeric or a kernel structure!" )
 end
 
 %%%% move the kernel parameters into simpler variables such that not always
 %%%% the structure needs to be used
 adjust_kernel = Kernel.adjust_kernel;
 truncation = Kernel.truncation;
-Kernel = Kernel.kernel;
+kernel = Kernel.kernel;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% main part of function
@@ -582,11 +584,11 @@ if D == 100 %@Sam: change back to 1 to see the error.
     end
     
     if derivtype == 1
-        Kernel = Kernel{1};
+        kernel = kernel{1};
     end
     
     % Evaluates the kernel to get the filter for the convolution
-    h = Kernel( gridside );
+    h = kernel( gridside );
     % Performs convolution to get the convolution fields
     smooth_data = convn( expanded_lat_data', h, 'same' )';
     % @Sam: can you explain the factor
@@ -602,7 +604,7 @@ elseif D < 4
     % Run the smoothing using fconv
     if derivtype == 0
         % Calculates the convolution field
-        smooth_data = fconv( expanded_lat_data, Kernel, D,...
+        smooth_data = fconv( expanded_lat_data, kernel, D,...
                              truncation, adjust_kernel );
         % @Sam: can you explain the factor, naively I would have thought
         % that should be accounted for in the kernel and its derivative
@@ -615,7 +617,7 @@ elseif D < 4
         % Calculates the derivatives of the convolution field
         for d = 1:D
             smooth_data(indexD{:},:,d) = fconv( expanded_lat_data,...
-                                                Kernel{d}, D, ...
+                                                kernel{d}, D, ...
                                                 truncation );
         end
         % @Sam: can you explain the factor
