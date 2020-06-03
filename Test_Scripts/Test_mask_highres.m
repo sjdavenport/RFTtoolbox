@@ -37,7 +37,7 @@ clear Sig
 % enlarged domain
 mask_hr = mask_highres( mask, resAdd, ceil(resAdd/2), show_plot );
 % non enlarged domain
-mask_hr = mask_highres( mask, resAdd, 0, show_plot );
+[ mask_hr, Num_ngh ] = mask_highres( mask, resAdd, 0, show_plot );
 
 % resolution added
 resAdd  = 3;
