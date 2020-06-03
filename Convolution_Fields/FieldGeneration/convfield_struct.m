@@ -537,7 +537,7 @@ Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
 % modify Dimhr by adding enlarge voxels to all sides
 if enlarge ~= 0 
     if D == 1
-        Dimhr = Dimhr + [ 2 * enlarge, 0 ];
+        Dimhr = Dimhr + 2 * enlarge;
     else
         Dimhr = Dimhr + 2 * enlarge;
     end
