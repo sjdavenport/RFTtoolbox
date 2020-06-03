@@ -57,8 +57,6 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % DEVELOPER TODOs:
 %   - add full 3D estimation
 % -------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
-%--------------------------------------------------------------------------
 % EXAMPLES
 % %1D
 % rf   = noisegen( [35 35], 50, 6 );
@@ -72,6 +70,9 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % 
 % %3D
 %--------------------------------------------------------------------------
+% AUTHORS: Fabian Telschow
+%--------------------------------------------------------------------------
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Check input and get important constants from the mandatory input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,8 +80,7 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % size of the domain
 s_lat_data = size( lat_data );
 
-% % !!!currently hard coded!!!
-% mask = logical( ones( [ s_lat_data(1:end-1) 1 ] ) );
+% get size of the mask
 sM = size( mask );
 
 % Design question, do we want to force the user to use logicals?
@@ -259,7 +259,7 @@ switch D
         % length of boundary by 2, since that is what LKC1 is.
         xybdry = ybdry + xbdry == 2;
         L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
-                    - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
+                      - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
                         
         %%%%%%%% Fill the output structure
         geom.vol_form = vol_form;
