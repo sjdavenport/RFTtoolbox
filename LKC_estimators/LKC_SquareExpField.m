@@ -1,4 +1,4 @@
-function [ LKC, resel ] = LKC_SquareExpField( FWHM, dim, type )
+function [ LKC, resel ] = LKC_SquareExpField_theory( FWHM, dim, type )
 % This function computes the theoretical LKCs for the Gaussian random field
 % with the square exponential covariance function
 % C(s) = exp( -s^2 / 2 / FWHM^2 )
@@ -64,16 +64,19 @@ switch type
        alpha = 1 / ( 4 * FWHM2sigma( FWHM )^2 );
 end
 
-% compute the LKCs by multiplication with certain volumes
+% compute the LKCs by multiplication with certain volumes compare:
+% Worsley et al (2004) Unified univariate and multivariate random field
+% theory
 switch D
    case 1
        LKC = dim(1) * sqrt( 2 * alpha );
    case 2
-       LKC = [ 2 * dim(1); dim(2)^2 ] .* ...
+       LKC = [ sum( dim ); prod( dim ) ] .* ...
                             [ sqrt( 2 * alpha ); 2 * alpha ];
    case 3
-       LKC = [ 3 * dim(1); 3 * dim(2)^2; dim(3)^3 ] .* ...
-             [ sqrt( 2 * alpha ); 2 * alpha; ( 2 * alpha )^(3/2) ];
+       LKC = [ sum( dim ) / 2; dim(1)*dim(2) + dim(1)*dim(3)...
+                    + dim(2)*dim(3); prod( dim ) ] .* ...
+                      [ sqrt( 2 * alpha ); 2 * alpha; ( 2 * alpha )^(3/2) ];
 end
 LKC = LKC';
 
