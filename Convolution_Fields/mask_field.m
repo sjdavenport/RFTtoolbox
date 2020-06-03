@@ -26,7 +26,7 @@ else
     mfield = @(tval) applyconvfield(tval, nan2zero(mask), RK, 1, xvals_vecs);
 end
 
-if ~asnan
+if ~asnan 
     mfield_out = inf2zero(mfield(x)./mfield(x));
 else
     mfield_out = inf2nan(mfield(x)./mfield(x)); %Returns NaN outside of the mask!

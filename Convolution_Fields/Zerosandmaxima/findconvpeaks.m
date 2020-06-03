@@ -1,4 +1,4 @@
-function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
+function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, boundary)
 % FINDCONVPEAKS(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
@@ -39,18 +39,15 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% These examples start on negative definite areas so it is easy to then use
-% Newton-Raphson to find a maximum. It's more difficult if that's not the
-% case!!
 % % 1D 
 % Y = [1,2,1];
 % findconvpeaks(Y, 3, 1)
-%
+% 
 % % 1D with different xvals_vecs
 % Y = [1,1,2,2,1,1];
 % xvals_vecs = 11:(length(Y)+10);
 % findconvpeaks(Y, 3, 1, ones(1,length(Y)), xvals_vecs)
-%
+% 
 % % 1D multiple peaks
 % Y = [1,2,1,1,1,1,2,1];
 % findconvpeaks(Y, 3, 2) % Top 2 peaks
@@ -59,30 +56,30 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 %                                   the top number of peaks 
 % findconvpeaks(Y, 3, [NaN, 4.5]) returns 4.5 which is not the max so watch
 %                                   out it can get stuck atm!
-%
+% 
 % % 2D
 % Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
 % [maxloc, maxval] = findconvpeaks(Y, 2, 1)
 % fine_eval = convfield(Y, 2, 0.01, 2);
 % max(fine_eval(:))
-%
+% 
 % % With masking!
 % FWHM = 3;
 % Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
 % mask = [1,1,1;0,1,1;1,1,1];
 % findconvpeaks(Y, FWHM, [2,2]', mask)
 % field = @(tval) applyconvfield(tval, Y, FWHM, -1, xvals_vecs, mask);
-%
+% 
 % % View masked field:
 % masked_field = @(x) mask_field(x, mask).*field(x);
 % fieldeval = reshape(masked_field(xvaluesatvoxels), [length(xvals_fine),length(xvals_fine)]);
 % surf(fieldeval)
-%
+% 
 % Y = [1,1,1;10,1,1;1,1,1] %I.e so the peak will be outside the mask!
 % mask = [0,1,1;0,1,1;0,1,1];
 % findconvpeaks(Y, 3, [3,3]', mask) %Need to fix so that
 % initialization at [2,2] is fine as well!
-%
+% 
 % %2D multiple peaks
 % Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]
 % surf(convfield(Y, 2, 0.1, 2))
@@ -167,18 +164,8 @@ end
 if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
     top = peak_est_locs;
     if strcmp(Ktype, 'G')
-        if D < 3
-            smoothed_data = convfield( lat_data, FWHM, 1, D ); %Just on the lattice for maximum finding
-            
-            % DEP cause slow
-%             xvalues_at_voxels = xvals2voxels(xvals_vecs);
-%             smoothed_data = applyconvfield(xvalues_at_voxels, lat_data, FWHM, truncation, xvals_vecs);
-%             smoothed_data = reshape(smoothed_data, size(mask));
-            %Using the above no longer need the Ktype condition
-%             smoothed_data = spm_conv(lat_data, FWHM);
-        elseif D == 3
-            smoothed_data = zeros(size(lat_data));
-            spm_smooth(lat_data, smoothed_data, FWHM);
+        if D < 4
+            smoothed_data = fconv( lat_data, FWHM , D );
         else
             error('Not yet ready for 4D or larger images')
         end
@@ -196,7 +183,25 @@ if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
     peak_est_locs = peak_est_locs(2:end);
 end
 
-[ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, 1.5 );
+% % When you have the getboundary function from Fabian implement the below!
+% boundary = getboundary(mask)
+
+% allowing the function to run even if the boundary is not specified
+if nargin < 7
+    box_sizes = 1.5;
+else
+    npeaks = size(peak_est_locs, 2);
+    mask_size = size(mask);
+    box_sizes = 1.5*ones(1,npeaks);
+    for I = 1:npeaks
+        converted_index = convind( peak_est_locs(:,I), mask_size );
+        if boundary(converted_index)
+            box_sizes(I) = 0.5;
+        end
+    end 
+end
+
+[ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );
 % 
 % npeaks = size(peak_est_locs, 2);
 % peakvals = zeros(1,npeaks);
