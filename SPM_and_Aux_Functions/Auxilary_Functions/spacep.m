@@ -1,4 +1,4 @@
-function point_out = spacep( point, spacing )
+function point_out = spacep( point, resAdd )
 % SPACEP( POINT, SPACING ) records the values of a the location of points in
 % a convolution field that has been evaluated on a lattice with given
 % spacing
@@ -11,10 +11,12 @@ function point_out = spacep( point, spacing )
 % point_out  the indices of the converted points
 %--------------------------------------------------------------------------
 % EXAMPLES
-% spacep( [3,3,3]', 0.05)
+% spacep( [3,3,3]', 20 )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+spacing = 1/(1+resAdd);
+
 inverse_spacing = floor(1/spacing);
 mod_spacing = 1/inverse_spacing;
 

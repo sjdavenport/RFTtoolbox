@@ -1,4 +1,4 @@
-function [ tstat, setof_smoothed_fields, xbar, std_dev ] = smoothtstat( lat_data, FWHM, spacing, usespm )
+function [ tstat, setof_smoothed_fields, xbar, std_dev ] = smoothtstat( lat_data, FWHM, resAdd, usespm )
 % SMOOTHTSTAT( lat_data, FWHM, spacing, usespm ) takes in lattice data, and 
 % returns the smooth convolution t field
 %--------------------------------------------------------------------------
@@ -48,20 +48,20 @@ function [ tstat, setof_smoothed_fields, xbar, std_dev ] = smoothtstat( lat_data
 % FWHM = 1;
 % smoothfield = smoothtstat(lat_data, FWHM)
 % surf(smoothfield)
-%
-% 
 %------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %------------------------------------------------------------------------
 if nargin < 3
-    spacing = 1;
+    resAdd = 0;
 end
+spacing = 1/(1+resAdd);
+
 s_lat_data = size(lat_data);
 Dim = s_lat_data(1:end-1);
 D = length(Dim);
 Dim = (Dim-1)/spacing + 1;
 
-setof_smoothed_fields = convfield( lat_data, FWHM, spacing, D, 0 );
+setof_smoothed_fields = convfield( lat_data, FWHM, resAdd, D, 0 );
 
 if D == 1
     Dim = [1,Dim];

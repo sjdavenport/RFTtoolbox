@@ -1,6 +1,7 @@
-function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
-% LAMBDA_EST( lat_data, FWHM, D, spacing, h ) calculates an estimate of 
-% Lambda(v) = cov(\nabla X(v)) at each voxel
+function Lambda_array = Lambda_num_est( lat_data, FWHM, D, resAdd, h )
+% LAMBDA_NUM_EST( lat_data, FWHM, D, spacing, h ) estimates 
+% Lambda(v) = cov(\nabla X(v)) at each voxel by a numerical (very accurate)
+% deriative approximation.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % lat_data      a Dim by nsubj array corresponding to the lattice data.
@@ -66,15 +67,8 @@ if length(Dim) ~= D
     error('Incorrect dimension')
 end
 
-% Define spacing in terms of the resolution
-if resAdd > 1 || resAdd == 0
-    spacing = 1/(1+resAdd);
-else
-    spacing = resAdd;
-end
-
 % Evaluate the value of the convolution field
-fieldseval = convfield( lat_data, FWHM, spacing, D );
+fieldseval = convfield( lat_data, FWHM, resAdd, D );
 fields_std = sqrt(var(fieldseval, 0, D+1)); % Get the standard derivation of the fields everywhere
 
 %Obtain a variance 1 field
@@ -87,7 +81,7 @@ index  = repmat( {':'}, 1, D );
 % Main loop
 if D == 1
     % Obtain the variance 1 field at an offset of h everywhere
-    fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h );
+    fieldsplush = convfield( lat_data, FWHM, resAdd, D, 0, -1, h );
     fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
     fieldsplush = fieldsplush./fieldsplush_std;
     clear fieldsplush_std
@@ -104,7 +98,7 @@ elseif D == 2 || D == 3
     for d = 1:D
         % Obtain the variance 1 field at an offset of h*e_d everywhere
         % where e_d is the standard basis vector in the dth direction
-        fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h*sbasis(d,D) );
+        fieldsplush = convfield( lat_data, FWHM, resAdd, D, 0, -1, h*sbasis(d,D) );
         fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
         fieldsplush = fieldsplush./fieldsplush_std;
         clear fieldsplush_std
@@ -128,4 +122,11 @@ else
 end
 
 end
+
+% % Define spacing in terms of the resolution
+% if resAdd > 1 || resAdd == 0
+%     spacing = 1/(1+resAdd);
+% else
+%     spacing = resAdd;
+% end
 

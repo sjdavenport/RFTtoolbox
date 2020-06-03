@@ -81,7 +81,7 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % 3D:
 % FWHM = 3;
 % noise = reshape(noisegen([91,109,91], 1, 6, 1), [91,109,91]);
-% tic; applyconvfield_gen([50,40,60]', noise, FWHM)
+% tic; applyconvfield([50,40,60]', noise, FWHM)
 % toc
 % tic; applyconvfield([50,40,60]', noise, FWHM)
 % toc
@@ -94,50 +94,91 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+
+%% Initialization
+% If a mask is supplied, mask the data
 if nargin >= 6
     Y = Y.*mask; %This masks the unsmoothed data
 end
 
+% Get the dimensions of the the data
 Ydim = size(Y);
+
+%Allow column vector to be used as inputs
 if length(Ydim) == 2 && Ydim(2) == 1
-    Ydim = Ydim'; %Allows column vector to be used as inputs
+    Ydim = Ydim'; 
 end
+
+% Deal with the dimension in 1D
 if Ydim(1) == 1
-    Ydim = Ydim(2:end); %Gets the dimension in 1D
+    Ydim = Ydim(2:end); 
 end
-D = length(Ydim);
 
+% Get the number of dimensions
+D = length(Ydim); 
+
+%% Error checking
+% Error check to ensure D <= 3
+if D > 3
+    error('D ~= 1,2,3 has not been coded here')
+end
+
+% Ensure tval is a D by nvals matrix
+if size(tval, 1) ~= D
+    error(['The size of the point to evaluate must match the number of ',...
+           'dimensions. I.e. the columns of the matrix must be the same',...
+           'as the number of dimensions, if there is only one data point',...
+           'it must be a row vector!'])
+end
+
+%% Setting the truncation and the Kernel
+% Set the truncation of the kernel
 if nargin < 4
-    truncation = -1; %Default truncation
+    truncation = -1; % setting truncation = -1 yields the default truncation below
 end
 
+% Error check to ensure truncation is the right size
 if ~isequal(size(truncation),[1,1])
     error('Truncation must be a number')
 end
 
+% If Kernel is numeric take an isotropic Gaussian kernel with this FWHM
 if isnumeric(Kernel)
-%     sigma = FWHM2sigma(Kernel);
     if truncation == -1
         sigma = FWHM2sigma(Kernel);
-        truncation = round(4*sigma);
+        truncation = round(4*sigma); % Default truncation
     end
-    Kernel = @(x) GkerMV(x,Kernel);
+    Kernel = @(x) GkerMV(x,Kernel); % The multivariate Gaussian kernel
 else
-%     5 evaluate kernel here to ensure that it has the right dimension!
+    %     Need to work out what to do here for general kernels
+    if truncation == -1
+        % The -1 selection is only set up for isotropic Gaussian kernels atm
+        truncation = 0; 
+    end
 end
 
-if truncation == -1
-    truncation = 0; %-1 selection only set up for isotropic Gaussian kernels
-end
+% Obtain the dimensions of the output
+outputdim = length(Kernel(tval(:,1)));
 
+% Initialize the matrix to store the convolution field outputs
+field_vals = zeros(outputdim, size(tval, 2));
+
+% Initialize ss 
+% (used to record the sum of squares of the kernel in case you want to normalize)
+ss = zeros(1, size(tval, 2));
+
+%% Set the default xvals_vecs
+% Default takes a D-dimensional cube with resolution 0 i.e. just the
+% lattice point where each voxel is square with volume 1
 if nargin < 5
     xvals_vecs = {1:Ydim(1)}; %The other dimensions are taken case of below.
 end
-
 if ~iscell(xvals_vecs)
     xvals_vecs = {xvals_vecs};
 end
 
+% Ensure that xvals_vecs is a cell with lengh the same as the number of
+% dimensions as the data
 if length(xvals_vecs) < D
     increm = xvals_vecs{1}(2) - xvals_vecs{1}(1);
     for d = (length(xvals_vecs)+1):D
@@ -145,6 +186,11 @@ if length(xvals_vecs) < D
     end
 end
 
+% If there is no truncation, obtain the indices of all the voxels on the
+% lattice
+% if truncation == 0
+%     xvalues_at_voxels = xvals2voxels( xvals_vecs );
+% end
 if truncation == 0
     if D == 1
         xvalues_at_voxels = xvals_vecs{1}';
@@ -158,17 +204,6 @@ if truncation == 0
 % else
 %     trunwindow = repmat(round(4*sigma), 1 ,D)'; %For non-isotropic kernel you'll need to change this!
 end
-if D > 3
-    error('D ~= 1,2,3 has not been coded here') %Discuss with Armin/Tom a good way of coding this in general?
-end
-
-if size(tval, 1) ~= D
-    error('The size of the point to evaluate must match the number of dimensions. I.e. the columns of the matrix must be the same as the number of dimensions, if there is only one data point it must be a row vector!')
-end
- 
-outputdim = length(Kernel(tval(:,1)));
-field_vals = zeros(outputdim, size(tval, 2));
-ss = zeros(1, size(tval, 2)); % ss will record the sum of squares of the kernel in case you want to normalize0
 
 if truncation > 0
     % this is a fix for now, need to make it so that arbitrary xvals_vecs
@@ -180,19 +215,22 @@ if truncation > 0
     end
 end
 
+%% Main Loop (Computes convolution fields)
 for I = 1:size(tval, 2)
     if truncation > 0
+        % Obtain limits for a box around the point tval(:,I)
         lower = floor(tval(:,I) - truncation);
         upper = ceil(tval(:,I) + truncation);
+        
+        % For each dimension obtain the indicies (xvalues_at_voxels) of the 
+        % voxels in the box specified by truncation and obtain the values
+        % of the lattice data at these locations (Ytemp)
         if D == 1
             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))';
-%             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))'  - xvals_vecs{1}(1) + 1;
             Ytemp = Y(xvalues_at_voxels);
         elseif D == 2
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
-%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
-%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
             [x, y] = ndgrid(eval1,eval2);  
             xvalues_at_voxels = [x(:),y(:)];
             Ytemp = Y(eval1, eval2);
@@ -200,24 +238,38 @@ for I = 1:size(tval, 2)
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end));
-%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
-%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
-%             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end)) - xvals_vecs{3}(1) + 1;
             [x, y, z] = ndgrid(eval1,eval2,eval3);
             xvalues_at_voxels = [x(:),y(:),z(:)];
             Ytemp = Y(eval1, eval2, eval3);
         end
     else
+        % If there is no truncation use all of the data
         Ytemp = Y;
     end
-    Kernel_eval = Kernel(repmat(tval(:,I),1, length(Ytemp(:))) - xvalues_at_voxels'); %this is the Ith tval! %Need to do this for 2016 and prior compatibility.    
-%     Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
+   
+    % Obtain the kernel at all voxels in the specified truncation area
+    % Need to do this for 2016 and prior compatibility
+    Kernel_eval = Kernel(repmat(tval(:,I),1, length(Ytemp(:))) - xvalues_at_voxels'); 
+    %     Kernel_eval = Kernel(tval(:,I) - xvalues_at_voxels'); %this is the Ith tval!
     ss(I) = sum(Kernel_eval(:).^2);
+    
+    % Obtain the convolution fields by multiplying the kernel evaluated at 
+    % the lattice locations with the lattice data
     field_vals(:,I) = Kernel_eval*Ytemp(:);
 end 
 
-% Note can use something similar to MkRadImg to figure out which voxels are
+% Note could use something similar to MkRadImg to figure out which voxels are
 % close to the target voxel so that you only evaluate at those voxels. i.e
 % at the moment it's a square, could make it a sphere though!
 
 end
+
+
+%             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))'  - xvals_vecs{1}(1) + 1;
+%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
+%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
+%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
+%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
+%             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)) - xvals_vecs{1}(1) + 1;
+%             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end)) - xvals_vecs{2}(1) + 1;
+%             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end)) - xvals_vecs{3}(1) + 1;
