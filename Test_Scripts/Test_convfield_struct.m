@@ -50,8 +50,11 @@ smY_old  = convn( Y2, h', 'same' );
 smYx_old = convn( Y2, dxh', 'same' );
 
 %%%% convolution fields function
-[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D, 0, 1 );
-DsmY = convfield_struct( Y, FWHM, resAdd, D, 1 );
+[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D, 0, 0 );
+DsmY = convfield_struct( Y, FWHM, resAdd, D, 1, 0 );
+
+smY_sam = convfield( Y, FWHM, resAdd, D, 0 );
+sameArray( smY_sam, smY )
 
 %%%% awsome that still works!
 [ sameArray( smY_old, smY ),...
