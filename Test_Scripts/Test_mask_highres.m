@@ -25,7 +25,7 @@ clear Sig
 
 mask_hr = mask_highres( mask, resAdd, enlarge, show_plot );
 
-%%%% 2D
+%% %%%% 2D
 % resolution added
 resAdd  = 1;
 % create a mask and show it
