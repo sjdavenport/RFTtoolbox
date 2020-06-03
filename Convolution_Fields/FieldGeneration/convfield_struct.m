@@ -364,9 +364,6 @@ if ~exist( 'enlarge', 'var' )
     enlarge = 0;
 end
 
-%% check and prepare the Kernel input structure
-% indicating whether kernel needs to be adjusted. Will be changed to 1 if needed
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% check and prepare the Kernel input structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
