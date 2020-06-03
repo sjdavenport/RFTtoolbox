@@ -35,6 +35,11 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %              computing geometric properties.
 %              Note that [1 1] is possible which means mask is applied in
 %              both stages.
+%   enlarge    an integer denoting the amount of voxels the resolution
+%              increased mask is enlarged by dilation. Note that for
+%              unbiased estimation resAdd needs to be an odd number and
+%              enlarge needs to be set to the default value currently.
+%              Default: ceil( resAdd / 2 )
 %   Lambda_est  string indicating which estimator for the Lambda
 %               matrix/Riemannian metric is used. Options are "analytical"
 %               and "numerical". Default: "analytical".
@@ -50,7 +55,6 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %                   induced metric of the random field.
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - include mask
 %   - add full 3D estimation
 % -------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow
@@ -87,13 +91,13 @@ mask = logical( mask );
 if sM( 2 ) == 1 && length( sM ) == 2
     D = 1;
 else
-    D = length(sM);
+    D = length( sM );
 end
 
 % check whether more than one sample is provided, else reject the input.
-if length( s_lat_data ) <= D || ( D==1 && s_lat_data(2) == 1 )
+if length( s_lat_data ) <= D || ( D == 1 && s_lat_data(2) == 1 )
     error( "At least 2 samples of a random field are needed!" );
-elseif length(s_lat_data) > D+1
+elseif length( s_lat_data ) > D + 1
     error( "Y needs to have only one dimension more than mask!" );
 else
     % get number of subjects/samples
@@ -105,7 +109,7 @@ index  = repmat( {':'}, 1, D );
 
 %%%% check validity of mask input
 if ~all( sM == s_lat_data( 1:end-1 ) ) && ~all( sM == s_lat_data ) && ...
-   ~( D == 1 && sM( 1 ) == s_lat_data( 1 ) )
+   ~( D == 1 && sM(1) == s_lat_data(1) )
    error( 'The mask needs to have the same size as Y.\n%s',...
           'Note that realisations are stored as columns.' )
 end
@@ -131,7 +135,7 @@ end
 
 if ~exist( 'enlarge', 'var' )
    % default method for Lambda matrix estimation
-   enlarge = 0;
+   enlarge = ceil( resAdd / 2 );
 end
 
 if ~exist( 'mask_opt', 'var' )
@@ -156,16 +160,20 @@ if mask_opt(1) == 1
     lat_data = repmat( mask, [ ones( [ 1 D ] ), nsubj ] ) .* lat_data;
 end
 
-%%%% get mask on higher resolution
+%%%% get mask on higher resolution and the weights of each voxel for the
+%%%% volume computation
 if resAdd ~= 0
-    mask = mask_highres( mask, resAdd, enlarge );
+    [ mask, weights ] = mask_highres( mask, resAdd, enlarge );
+    weights = weights( mask );
+else
+    weights = ones( [ sum( mask(:) ), 1 ] );
 end
 
 %%%% get the Riemannian metric/Lambda matrix
 if strcmp( Lambda_est, "analytical")
     [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
 elseif strcmp( Lambda_est, "numerical")
-    [ g, xvals ] = Lambda_num_est( lat_data, Kernel, resAdd, enlarge );
+    [ g, xvals ] = Lambda_numeric_est( lat_data, Kernel, resAdd, enlarge );
 else
     % output error message, if not a valid method is chosen
     error( strcat( "Choose a valid method for Lambda/Riemannian metric", ...
@@ -184,15 +192,18 @@ switch D
         %%%%%%%% calculate LKC1
         % get the volume form
         vol_form = sqrt( max( g(:,1), 0 ) );
+        % voxel size
+        xvec = xvals{1};
         
-        % restrict vol_form to mask
-        if mask_opt(2) == 1 
-            vol_form = mask .* vol_form;
+        % restrict vol_form and dx to mask
+        if mask_opt(2) == 1
+            xvec     = xvec( mask );
+            vol_form = vol_form( mask );     
         end
         
         % estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
-        L(1) = diff(xvals{1}) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
+        L(1) = diff(xvec) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
         
         %%%%%%%% Fill the output structure
         geom.vol_form    = vol_form;
@@ -214,34 +225,41 @@ switch D
         clear g
         
         %%%%%%%%%%%% calculate LKC 2
-        % get the volume form, max introduced for stability
+        % get the volume form, max introduced for stability, since at the
+        % boundaries there might be tiny negative numbers due to numerical
+        % calculations
         vol_form = sqrt( max( g_xx .* g_yy - g_xy.^2, 0 ) );
         % restrict vol_form to mask
-        if mask_opt(2) == 1 
-            vol_form = mask .* vol_form;
+        if mask_opt(2) == 1
+            vol_form = vol_form( mask );
         end
         
         % integate volume form over the domain. It assumes that each voxel
         % has the same volume dx*dy and simple midpoint integration is used
-        L(2) = sum( vol_form(:) ) * dx * dy;
-        
+        % note that we also use weights to give an appropriate quotient to
+        % boundary voxels, if resAdd > 0, which takes into account that the
+        % volume of the boundary voxels needs to be halved, or quartered, etc
+        L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
+            
         %%%%%%%%%%%% calculate LKC 1
-        % find x shift boundary voxels and integrate using trapozoid rule.
+        % find x shift boundary voxels, i.e. horizontal boundary parts, and
+        % integrate using trapozoid rule.
         % Note that we later need to remove half of the end points value,
         % of each line segment which are contained in the x and the y shift
         % boundary. They will be count double otherwise.
         xbdry = bdry_voxels( mask, "x" );      
-        L(1)  = sum( sqrt( g_xx( xbdry )' ) ) * dx;
+        L(1)  = sum( sqrt( g_xx( xbdry ) ) ) * dx;
         
-        % find x shift boundary voxels and integrate using trapozoid rule.
+        % find y shift boundary voxels, i.e. vertical boundary parts, and
+        % integrate using trapozoid rule.
         ybdry = bdry_voxels( mask, "y" );      
-        L(1)  = L(1) + sum( sqrt( g_yy( ybdry )' ) ) * dy;
+        L(1)  = L(1) + sum( sqrt( g_yy( ybdry ) ) ) * dy;
         
         % remove double counted voxels at end of line segments and divide
         % length of boundary by 2, since that is what LKC1 is.
         xybdry = ybdry + xbdry == 2;
-        L(1) = ( L(1) - sum( sqrt( g_xx( xybdry )' ) ) * dx / 2 ...
-                    - sum( sqrt( g_yy( xybdry )' ) ) * dy / 2 ) / 2;
+        L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
+                    - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
                         
         %%%%%%%% Fill the output structure
         geom.vol_form = vol_form;
@@ -278,7 +296,17 @@ switch D
                               - g_xx.*g_yz.^2, 0 ) );
         % restrict vol_form to mask
         if mask_opt(2) == 1 
-            vol_form = mask .* vol_form;
+            % erode mask by 1 voxel in order to not overestimate highest
+            % LKC!
+            mask_er = ~logical( imdilate( ~mask, ones( ones(1, D)*3 ) ) );
+            
+            % mask the volume form by the eroded mask to identify the
+            % voxels used for the colume computation. Note that each voxel
+            % is assumed to represent the midpoint value of a box of
+            % volume dxdydz and thereby the outer mask voxels would
+            % enlarge the volume of the domain by dx/2 or dy/2 dz/2
+            % respectively if not removed
+            vol_form = mask_er .* vol_form;
         end
         % integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
