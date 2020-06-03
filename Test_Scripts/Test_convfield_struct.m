@@ -50,7 +50,7 @@ smY_old  = convn( Y2, h', 'same' );
 smYx_old = convn( Y2, dxh', 'same' );
 
 %%%% convolution fields function
-[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D );
+[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D, 0, 1 );
 DsmY = convfield_struct( Y, FWHM, resAdd, D, 1 );
 
 %%%% awsome that still works!
@@ -122,7 +122,7 @@ smYx_old = convn( Y2, dxh, 'same' );
 smYy_old = convn( Y2, dyh, 'same' );
 
 %%%% convolution fields function
-[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D );
+[ smY, xvals_vecs ] = convfield_struct( Y, FWHM, resAdd, D, 0, 1 );
 DsmY = convfield_struct( Y, FWHM, resAdd, D, 1 );
 
 %%%% awsome that still works!
