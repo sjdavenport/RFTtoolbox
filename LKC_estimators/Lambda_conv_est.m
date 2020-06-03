@@ -76,7 +76,7 @@ end
 
 if ~exist( 'enlarge', 'var' )
    % default number of resolution increasing voxels between observed voxels
-   enlarge = 0;
+   enlarge =  ceil( resAdd / 2 );
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

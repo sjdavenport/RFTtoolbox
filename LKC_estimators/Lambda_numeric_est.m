@@ -1,21 +1,29 @@
-function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
+function Lambda_array = Lambda_numeric_est( lat_data, Kernel, resAdd,...
+                                                  enlarge, h )
 % LAMBDA_EST( lat_data, FWHM, D, spacing, h ) calculates an estimate of 
 % Lambda(v) = cov(\nabla X(v)) at each voxel
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% lat_data      a Dim by nsubj array corresponding to the lattice data.
-%               note must have nsubj > 1
-% FWHM          the FWHM of the smoothing kernel
-% D             the dimension
-% resAdd        the resolution increase between the voxels. I.e 0 adds no
-%               point in between, 1 adds one etc
-% h             the h used to calculate the derivatives i.e. via
-%               (X(v+h)-X(v))/h. Default is 0.00001. Avoid taking h to be
-%               too small for numerical precision reasons
+% Mandatory
+%   lat_data data array T_1 x ... x T_D x N. Last index enumerates the
+%            samples. Note that N > 1 is required!
+%   Kernel   array 1x1 or 1xD containing the FWHM for different directions
+%            for smoothing with a Gaussian kernel, if numeric an isotropic
+%            kernel is assumed.
+% Optional
+%   resAdd   integer denoting the amount of voxels padded between existing
+%            voxels to increase resolution
+%   enlarge  integer denoting the amount of voxels padded between existing
+%            voxels to increase resolution
+%   h        the h used to calculate the derivatives i.e. via
+%            (X(v+h)-X(v))/h. Default is 0.00001. Avoid taking h to be
+%            too small for numerical precision reasons
 %--------------------------------------------------------------------------
 % OUTPUT
 % Lambda_array  a D by D by prod(Dim) array giving the Lambda matrix at each
 %               voxel
+% -------------------------------------------------------------------------
+% DEVELOPER TODOs:
 %--------------------------------------------------------------------------
 % EXAMPLES
 % % 1D (stationary example)
@@ -50,44 +58,76 @@ function Lambda_array = Lambda_est( lat_data, FWHM, D, resAdd, h )
 % mean(onetwo_entry(:))
 % plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport
+% AUTHOR: Samuel Davenport, Fabian Telschow
 %--------------------------------------------------------------------------
-if nargin < 4
-   resAdd = 1; %Default is a resolution of 1, i.e. a spacing of 0.5
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Check input and get important constants from the mandatory input
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Get constants from the mandatory input
+% size of the domain
+s_lat_data = size( lat_data );
+
+% dimension of the domain
+D = length( s_lat_data( 1:end-1 ) );
+
+% size of domain
+Dim = s_lat_data( 1:end-1 );
+
+% get number of subjects/samples
+nsubj = s_lat_data( D + 1 );
+
+% get variable domain counter
+index  = repmat( {':'}, 1, D );
+
+% check that method is implemented for dimension D
+if D > 3
+    error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
-if nargin < 5
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% add/check optional values
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if ~exist( 'resAdd', 'var' )
+   % default number of resolution increasing voxels between observed voxels
+   resAdd = 1;
+end
+
+if ~exist( 'enlarge', 'var' )
+   % default number of resolution increasing voxels between observed voxels
+   enlarge = ceil( resAdd / 2 );
+end
+
+if  ~exist( 'h', 'var' )
     h = 0.00001; % Note don't take h to be substantially lower than this 
-                 %or there will be numerical precision issues
-end
-s_lat_data = size(lat_data);
-
-Dim = s_lat_data(1:end-1);
-if length(Dim) ~= D
-    error('Incorrect dimension')
+                 % or there will be numerical precision issues
 end
 
-% Define spacing in terms of the resolution
-if resAdd > 1 || resAdd == 0
-    spacing = 1/(1+resAdd);
-else
-    spacing = resAdd;
-end
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% main function
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Evaluate the value of the convolution field
-fieldseval = convfield( lat_data, FWHM, spacing, D );
-fields_std = sqrt(var(fieldseval, 0, D+1)); % Get the standard derivation of the fields everywhere
+[ fieldseval, ~, Kernel ] = convfield_struct( lat_data, Kernel, resAdd,...
+                                              D, 0, enlarge ); 
+% Get the standard derivation of the fields everywhere                                 
+fields_std = sqrt( var( fieldseval, 0, D+1 ) );
 
-%Obtain a variance 1 field
-fieldseval = fieldseval./fields_std; 
+% Obtain a variance 1 field
+fieldseval = fieldseval ./ fields_std; 
 clear fields_std
 
-% Get variable domain counter
-index  = repmat( {':'}, 1, D );     
+% Define the shifted kernel
+Kernelh = struct();
+Kernelh.adjust_kernel = ;
+
+
 
 % Main loop
 if D == 1
     % Obtain the variance 1 field at an offset of h everywhere
-    fieldsplush = convfield( lat_data, FWHM, spacing, D, 0, -1, h );
+    fieldsplush = convfield_struct( lat_data, Kernelh, resAdd, D, 0,...
+                                     enlarge );
     fieldsplush_std = sqrt(var(fieldsplush, 0, D+1));
     fieldsplush = fieldsplush./fieldsplush_std;
     clear fieldsplush_std
