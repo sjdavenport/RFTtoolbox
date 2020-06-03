@@ -1,5 +1,5 @@
 function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
-                             Lambda_est )
+                             enlarge, Lambda_est )
 % This function estimates the Lipschitz Killing curvatures for a
 % convolution field derived from a general kernel.
 % If Lambda_est is choosing to be "analytical" it uses that derivatives can
@@ -31,8 +31,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %              existing voxels to increase resolution
 %   mask_opt   2 x 1 logical vector. FIRST COMPONENT, if "1" it aplies
 %              the mask prior of application of convolution fields.
-%              SECOND COMPONENT, if "1" mask is also applied after
+%              SECOND COMPONENT, if "1" mask is applied after
 %              computing geometric properties.
+%              Note that [1 1] is possible which means mask is applied in
+%              both stages.
 %   Lambda_est  string indicating which estimator for the Lambda
 %               matrix/Riemannian metric is used. Options are "analytical"
 %               and "numerical". Default: "analytical".
@@ -127,6 +129,11 @@ if ~exist( 'Lambda_est', 'var' )
    Lambda_est = "analytical";
 end
 
+if ~exist( 'enlarge', 'var' )
+   % default method for Lambda matrix estimation
+   enlarge = 0;
+end
+
 if ~exist( 'mask_opt', 'var' )
    % default method for mask_opt, which controls when the mask is applied
    % prior/after application of smoothing using convfield.m
@@ -150,15 +157,15 @@ if mask_opt(1) == 1
 end
 
 %%%% get mask on higher resolution
-if mask_opt(2) == 1
-    mask_hr = mask_highres( mask, resAdd );
+if resAdd ~= 0
+    mask = mask_highres( mask, resAdd, enlarge );
 end
 
 %%%% get the Riemannian metric/Lambda matrix
 if strcmp( Lambda_est, "analytical")
-    [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd );
+    [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
 elseif strcmp( Lambda_est, "numerical")
-    [ g, xvals ] = Lambda_num_est( lat_data, Kernel, resAdd );
+    [ g, xvals ] = Lambda_num_est( lat_data, Kernel, resAdd, enlarge );
 else
     % output error message, if not a valid method is chosen
     error( strcat( "Choose a valid method for Lambda/Riemannian metric", ...
@@ -176,11 +183,11 @@ switch D
     case 1
         %%%%%%%% calculate LKC1
         % get the volume form
-        vol_form = sqrt( g(:,1) );
+        vol_form = sqrt( max( g(:,1), 0 ) );
         
-        % restrict vol_form to mask_hr
+        % restrict vol_form to mask
         if mask_opt(2) == 1 
-            vol_form = mask_hr .* vol_form;
+            vol_form = mask .* vol_form;
         end
         
         % estimate of L1 by integrating volume form over the domain using
@@ -209,23 +216,33 @@ switch D
         %%%%%%%%%%%% calculate LKC 2
         % get the volume form, max introduced for stability
         vol_form = sqrt( max( g_xx .* g_yy - g_xy.^2, 0 ) );
-        % restrict vol_form to mask_hr
+        % restrict vol_form to mask
         if mask_opt(2) == 1 
-            vol_form = mask_hr .* vol_form;
+            vol_form = mask .* vol_form;
         end
         
         % integate volume form over the domain. It assumes that each voxel
         % has the same volume dx*dy and simple midpoint integration is used
-        L(2) = sum( vol_form(:) .* mask_hr(:) ) * dx * dy;
+        L(2) = sum( vol_form(:) ) * dx * dy;
         
         %%%%%%%%%%%% calculate LKC 1
-        L(1) = sum( sqrt(g_xx(1,1:end-1)')     + sqrt(g_xx(1,2:end)') ) * dx + ...
-               sum( sqrt(g_yy(1:end-1,1))      + sqrt(g_yy(2:end,1))  ) * dy + ...
-               sum( sqrt(g_xx(end-1,1:end-1)') + sqrt(g_xx(end-1,2:end)') ) * dx + ...
-               sum( sqrt(g_yy(1:end-1,end-1))  + sqrt(g_yy(2:end,end-1)) ) * dy ...
-                    / 2 / 2; % first 2 because of trapezoid integral approximation
-                             % second 2 because of L1 being half the boundary length
+        % find x shift boundary voxels and integrate using trapozoid rule.
+        % Note that we later need to remove half of the end points value,
+        % of each line segment which are contained in the x and the y shift
+        % boundary. They will be count double otherwise.
+        xbdry = bdry_voxels( mask, "x" );      
+        L(1)  = sum( sqrt( g_xx( xbdry )' ) ) * dx;
         
+        % find x shift boundary voxels and integrate using trapozoid rule.
+        ybdry = bdry_voxels( mask, "y" );      
+        L(1)  = L(1) + sum( sqrt( g_yy( ybdry )' ) ) * dy;
+        
+        % remove double counted voxels at end of line segments and divide
+        % length of boundary by 2, since that is what LKC1 is.
+        xybdry = ybdry + xbdry == 2;
+        L(1) = ( L(1) - sum( sqrt( g_xx( xybdry )' ) ) * dx / 2 ...
+                    - sum( sqrt( g_yy( xybdry )' ) ) * dy / 2 ) / 2;
+                        
         %%%%%%%% Fill the output structure
         geom.vol_form = vol_form;
         
@@ -239,12 +256,12 @@ switch D
         dz = dz(1);
         
         % short cuts for the metric entries
-        g_xx = g(:, :, 1, 1 );
-        g_yy = g(:, :, 2, 2 );
-        g_zz = g(:, :, 3, 3 );
-        g_xy = g(:, :, 1, 2 );
-        g_xz = g(:, :, 1, 3 );
-        g_yz = g(:, :, 1, 2 );
+        g_xx = g(:, :, :, 1, 1 );
+        g_yy = g(:, :, :, 2, 2 );
+        g_zz = g(:, :, :, 3, 3 );
+        g_xy = g(:, :, :, 1, 2 );
+        g_xz = g(:, :, :, 1, 3 );
+        g_yz = g(:, :, :, 1, 2 );
         
         % save g to the output structure and clear
         geom.riem_metric = g;
@@ -259,63 +276,29 @@ switch D
                               - g_xz.^2.*g_yy...
                               - g_xy.^2.*g_zz...
                               - g_xx.*g_yz.^2, 0 ) );
-        % restrict vol_form to mask_hr
+        % restrict vol_form to mask
         if mask_opt(2) == 1 
-            vol_form = mask_hr .* vol_form;
+            vol_form = mask .* vol_form;
         end
         % integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
-        L(3) = sum( vol_form(:) .* mask_hr(:) ) * dx * dy * dz;
-                          
+        L(3) = sum( vol_form(:) ) * dx * dy * dz;                  
 
         %%%%%%%%%%%% calculate LKC 2
-        sG = size(g_xx);
-        % compute the volume form of the faces
-        ind_xy_b = { ':', ':', 1 };
-        ind_xy_t = { ':', ':', sG(3) };
-        ind_xz_b = { ':', 1, ':' };
-        ind_xz_t = { ':', sG(3), ':' };
-        ind_yz_b = { 1 ,':', ':' };
-        ind_yz_t = { sG(3), ':', ':' };
+        % find faces having constant z value and integrate using simple
+        % midpoint rule.
+        bdry = bdry_voxels( mask, "xy" );
+        L(2)  = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
+                              - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
+                          
+        bdry = bdry_voxels( mask, "xz" );
+        L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
+                              - g_xz( bdry ).^2, 0 ) ) * dx * dz / 2 );
+
+        bdry = bdry_voxels( mask, "yz" );
+        L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
+                              - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
         
-        % integrate xy_b face volume form
-        vol_form = sqrt( max( g_xx(ind_xy_b{:}).*g_yy(ind_xy_b{:})...
-                              - g_xy(ind_xy_b{:}).^2, 0 ) );
-        [ Xgrid, Ygrid ] = meshgrid( 1:dx:(sY(1)-2*remove), ...
-                                     1:dx:(sY(2)-2*remove) ); 
-        DT = delaunayTriangulation( [ Xgrid(:), Ygrid(:) ] );
-        L(2) = integrateTriangulation( DT, vol_form(:) );
-        
-        % integrate xy_t face volume form
-        vol_form = sqrt( max( g_xx(ind_xy_t{:}).*g_yy(ind_xy_t{:})...
-                              - g_xy(ind_xy_t{:}).^2, 0 ) );
-        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
-        
-        % integrate xz_b face volume form
-        vol_form = sqrt( max( g_xx(ind_xz_b{:}).*g_zz(ind_xz_b{:})...
-                              - g_xz(ind_xz_b{:}).^2, 0 ) );
-        [ Xgrid, Zgrid ] = meshgrid( 1:dx:(sY(1)-2*remove), ...
-                                     1:dx:(sY(3)-2*remove) ); 
-        DT = delaunayTriangulation( [ Xgrid(:), Zgrid(:) ] );
-        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
-        
-        % integrate xz_t face volume form
-        vol_form = sqrt( max( g_xx(ind_xz_t{:}).*g_zz(ind_xz_t{:})...
-                              - g_xz(ind_xz_t{:}).^2, 0 ) );
-        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
-        
-        % integrate yz_b face volume form
-        vol_form = sqrt( max( g_yy(ind_yz_b{:}).*g_zz(ind_yz_b{:})...
-                              - g_yz(ind_yz_b{:}).^2, 0 ) );
-        [ Ygrid, Zgrid ] = meshgrid( 1:dx:(sY(2)-2*remove), ...
-                                     1:dx:(sY(3)-2*remove) ); 
-        DT = delaunayTriangulation( [ Ygrid(:), Zgrid(:) ] );
-        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
-        
-        % integrate yz_t face volume form
-        vol_form = sqrt( max( g_yy(ind_yz_t{:}).*g_zz(ind_yz_t{:})...
-                              - g_yz(ind_yz_t{:}).^2, 0 ) );
-        L(2) = L(2) + integrateTriangulation( DT, vol_form(:) );
         
         %%%%%%%%%%%% calculate LKC 1
         % work in progress
