@@ -1,4 +1,5 @@
-function mask_hr = mask_highres( mask, resAdd, enlarge, plot_switch )
+function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
+                                                     enlarge, plot_switch )
 % This function computes a high resolution version of a given mask.
 % It has the option to enlarge the mask region by resAdd to use shifted
 % boundaries in LKC estimation. This is required in the interpretation of
@@ -16,11 +17,14 @@ function mask_hr = mask_highres( mask, resAdd, enlarge, plot_switch )
 %           is odd means that the boundary voxels are exactly half the
 %           distance between the voxels shifted with respect to the
 %           original mask voxels.
-%--------------------------------------------------------------------------
-% OUTPUT
-%   mask_hr     an logical hr_T_1 x ... x hr_T_D array. Here hr_T_i = 
 %   plot_switch logical to show educational plots explaining the code of
 %               the function. Default is 0, i.e. no plots.
+%--------------------------------------------------------------------------
+% OUTPUT
+%   mask_hr  an logical hr_T_1 x ... x hr_T_D array representing the mask
+%            on a resolution increased grid
+%   weights  an hr_T_1 x ... x hr_T_D array giving the number of neighbours
+%            of each voxel within the mask
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 % -------------------------------------------------------------------------
@@ -144,6 +148,7 @@ end
 %%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
+    weights = mask_hr;
     return
 end
 
@@ -161,6 +166,7 @@ end
 % return logical array of size s_hr, if mask is always 1
 if all( mask(:) )
     mask_hr = true( s_hr );
+    weights = msk_hr;
     return
 end
 
@@ -228,5 +234,26 @@ if plot_switch
         
     end
 end
+
+%%%% compute the amount each voxel contribtes to the volume
+% get the number of neighbouring voxels inside the mask
+weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
+weights( ~mask_hr ) = 0;
+
+switch D
+    case 1
+        weights( weights == 3 ) = 1;
+        weights( weights == 2 )  = 1 / 2;
+    case 2
+        weights( weights == 4 ) = 1 / 4;
+        weights( weights == 5 ) = 1 / 4;
+        weights( weights == 6 ) = 1 / 2;
+        weights( weights == 7 ) = 1 / 2;
+        weights( weights == 8 ) = 3 / 4;
+        weights( weights == 9 ) = 1;
+    case 3
+end
+        
+       
     
 return
