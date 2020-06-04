@@ -10,13 +10,12 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 % Mandatory:
 %  Y      an array of dimension T_1 x...x T_D x N of N random
 %         fields over an T_1 x...x T_D rectangle.
-%  mask   a logical array of dimension T_1 x...x T_D. Not that the domain
-%         domain needs to be only one connected component currently in D=1. 
+%  mask   a logical array of dimension T_1 x...x T_D.
 %
 % Optional:
 %  Mboot     an integer specifying the number of bootstraps used for
 %            estimation of LKC. If "1" the HPE is used otherwise the
-%            bHPE. Default: Mboot 1.
+%            bHPE. Default 1.
 %  normalize logical indicating whether Y needs to be standardized. 
 %            Default 1, i.e., mean will be subtracted and data will be 
 %            standardized to have empirical variance 1, if N>1 else 0.
@@ -40,10 +39,10 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 %          - confInt95: approximate 95% confidence intervals for hatL
 %                       based on the standard CLT.
 % -------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %%%% D = 1
+% %%% D = 1
 % dim   = [ 100 ];
 % mask  = ones( [dim 1] );
 % FWHM  = 12;
@@ -100,7 +99,7 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 % bHPE_C = LKCestim_HPE( Y, mask, 3e3, 0, "C" );
 % bHPE_m = LKCestim_HPE( Y, mask, 1e3, 0, "matlab" );
 % 
-% %%%% D = 3
+% %%% D = 3
 % dim   = [ 35 35 35 ];
 % mask  = ones( dim );
 % FWHM  = 5;
@@ -128,10 +127,11 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 % % Never use "matlab" for bHPE since it is extremely slow.
 % bHPE_C = LKCestim_HPE( Y, mask, 3e3, 0, "C" );
 %--------------------------------------------------------------------------
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Check input and get important constants from the mandatory input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Get constants from the input
+%%% Get constants from the input
 % size of the domain
 sM = size( mask );
 sY = size( Y );
@@ -153,7 +153,7 @@ N      = sY( D + 1 );
 % get variable domain counter
 index  = repmat( {':'}, 1, D );
 
-%%%% check validity of mask input
+% check validity of mask input
 if ~all( sM == sY( 1:end-1 ) ) && ~all( sM == sY ) && ...
    ~( D == 1 && sM( 1 ) == sY( 1 ) )
    error( 'The mask needs to have the same size as Y. Note that realisations are stored as columns.' )
@@ -164,7 +164,8 @@ if D > 3
     error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% add/check optional values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'Mboot', 'var' )
@@ -191,9 +192,8 @@ if ~exist( 'version', 'var' )
 end
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize the LKC output
 if Mboot > 1
@@ -270,8 +270,9 @@ else
     L0 = ECall{1}(1,2);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Prepare output as a structure
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  Prepare output as a structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Summary estimators: LKCs as mean of the individual estimators and the
 % corresponding covariance matrix and confidence intervals

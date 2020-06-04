@@ -9,7 +9,8 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  lat_data  a Dim by nsubj array of data
+%  lat_data  data array T_1 x ... x T_D x N. Last index enumerates the
+%            samples. Note that N > 1 is required!
 %  Kernel    either a structure or a numeric.
 %            If structure it should contain the following fields:
 %            - kernel:
@@ -48,8 +49,8 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
 %             has not yet been implemented.
 %  enlarge    a numeric which must be a positive integer or zero. The
 %             convolution field is computed on a domain enlarged in each
-%             direction by 'enlarge' voxels. Note if resAdd ~=0 the voxels
-%             are in high resolution. Default 0. 
+%             direction by 'enlarge' voxels. Note if resAdd ~=0 the added
+%             voxels are in high resolution. Default 0. 
 %--------------------------------------------------------------------------
 % OUTPUT
 % %%% 1D
