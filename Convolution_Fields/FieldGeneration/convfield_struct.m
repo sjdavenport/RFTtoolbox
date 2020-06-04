@@ -281,7 +281,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Get important constants
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% get constants from the input lat_data field
@@ -291,7 +291,7 @@ slatdata = size( lat_data );
 D_latdata = length( slatdata );
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% add/check optional values and define the kernel structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%% D input
@@ -364,7 +364,7 @@ if ~exist( 'enlarge', 'var' )
     enlarge = 0;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% check and prepare the Kernel input structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % indicating whether kernel needs to be adjusted. Will be changed to 1 if
@@ -526,7 +526,7 @@ adjust_kernel = Kernel.adjust_kernel;
 truncation = Kernel.truncation;
 kernel = Kernel.kernel;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% main part of function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dimensions for domain of the field with increased resolution
@@ -569,7 +569,7 @@ end
 expanded_lat_data = zeros( [ Dimhr, nsubj] );
 expanded_lat_data( index{:}, : ) = lat_data;
 
-%%%% Main loop: Calculation of convolution fields
+%%% Main loop: Calculation of convolution fields
 if D == 100%@Sam: change back to 1 to see the error.
             %      I would very much like to remove the whole bit and always
             %      force the user to obey our convention of columns as
