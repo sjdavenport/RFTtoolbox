@@ -73,10 +73,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Check input and get important constants from the mandatory input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Get constants from the mandatory input
+%%% Get constants from the mandatory input
 % size of the domain
 s_lat_data = size( lat_data );
 
@@ -107,7 +107,7 @@ end
 % get variable domain counter
 index  = repmat( {':'}, 1, D );
 
-%%%% check validity of mask input
+%%% check validity of mask input
 if ~all( sM == s_lat_data( 1:end-1 ) ) && ~all( sM == s_lat_data ) && ...
    ~( D == 1 && sM(1) == s_lat_data(1) )
    error( 'The mask needs to have the same size as Y.\n%s',...
@@ -120,7 +120,7 @@ if D > 3
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% add/check optional values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'resAdd', 'var' )
@@ -146,22 +146,22 @@ if ~exist( 'mask_opt', 'var' )
    mask_opt = [ 1 1 ];
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% allocate variables
+%%% allocate variables
 % allocate vector for Lipschitz Killing curvature
 L = NaN * ones( [ 1 D ] );
 % structure to output the different computed fields for debugging purposes
 geom = struct();
 
-%%%% mask the lattice data, if opted for
+%%% mask the lattice data, if opted for
 if mask_opt(1) == 1
     lat_data = repmat( mask, [ ones( [ 1 D ] ), nsubj ] ) .* lat_data;
 end
 
-%%%% get mask on higher resolution and the weights of each voxel for the
-%%%% volume computation
+%%% get mask on higher resolution and the weights of each voxel for the
+%%% volume computation
 if resAdd ~= 0
     [ mask, weights ] = mask_highres( mask, resAdd, enlarge );
     weights = weights( mask );
@@ -169,7 +169,7 @@ else
     weights = ones( [ sum( mask(:) ), 1 ] );
 end
 
-%%%% get the Riemannian metric/Lambda matrix
+%%% get the Riemannian metric/Lambda matrix
 if strcmp( Lambda_est, "analytical")
     [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
 elseif strcmp( Lambda_est, "numerical")
@@ -182,18 +182,19 @@ else
 end
 
 
-%%%%%%%%%%%%% BEGIN estimate the LKCs in different dimensions %%%%%%%%%%%%%
-%%%% Compute 0th LKC
+%%%%%% BEGIN estimate the LKCs in different dimensions
+%%% Compute 0th LKC
 L0 = EulerChar( mask, 0.5, D );
 
-%%%% compute LKCs for 0 < d < D
+%%% compute LKCs for 0 < d < D
 switch D
     case 1
-        %%%%%%%% calculate LKC1
-        % get the volume form
-        vol_form = sqrt( max( g(:,1), 0 ) );
+        %%% calculate LKC1        
         % voxel size
         xvec = xvals{1};
+        
+        % get the volume form
+        vol_form = sqrt( max( g(:,1), 0 ) );
         
         % restrict vol_form and dx to mask
         if mask_opt(2) == 1
@@ -203,9 +204,9 @@ switch D
         
         % estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
-        L(1) = diff(xvec) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
+        L(1) = diff( xvec ) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
         
-        %%%%%%%% Fill the output structure
+        %%% Fill the output structure
         geom.vol_form    = vol_form;
         geom.riem_metric = g;
         
@@ -215,6 +216,7 @@ switch D
         dx = dx(1);
         dy = diff( xvals{2} );
         dy = dy(1);
+        
         % short cuts for the metric entries
         g_xx = g(:, :, 1, 1 );
         g_yy = g(:, :, 2, 2 );
@@ -224,11 +226,12 @@ switch D
         geom.riem_metric = g;
         clear g
         
-        %%%%%%%%%%%% calculate LKC 2
+        %%% calculate LKC 2
         % get the volume form, max introduced for stability, since at the
         % boundaries there might be tiny negative numbers due to numerical
         % calculations
         vol_form = sqrt( max( g_xx .* g_yy - g_xy.^2, 0 ) );
+        
         % restrict vol_form to mask
         if mask_opt(2) == 1
             vol_form = vol_form( mask );
@@ -241,7 +244,7 @@ switch D
         % volume of the boundary voxels needs to be halved, or quartered, etc
         L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
             
-        %%%%%%%%%%%% calculate LKC 1
+        %%% calculate LKC 1
         % find x shift boundary voxels, i.e. horizontal boundary parts, and
         % integrate using trapozoid rule.
         % Note that we later need to remove half of the end points value,
@@ -261,7 +264,7 @@ switch D
         L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
                       - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
                         
-        %%%%%%%% Fill the output structure
+        %%% Fill the output structure
         geom.vol_form = vol_form;
         
     case 3
@@ -285,7 +288,7 @@ switch D
         geom.riem_metric = g;
         clear g
         
-        %%%%%%%%%%%% calculate LKC 3
+        %%% calculate LKC 3
         % get the volume form, i.e. sqrt(det g), max introduced for
         % stability
         vol_form = sqrt( max(   g_xx.*g_yy.*g_zz...
@@ -294,29 +297,21 @@ switch D
                               - g_xz.^2.*g_yy...
                               - g_xy.^2.*g_zz...
                               - g_xx.*g_yz.^2, 0 ) );
+
         % restrict vol_form to mask
         if mask_opt(2) == 1 
-            % erode mask by 1 voxel in order to not overestimate highest
-            % LKC!
-            mask_er = ~logical( imdilate( ~mask, ones( ones(1, D)*3 ) ) );
-            
-            % mask the volume form by the eroded mask to identify the
-            % voxels used for the colume computation. Note that each voxel
-            % is assumed to represent the midpoint value of a box of
-            % volume dxdydz and thereby the outer mask voxels would
-            % enlarge the volume of the domain by dx/2 or dy/2 dz/2
-            % respectively if not removed
-            vol_form = mask_er .* vol_form;
+            vol_form = vol_form( mask );
         end
+        
         % integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
-        L(3) = sum( vol_form(:) ) * dx * dy * dz;                  
+        L(3) = sum( vol_form(:) * weights(:) ) * dx * dy * dz;                  
 
-        %%%%%%%%%%%% calculate LKC 2
+        %%% calculate LKC 2
         % find faces having constant z value and integrate using simple
         % midpoint rule.
         bdry = bdry_voxels( mask, "xy" );
-        L(2)  = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
+        L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
                               - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
                           
         bdry = bdry_voxels( mask, "xz" );
@@ -327,14 +322,13 @@ switch D
         L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
                               - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
         
-        
-        %%%%%%%%%%%% calculate LKC 1
+        %%% calculate LKC 1
         % work in progress
 end
-%%%%%%%% END estimate the LKCs in different dimensions
+%%%%%% END estimate the LKCs in different dimensions
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Prepare output as a structure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Summarize output
