@@ -28,8 +28,6 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 % -------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
-%--------------------------------------------------------------------------
 % EXAMPLES
 % showplots of the mask
 % show_plot = 1;
@@ -94,9 +92,11 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 % % non enlarged domain
 % mask_hr = mask_highres( mask, resAdd, 0, 0 );
 %--------------------------------------------------------------------------
+% AUTHORS: Fabian Telschow
+%--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check input and get important constants from the mandatory input
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  Check input and get important constants from the mandatory input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % check whether the mask is logical
 if ~islogical( mask )
@@ -105,6 +105,7 @@ end
 
 % get the size of the mask
 s_mask = size( mask );
+
 % get the dimension
 D = length( s_mask );
 if D == 2 && s_mask(2) == 1
@@ -120,18 +121,18 @@ else
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  add/check optional values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'enlarge', 'var' )
    % default option of 'enlarge'
    enlarge = 0;
 end
 
-if ~isnumeric(enlarge)
+if ~isnumeric( enlarge )
     error( "enlarge must be a postive integer!" )
 else
-    if enlarge ~= ceil(enlarge) || enlarge < 0
+    if enlarge ~= ceil( enlarge ) || enlarge < 0
        error( "enlarge must be a postive integer!" )
     end
 end
@@ -142,17 +143,17 @@ if ~exist( 'plot_switch', 'var' )
 end
 
 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% return the input mask if resAdd = 0
+%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
     weights = mask_hr;
     return
 end
 
-%%%% resAdd > 0 cases
+%%%%%% resAdd > 0 cases
 % size of the output array
 s_hr = ( s_mask - 1 ) * resAdd + s_mask;
 if enlarge ~= 0
@@ -170,7 +171,7 @@ if all( mask(:) )
     return
 end
 
-%%%% If the mask is non-trivial use a dilation trick
+%%% If the mask is non-trivial use a dilation trick
 % create index to fill the original mask at the correct voxels of the high
 % resolution mask
 index = cell( [ 1 D ] );
@@ -213,23 +214,23 @@ if plot_switch
     if D == 1
         figure(1),clf,
         plot( old_mask_hr ),
-        title('fill mask into high res')
+        title( 'fill mask into high res' )
         figure(2),clf,
         plot( mask_hr )
-        title('high res mask')
+        title( 'high res mask' )
         figure(3),clf,
-        plot( double(mask_hr) + double(old_mask_hr) )
-        title('dilate that mask')
+        plot( double( mask_hr ) + double( old_mask_hr ) )
+        title( 'dilate that mask' )
     elseif D == 2
         figure(1),clf,
         imagesc( old_mask_hr ),
-        title('fill mask into high res')
+        title( 'fill mask into high res' )
         figure(2),clf,
         imagesc( mask_hr )
-        title('high res mask')
+        title( 'high res mask' )
         figure(3),clf,
-        imagesc( double(mask_hr) + double(old_mask_hr) )
-        title('dilate that mask')
+        imagesc( double( mask_hr ) + double( old_mask_hr ) )
+        title( 'dilate that mask ')
     elseif D == 3
         
     end
@@ -243,7 +244,7 @@ weights( ~mask_hr ) = 0;
 switch D
     case 1
         weights( weights == 3 ) = 1;
-        weights( weights == 2 )  = 1 / 2;
+        weights( weights == 2 ) = 1 / 2;
     case 2
         weights( weights == 4 ) = 1 / 4;
         weights( weights == 5 ) = 1 / 4;
@@ -252,6 +253,11 @@ switch D
         weights( weights == 8 ) = 3 / 4;
         weights( weights == 9 ) = 1;
     case 3
+        tmp = weights;
+        weights( mask_hr )   = 1/2;
+        weights( tmp == 27 ) = 1;
+        weights( tmp == 8 )  = 1/8;
+
 end
         
        
