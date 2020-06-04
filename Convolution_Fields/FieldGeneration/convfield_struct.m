@@ -1,11 +1,12 @@
 function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
                                                          Kernel, resAdd, D,...
                                                          derivtype, enlarge )
-% CONVFIELD( lat_data, Kernel, resAdd, D, derivtype ) generates a
-% convolution field evaluated on an equidistant grid with resolution
-% increased by adding resAdd voxels inbetween each voxel in each dimension.
-% The field is derived from lattice data smoothed with an seperable kernel
-% which can be specified.
+% CONVFIELD_STRUCT( lat_data, Kernel, resAdd, D, derivtype, enlarge )
+% generates a convolution field from lattice data smoothed with an
+% seperable kernel which can be specified. The generated field is evaluated
+% on an equidistant grid with resolution increased by adding resAdd voxels
+% inbetween each voxel in each dimension.
+%
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -52,7 +53,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
 %             direction by 'enlarge' voxels. Note if resAdd ~=0 the added
 %             voxels are in high resolution. Default 0. 
 %--------------------------------------------------------------------------
-% OUTPUT
+% EXAMPLES
 % %%% 1D
 % %% Smoothing with increased resolution
 % nvox = 100; xvals = 1:nvox;
@@ -282,20 +283,21 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_struct( lat_data,...
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Get important constants
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% get constants from the input lat_data field
+
+%% %-----------------------------------------------------------------------
+% get important constants from mandatory input
+%--------------------------------------------------------------------------
+%%% get constants from the input lat_data field
 % get size of the input data
 slatdata = size( lat_data );
 % get number of dimensions of input data
 D_latdata = length( slatdata );
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values and define the kernel structure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%% D input
+%% %-----------------------------------------------------------------------
+% add/check optional input
+%--------------------------------------------------------------------------
+%%% D input
 % If no dimension is specfied it is assumed that nsubj = 1 and you just
 % want to smooth a single field
 if ~exist( 'D', 'var' )
@@ -340,6 +342,7 @@ indexD = repmat( {':'}, 1, D );
 if ~exist( 'resAdd', 'var' )
     resAdd = 1;
 end
+
 % get the difference between voxels with resolution increase
 dx = 1 / ( resAdd + 1 );
 
@@ -365,9 +368,9 @@ if ~exist( 'enlarge', 'var' )
     enlarge = 0;
 end
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% check and prepare the Kernel input structure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  check and prepare the Kernel input structure
+%--------------------------------------------------------------------------
 % indicating whether kernel needs to be adjusted. Will be changed to 1 if
 % needed
 use_adjust = 0;
@@ -437,7 +440,7 @@ elseif isstruct( Kernel )
                 error( 'The kernel adjustment must be of the right dimension' )
             end
         end
-        %%%% check whether field 'kernel' is numeric or not
+        %%% check whether field 'kernel' is numeric or not
         if ~isnumeric( Kernel.kernel )
             % check whether the mandatory truncation field exists
             if ~isfield( Kernel, 'truncation' )
@@ -461,19 +464,19 @@ elseif isstruct( Kernel )
             % set the FWHM parameter to be the user input adjusted by the
             % resolution factor
             FWHM = Kernel.kernel / dx;
-            % Obtain the parameter of kernel in form of the FWHM adjusted
+            % obtain the parameter of kernel in form of the FWHM adjusted
             % for the dx
             sigma = FWHM2sigma( FWHM );
-            % Set default truncation if missing
+            % set default truncation if missing
             if ~isfield( Kernel, "truncation" )
                 Kernel.truncation = ceil( 4*sigma );
             end
-            % Set default adjust_kernel
+            % set default adjust_kernel
             if ~isfield( Kernel, "adjust_kernel" )
                 Kernel.adjust_kernel = zeros( D, 1 );
             end
             
-            % Check adjust kernel field
+            % check adjust kernel field
             if any( Kernel.adjust_kernel )
                 use_adjust = 1;
             end
@@ -486,7 +489,7 @@ elseif isstruct( Kernel )
                 error( 'The kernel adjustment must be of the right dimension' )
             end
             
-            % Default kernel is isotropic Gaussian kernel, respectively its
+            % default kernel is isotropic Gaussian kernel, respectively its
             % derivatives
             if derivtype == 0
                 Kernel.kernel = @(x) Gker( x, FWHM );
@@ -527,11 +530,13 @@ adjust_kernel = Kernel.adjust_kernel;
 truncation = Kernel.truncation;
 kernel = Kernel.kernel;
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main part of function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Dimensions for domain of the field with increased resolution
+
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
+% dimensions for domain of the field with increased resolution
 Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
+
 % modify Dimhr by adding enlarge voxels to all sides
 if enlarge ~= 0 
     if D == 1
@@ -541,7 +546,7 @@ if enlarge ~= 0
     end
 end
 
-% Setting up the default xvals_vecs
+% setting up the default xvals_vecs
 xvals_vecs  = cell( 1, D );
 
 for d = 1:D
@@ -566,19 +571,19 @@ for d = 1:D
     index{d} = ( enlarge + 1 ):( resAdd + 1 ):( Dimhr(d) - enlarge );
 end
 
-% Increase the resolution of the raw data by introducing zeros
+% increase the resolution of the raw data by introducing zeros
 expanded_lat_data = zeros( [ Dimhr, nsubj] );
 expanded_lat_data( index{:}, : ) = lat_data;
 
-%%% Main loop: Calculation of convolution fields
+%%% main loop: calculation of convolution fields
 if D == 100%@Sam: change back to 1 to see the error.
             %      I would very much like to remove the whole bit and always
             %      force the user to obey our convention of columns as
             %      samples!
-    % Points at which to evaluate the Kernel
+    % points at which to evaluate the Kernel
     gridside  = -truncation:dx:truncation;
      
-    % Field adjustment if that is specified (note default is to bypass this loop)
+    % field adjustment if that is specified (note default is to bypass this loop)
     if use_adjust
         gridside = gridside + adjust_kernel;
 %       gridside = fliplr(gridside - adjust_kernel);
@@ -588,23 +593,23 @@ if D == 100%@Sam: change back to 1 to see the error.
         kernel = kernel{1};
     end
     
-    % Evaluates the kernel to get the filter for the convolution
+    % evaluates the kernel to get the filter for the convolution
     h = kernel( gridside );
-    % Performs convolution to get the convolution fields
+    % performs convolution to get the convolution fields
     smooth_data = convn( expanded_lat_data', h, 'same' )';
     % @Sam: can you explain the factor
     smooth_data = smooth_data / dx^( D + derivtype );
     
-    % Transpose the data to return a horizontal output, if initial input
+    % transpose the data to return a horizontal output, if initial input
     % was horizontal
     if vert2horz && nsubj == 1
         smooth_data = smooth_data';
     end
 
 elseif D < 4
-    % Run the smoothing using fconv
+    % run the smoothing using fconv
     if derivtype == 0
-        % Calculates the convolution field
+        % calculates the convolution field
         smooth_data = fconv( expanded_lat_data, kernel, D,...
                              truncation, adjust_kernel );
         % @Sam: can you explain the factor, naively I would have thought
@@ -617,7 +622,7 @@ elseif D < 4
         % preallocate the output field for speed
         smooth_data = ones( [ Dimhr nsubj D ] );
         
-        % Calculates the derivatives of the convolution field
+        % calculate the derivatives of the convolution field
         for d = 1:D
             smooth_data(indexD{:},:,d) = fconv( expanded_lat_data,...
                                                 kernel{d}, D, ...
