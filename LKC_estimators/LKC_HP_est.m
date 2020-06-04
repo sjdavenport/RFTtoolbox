@@ -1,7 +1,7 @@
 function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
-% LKCestim_HPE( Y, mask, Mboot, normalize, version )
-% This function computes the Lipschitz Killing curvature using the
-% Hermite projection estimator proposed in Telschow et al (2020+).
+% LKC_HPE_est( Y, mask, Mboot, normalize, version ) computes the Lipschitz
+% Killing curvature using the Hermite projection estimator proposed in
+% Telschow et al (2020+).
 % It uses a fast and exact way to compute the EC curves by looping through
 % discrete critical values and computes their contribution to the change in
 % the Euler characteristic.
@@ -38,8 +38,6 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 %                      hatL based on the CLT. 
 %          - confInt95: approximate 95% confidence intervals for hatL
 %                       based on the standard CLT.
-% -------------------------------------------------------------------------
-% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %%% D = 1
@@ -126,12 +124,15 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 % % requires several subjects.
 % % Never use "matlab" for bHPE since it is extremely slow.
 % bHPE_C = LKCestim_HPE( Y, mask, 3e3, 0, "C" );
+% -------------------------------------------------------------------------
+% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Get constants from the input
+
+%% %-----------------------------------------------------------------------
+%  check mandatory input and get important constants
+%--------------------------------------------------------------------------
+%%% get constants from the input
 % size of the domain
 sM = size( mask );
 sY = size( Y );
@@ -150,8 +151,6 @@ if length( sY ) == D
 end
 % get number of subjects/samples
 N      = sY( D + 1 );
-% get variable domain counter
-index  = repmat( {':'}, 1, D );
 
 % check validity of mask input
 if ~all( sM == sY( 1:end-1 ) ) && ~all( sM == sY ) && ...
@@ -165,9 +164,9 @@ if D > 3
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  add and check optional values
+%--------------------------------------------------------------------------
 if ~exist( 'Mboot', 'var' )
    % default number of bootstrap replicates
    Mboot = 1;
@@ -192,17 +191,17 @@ if ~exist( 'version', 'var' )
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Initialize the LKC output
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
+% initialize the LKC output
 if Mboot > 1
     L_hat = NaN*zeros( [ D, Mboot ] );
 else
     L_hat = NaN*zeros( [ D, N ] );    
 end
 
-% Apply the mask to the data, i.e., set values outside the mask to -oo
+% apply the mask to the data, i.e., set values outside the mask to -oo
 if ~all( mask(:) )
     mask( mask == 0 ) = -Inf;
     Y = repmat( mask, [ ones( [ 1 D ] ), N ] ).* Y;
@@ -212,9 +211,9 @@ end
 p = [ sqrt( 2 * pi ); pi; ( 2 * pi )^( 3 / 2 ) / factorial( 3 ); ...
       ( 2 * pi )^( 4 / 2 ) / factorial( 4 ) ];
 
-% Compute LKCs depending on method
+% compute LKCs depending on method
 if( Mboot > 1 )    
-    % Get weights for the multiplier bootstrap
+    % get weights for the multiplier bootstrap
     multiplier = normrnd( 0, 1, [ N, Mboot ] );
 
     % reshape and and standardize the field, such that it has unit variance
@@ -231,11 +230,11 @@ if( Mboot > 1 )
             mY = Y * multiplier( :, i );
         end
 
-        % Get the EC stepfunctions
+        % get the EC stepfunctions
         EC = EulerCharCrit( mY, D, mask, version );
         EC = EC{ 1 };
 
-        % Get LKC by integrating the EC curves against the Hermite
+        % get LKC by integrating the EC curves against the Hermite
         % polynomials
         v =  EC( 2:end-1, 1 )';
         % differences of EC between consecutive critical values
@@ -252,11 +251,11 @@ else
         Y = ( Y - mean( Y, D+1 ) ) ./ std( Y, 0, D+1 );
     end
     
-    % Get the EC stepfunctions
+    % get the EC stepfunctions
     ECall = EulerCharCrit( Y, D, mask, version );
 
     for i = 1:N
-        % Get LKC by integrating the Euler Char curves against the Hermite
+        % get LKC by integrating the Euler Char curves against the Hermite
         % polynomials
         v =  ECall{ i }( 2:end-1, 1 )';
         % differences of EC between consecutive critical values
@@ -271,10 +270,10 @@ else
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  Prepare output as a structure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Summary estimators: LKCs as mean of the individual estimators and the
+%% %-----------------------------------------------------------------------
+%  prepare output structure
+%--------------------------------------------------------------------------
+% summary estimators: LKCs as mean of the individual estimators and the
 % corresponding covariance matrix and confidence intervals
 if N > 1
     L_hatn     = mean( L_hat, 2 );
@@ -288,7 +287,8 @@ else
     L_se_hat   = "standard error cannot be computed for a single field";
     L_conf_hat = "Confidence intervalls can not be computed for a single field";
 end
-% Summarize output
+% summarize output
 LKC  = struct(  'hatL1', L_hat, 'hatL', L_hatn, 'L0', L0, 'hatSIGMA',...
                 Sigma_hat, 'hatSE', L_se_hat, 'confInt95', L_conf_hat );
+            
 return

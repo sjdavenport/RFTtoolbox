@@ -1,16 +1,14 @@
 function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
-                             enlarge, Lambda_est )
-% LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt, enlarge, Lambda_est )
+                             enlarge, version )
+% LKC_CONV_EST( lat_data, mask, Kernel, resAdd, mask_opt, enlarge, version )
 % estimates the Lipschitz Killing curvatures for a convolution field
-% derived from a general kernel.
-% If Lambda_est is choosing to be "analytical" it uses that derivatives can
-% be represented as convolutions with the derivative kernel. The option
-% "numerical" uses numerical approximation of the derivative, which are
-% precise approximations of the true derivative, since convolution fields
-% can be compute for any location.
-%
-% The function estimates the LKCs of convolution fields generated from
-% convfield.m if the same Kernel is used.
+% derived from a general kernel. Corresponding samples of such fields can
+% be simulated using convfield.m which has the same input variables.
+% If 'version' is choosing to be 'analytical' the analytic derivatives in
+% form of convolutions with the derivative of the kernel are used. If
+% version is 'numerical', numerical approximation of the derivative are
+% used, which are precise approximations of the true derivative, since
+% convolution fields can be compute for any location.
 %
 % Currently, only 1D and 2D provide estimates for all LKCs.
 % 3D only allows for estimation of L2 and L3.
@@ -68,19 +66,20 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % 
 % %3D
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %-----------------------------------------------------------------------
+%  check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % size of the domain
 s_lat_data = size( lat_data );
 
 % get size of the mask
 sM = size( mask );
 
-% Design question, do we want to force the user to use logicals?
+% design question, do we want to force the user to use logicals?
 mask = logical( mask );
 
 % dimension of the domain, since matlab is not consistent for D<1, we need
@@ -113,10 +112,9 @@ if D > 3
     error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
 
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  add/check optional values
+%--------------------------------------------------------------------------
 if ~exist( 'resAdd', 'var' )
    % default number of resolution increasing voxels between observed voxels
    resAdd = 1;
@@ -140,9 +138,9 @@ if ~exist( 'mask_opt', 'var' )
    mask_opt = [ 1 1 ];
 end
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
 %%% allocate variables
 % allocate vector for Lipschitz Killing curvature
 L = NaN * ones( [ 1 D ] );
@@ -179,7 +177,7 @@ end
 
 
 %%%%%% BEGIN estimate the LKCs in different dimensions
-%%% Compute 0th LKC
+%%% compute 0th LKC
 L0 = EulerChar( mask, 0.5, D );
 
 %%% compute LKCs for 0 < d < D
@@ -202,7 +200,7 @@ switch D
         % the trapezoid rule
         L(1) = diff( xvec ) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
         
-        %%% Fill the output structure
+        %%% fill the output structure
         geom.vol_form    = vol_form;
         geom.riem_metric = g;
         
@@ -260,7 +258,7 @@ switch D
         L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
                       - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
                         
-        %%% Fill the output structure
+        %%% fill the output structure
         geom.vol_form = vol_form;
         
     case 3
@@ -324,10 +322,10 @@ end
 %%%%%% END estimate the LKCs in different dimensions
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Prepare output as a structure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Summarize output
+%% %-----------------------------------------------------------------------
+%  prepare output structure
+%--------------------------------------------------------------------------
+% summarize output
 LKC  = struct( 'hatL', L, 'L0', L0, 'geomQuants',...
                geom );
            

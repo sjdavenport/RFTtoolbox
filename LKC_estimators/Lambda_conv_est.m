@@ -1,15 +1,15 @@
 function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
                                                   enlarge )
-% Lambda_conv_est( lat_data, Kernel, resAdd, enlarge )
-% calculates an estimate of the induced Riemannian metric from a 
-% convolution field. It is known as the Lambda matrix in neuroimaging.
+% LAMBDA_CONV_EST( lat_data, Kernel, resAdd, enlarge ) calculates an
+% estimate of the induced Riemannian metric from a convolution field. It is
+% known as the Lambda matrix in neuroimaging.
 % This function uses the exact formula from taking the derivatives of the
 % kernels and computing the corresponding convolutions.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%   lat_data data array T_1 x ... x T_D x N. Last index enumerates the
+%  lat_data  data array T_1 x ... x T_D x N. Last index enumerates the
 %            samples. Note that N > 1 is required!
 %  Kernel    either a structure or a numeric.
 %            If structure it should contain the following fields:
@@ -67,9 +67,10 @@ function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ------------------------------------------------------------------------
+% check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % size of the domain
 s_lat_data = size( lat_data );
 
@@ -88,9 +89,9 @@ if D > 3
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ------------------------------------------------------------------------
+%  add/check optional values
+%--------------------------------------------------------------------------
 if ~exist( 'resAdd', 'var' )
    % default number of resolution increasing voxels between observed voxels
    resAdd = 1;
@@ -102,9 +103,9 @@ if ~exist( 'enlarge', 'var' )
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ------------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
 %%% get the convolution fields and their derivatives
 if isnumeric( Kernel )
     % get the convolution fields and their derivatives
@@ -164,12 +165,12 @@ end
 sY = size( convY );
 
 % allocate output the entries of the Riemannian metric
-Lambda_est = zeros( [ sY(1:end-1)  D D ] );
+Lambda_est = zeros( [ sY(1:end-1) D D ] );
 
 %%%%%% BEGIN compute the Riemannian metric
 switch D
     case 1
-        % Get the estimates of the variances and covariances required to
+        % get the estimates of the variances and covariances required to
         % compute the Riemannian metric/Lambda matrix
         VY    = var( convY,  0, D+1 );
         VdxY  = var( DconvY, 0, D+1 );
@@ -184,7 +185,7 @@ switch D
         convYy = squeeze( DconvY( index{:}, :, 2 ) );
         clear DconvY
         
-        % Get the estimates of the variances and covariances required to
+        % get the estimates of the variances and covariances required to
         % compute the Riemannian metric/Lambda matrix
         VY   = var( convY,  0, D+1 ); 
         VdxY = var( convYx, 0, D+1 );
@@ -213,7 +214,7 @@ switch D
         convYz = squeeze( DconvY( index{:}, :, 3 ) );
         clear DconvY
         
-        % Get the estimates of the covariances
+        % get the estimates of the covariances
         VY   = var( convY,  0, D+1 );
         VdxY = var( convYx, 0, D+1 );
         VdyY = var( convYy, 0, D+1 );

@@ -1,11 +1,10 @@
 function L = LKC_wncfield_theory( mask, Kernel, resAdd, mask_opt, enlarge )
-% computes theoretical Lipschitz Killing curvatures for a convolution field
+% LKC_WNCFIELD_THEORY( mask, Kernel, resAdd, mask_opt, enlarge ) computes
+% theoretical Lipschitz Killing curvatures for a convolution field
 % derived from a seperable kernel with underlying discrete independent
-% Gaussian white noise process.
-% It uses the fact that the voxels are independent and thereby double
-% convolutions become single convolutions.
-%
-% This function is mainly for comparison purposes.
+% Gaussian white noise process on a lattice.
+% It uses the fact that the voxels are independent and the variance and
+% mean are known.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -35,16 +34,17 @@ function L = LKC_wncfield_theory( mask, Kernel, resAdd, mask_opt, enlarge )
 %--------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %-----------------------------------------------------------------------
+%  check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % get size of the mask
 sM = size( mask );
 
-% Design question, do we want to force the user to use logicals?
+% @Sam: design question, do we want to force the user to use logicals?
 mask = logical( mask );
 
 % dimension of the domain, since matlab is not consistent for D<1, we need
@@ -62,9 +62,9 @@ if D > 3
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  add/check optional input
+%--------------------------------------------------------------------------
 if ~exist( 'resAdd', 'var' )
    % default number of resolution increasing voxels between observed voxels
    resAdd = 1;
@@ -81,9 +81,9 @@ if ~exist( 'mask_opt', 'var' )
    mask_opt = [ 1 1 ];
 end
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
 % allocate vector for Lipschitz Killing curvature
 L = NaN * ones( [ 1 D ] );
 
@@ -146,7 +146,7 @@ switch D
         g( :, :, 1, 2 ) = -CYdyY .* CYdxY ./ VY.^2 + CdxYdyY ./ VY;
 
      case 3
-        % Get the estimates of the covariances
+        % get the estimates of the covariances
         VY   = var( convY,  0, D+1 );
         VdxY = var( convYx, 0, D+1 );
         VdyY = var( convYy, 0, D+1 );
@@ -178,7 +178,7 @@ end
 
 
 %%%%%% BEGIN estimate the LKCs in different dimensions
-%%% Compute 0th LKC
+%%% compute 0th LKC
 L0 = EulerChar( mask, 0.5, D );
 
 %%% compute LKCs for 0 < d <= D
