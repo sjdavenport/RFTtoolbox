@@ -74,7 +74,7 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 % mask_hr = mask_highres( mask, resAdd, 0, show_plot );
 % 
 % 
-% %%%% 3D
+% %%% 3D
 % % resolution added
 % resAdd  = 3;
 % % create a mask and show it
@@ -146,7 +146,7 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% return the input mask if resAdd = 0
+%%%%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
     weights = mask_hr;
@@ -264,6 +264,4 @@ switch D
 
 end
         
-       
-    
 return
