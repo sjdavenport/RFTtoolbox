@@ -1,8 +1,6 @@
 function bdry = bdry_voxels( mask, version )
-% This function computes a high resolution version of a given mask.
-% It has the option to enlarge the mask region by resAdd to use shifted
-% boundaries in LKC estimation. This is required in the interpretation of
-% values at voxels as the center values of rectangular domains. 
+% BDRY_VOXELS( mask, version ) outputs voxels from the boundary. Different
+% subsets can be specified by the 'version' input.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -32,12 +30,12 @@ function bdry = bdry_voxels( mask, version )
 % -------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % check whether the mask is logical
 if ~islogical( mask )
     error( "The mask must be a logical array!" );
@@ -53,9 +51,9 @@ if D == 2 && s_mask(2) == 1
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
 if version == "full"
     bdry = logical( imdilate( ~mask, ones( ones(1, D) * 3 ) ) ) & ...
                             mask;

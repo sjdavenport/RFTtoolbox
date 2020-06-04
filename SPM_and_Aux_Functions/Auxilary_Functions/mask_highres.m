@@ -1,9 +1,8 @@
-function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
-                                                     enlarge, plot_switch )
-% This function computes a high resolution version of a given mask.
-% It has the option to enlarge the mask region by resAdd to use shifted
-% boundaries in LKC estimation. This is required in the interpretation of
-% values at voxels as the center values of rectangular domains. 
+function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
+% mask_highres( mask, resAdd, enlarge, plots )computes a high resolution
+% version of a mask. It has an option to enlarge the mask region by resAdd.
+% This is used in LKC estimation, since in this toolbox voxels are usually
+% interpreted as the center values of rectangular domains.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -17,7 +16,7 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 %           is odd means that the boundary voxels are exactly half the
 %           distance between the voxels shifted with respect to the
 %           original mask voxels.
-%   plot_switch logical to show educational plots explaining the code of
+%   plots logical to show educational plots explaining the code of
 %               the function. Default is 0, i.e. no plots.
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -95,9 +94,10 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 % AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %-----------------------------------------------------------------------
+%  check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % check whether the mask is logical
 if ~islogical( mask )
     error( "The mask must be a logical array!" );
@@ -121,9 +121,9 @@ else
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  add/check optional input
+%--------------------------------------------------------------------------
 if ~exist( 'enlarge', 'var' )
    % default option of 'enlarge'
    enlarge = 0;
@@ -137,15 +137,15 @@ else
     end
 end
 
-if ~exist( 'plot_switch', 'var' )
+if ~exist( 'plots', 'var' )
    % default option of 'enlarge'
-   plot_switch = 0;
+   plots = 0;
 end
 
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %-----------------------------------------------------------------------
+%  main function
+%--------------------------------------------------------------------------
 %%%%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
@@ -171,7 +171,7 @@ if all( mask(:) )
     return
 end
 
-%%% If the mask is non-trivial use a dilation trick
+%%% if the mask is non-trivial use a dilation trick
 % create index to fill the original mask at the correct voxels of the high
 % resolution mask
 index = cell( [ 1 D ] );
@@ -184,7 +184,7 @@ end
 mask_hr = false( s_hr );
 mask_hr( index{:} ) = mask;
 
-if plot_switch
+if plots
     old_mask_hr = mask_hr;
 end
 
@@ -210,7 +210,7 @@ if enlarge ~= ceil(resAdd/2)
 end
 
 % show plots explaining the output
-if plot_switch
+if plots
     if D == 1
         figure(1),clf,
         plot( old_mask_hr ),
