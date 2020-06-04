@@ -1,19 +1,19 @@
 function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
                              enlarge, Lambda_est )
-% This function estimates the Lipschitz Killing curvatures for a
-% convolution field derived from a general kernel.
+% LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt, enlarge, Lambda_est )
+% estimates the Lipschitz Killing curvatures for a convolution field
+% derived from a general kernel.
 % If Lambda_est is choosing to be "analytical" it uses that derivatives can
-% be represented as convolutions with the derivative kernel. If "numerical"
-% is used the fact that convolution fields can be used to compute the
-% values everywhere lead to precise numerical approximations of the true
-% derivative.
+% be represented as convolutions with the derivative kernel. The option
+% "numerical" uses numerical approximation of the derivative, which are
+% precise approximations of the true derivative, since convolution fields
+% can be compute for any location.
 %
-% The function will estimate LKCs of convolution fields generated from
-% convfield.m, if the same kernel/truncation etc is used.
+% The function estimates the LKCs of convolution fields generated from
+% convfield.m if the same Kernel is used.
 %
 % Currently, only 1D and 2D provide estimates for all LKCs.
-% 3D only allows for estimation of L3 and L2.
-% Moreover, the domain of the field is considered to be a box.
+% 3D only allows for estimation of L2 and L3.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
