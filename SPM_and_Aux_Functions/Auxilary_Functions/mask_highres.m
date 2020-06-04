@@ -74,7 +74,7 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd,...
 % mask_hr = mask_highres( mask, resAdd, 0, show_plot );
 % 
 % 
-% %%%% 3D
+% %%% 3D
 % % resolution added
 % resAdd  = 3;
 % % create a mask and show it
@@ -146,7 +146,7 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% return the input mask if resAdd = 0
+%%%%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
     weights = mask_hr;
@@ -236,7 +236,7 @@ if plot_switch
     end
 end
 
-%%%% compute the amount each voxel contribtes to the volume
+%%% compute the amount each voxel contribtes to the volume
 % get the number of neighbouring voxels inside the mask
 weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
 weights( ~mask_hr ) = 0;
@@ -253,6 +253,10 @@ switch D
         weights( weights == 8 ) = 3 / 4;
         weights( weights == 9 ) = 1;
     case 3
+        % note that this is only approximate. Getting the correct weights
+        % requires more thought, As an example weights=26 can lead to a
+        % weight of 1/2 or 3/4 depending on how the voxels are spread.
+        % Maybe we fix that later.
         tmp = weights;
         weights( mask_hr )   = 1/2;
         weights( tmp == 27 ) = 1;
@@ -260,6 +264,4 @@ switch D
 
 end
         
-       
-    
 return
