@@ -141,7 +141,7 @@ if ~exist( 'mask_opt', 'var' )
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% main function
+%%%  main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% allocate variables
 % allocate vector for Lipschitz Killing curvature
@@ -278,7 +278,7 @@ switch D
         g_zz = g(:, :, :, 3, 3 );
         g_xy = g(:, :, :, 1, 2 );
         g_xz = g(:, :, :, 1, 3 );
-        g_yz = g(:, :, :, 1, 2 );
+        g_yz = g(:, :, :, 2, 3 );
         
         % save g to the output structure and clear
         geom.riem_metric = g;
