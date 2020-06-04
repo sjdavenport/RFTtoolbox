@@ -1,9 +1,9 @@
 function [ LKC, resel ] = LKC_SquareExpField_theory( FWHM, dim, type )
-% This function computes the theoretical LKCs for the Gaussian random field
-% with the square exponential covariance function
-% C(s) = exp( -s^2 / 2 / FWHM^2 )
-% over an rectangle S = T_1 x ... x T_D for D < 4.
-% In other words it computes the LKCs of smoothed white noise.
+% This function outputs the theoretical LKCs for the isotropic Gaussian
+% random field with square exponential covariance function C(s) = 
+% exp( -s^2 / 2 / FWHM^2 ) over an rectangle S = T_1 x ... x T_D for D < 4.
+% In other words it computes the Lipschitz-Killing-Curvatures of smoothed
+% white noise.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -30,8 +30,8 @@ function [ LKC, resel ] = LKC_SquareExpField_theory( FWHM, dim, type )
 % AUTHORS: Fabian Telschow, Wenyi Lin
 %--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check mandatory input and get constants
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  Check mandatory input and get constants
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % check whether the input is valid
 if length( dim ) > 3
@@ -44,16 +44,16 @@ if D == 2 && ( dim(1) == 1 || dim(2) == 1 )
     D = 1;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% add/check optional values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'type', 'var' )
    % default number of resolution increasing voxels between observed voxels
    type = "fwhm";
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % theoretical value for Lambda matrix. Note that because of
 % stationarity it is constant times identity accross the domain.
