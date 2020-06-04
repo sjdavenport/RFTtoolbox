@@ -20,16 +20,14 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % Mandatory
 %   lat_data  data array T_1 x ... x T_D x N. Last index enumerates the
 %             samples. Note that N > 1 is required!
-%   mask      a logical array of dimension T_1 x...x T_D. Not that the
-%             domain needs to be only one connected component currently in
-%             D=1. (Not yet implemented!!!!) 
+%   mask      a logical array of dimension T_1 x...x T_D.
 %   Kernel    array 1x1 or 1xD containing the FWHM for different directions
 %             for smoothing with a Gaussian kernel, if numeric an isotropic
 %             kernel is assumed.
 % Optional
 %   resAdd     integer denoting the amount of voxels padded between 
-%              existing voxels to increase resolution
-%   mask_opt   2 x 1 logical vector. FIRST COMPONENT, if "1" it aplies
+%              existing voxels to increase resolution. Default 1.
+%   mask_opt   2 x 1 logical vector. FIRST COMPONENT, if "1" it applies
 %              the mask prior of application of convolution fields.
 %              SECOND COMPONENT, if "1" mask is applied after
 %              computing geometric properties.
@@ -39,20 +37,20 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %              increased mask is enlarged by dilation. Note that for
 %              unbiased estimation resAdd needs to be an odd number and
 %              enlarge needs to be set to the default value currently.
-%              Default: ceil( resAdd / 2 )
+%              Default ceil( resAdd / 2 )
 %   Lambda_est  string indicating which estimator for the Lambda
 %               matrix/Riemannian metric is used. Options are "analytical"
-%               and "numerical". Default: "analytical".
+%               and "numerical". Default "analytical".
 %               Note that "numerical" might be faster.
 %--------------------------------------------------------------------------
 % OUTPUT
-%   LKC     structure containing fields:
-%           - hatL: D x 1 vector of estimates of LKC for the sample Y. It
-%                   is the average of hatL1.
-%           - L0:   integer containing the Euler characteristic of the mask
-%                   equivalently the zeroth LKC of the random fields.
-%           - geom: structure containing geometric quantities of the
-%                   induced metric of the random field.
+%   LKC  structure containing fields:
+%        - hatL: D x 1 vector of estimates of LKC for the sample Y. It
+%                is the average of hatL1.
+%        - L0:   integer containing the Euler characteristic of the mask
+%                equivalently the zeroth LKC of the random fields.
+%        - geom: structure containing geometric quantities of the
+%                induced metric of the random field.
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %   - add full 3D estimation
@@ -76,7 +74,6 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Check input and get important constants from the mandatory input
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Get constants from the mandatory input
 % size of the domain
 s_lat_data = size( lat_data );
 
@@ -104,10 +101,7 @@ else
     nsubj = s_lat_data( D + 1 );
 end
 
-% get variable domain counter
-index  = repmat( {':'}, 1, D );
-
-%%% check validity of mask input
+% check validity of mask input
 if ~all( sM == s_lat_data( 1:end-1 ) ) && ~all( sM == s_lat_data ) && ...
    ~( D == 1 && sM(1) == s_lat_data(1) )
    error( 'The mask needs to have the same size as Y.\n%s',...
@@ -121,11 +115,11 @@ end
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values
+%%% add/check optional values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist( 'resAdd', 'var' )
    % default number of resolution increasing voxels between observed voxels
-   resAdd = 0;
+   resAdd = 1;
 end
 
 if ~exist( 'Lambda_est', 'var' )
@@ -147,7 +141,7 @@ if ~exist( 'mask_opt', 'var' )
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
+%%% main function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% allocate variables
 % allocate vector for Lipschitz Killing curvature
@@ -155,21 +149,23 @@ L = NaN * ones( [ 1 D ] );
 % structure to output the different computed fields for debugging purposes
 geom = struct();
 
-%%% mask the lattice data, if opted for
+%%% manipulate the mask and mask the data
+% mask the lattice data, if opted for
 if mask_opt(1) == 1
     lat_data = repmat( mask, [ ones( [ 1 D ] ), nsubj ] ) .* lat_data;
 end
 
-%%% get mask on higher resolution and the weights of each voxel for the
-%%% volume computation
+% get mask on higher resolution and the weights of each voxel for the
+% volume computation.
 if resAdd ~= 0
     [ mask, weights ] = mask_highres( mask, resAdd, enlarge );
+    % reduce weights matrix only to active voxels for speed up
     weights = weights( mask );
 else
     weights = ones( [ sum( mask(:) ), 1 ] );
 end
 
-%%% get the Riemannian metric/Lambda matrix
+%%% get the Riemannian metric/Lambda matrix from the data
 if strcmp( Lambda_est, "analytical")
     [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
 elseif strcmp( Lambda_est, "numerical")
@@ -334,4 +330,5 @@ end
 % Summarize output
 LKC  = struct( 'hatL', L, 'L0', L0, 'geomQuants',...
                geom );
+           
 return
