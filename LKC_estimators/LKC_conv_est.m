@@ -289,7 +289,7 @@ switch D
         
         % integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
-        L(3) = sum( vol_form(:) * weights(:) ) * dx * dy * dz;                  
+        L(3) = vol_form(:)' * weights(:) * dx * dy * dz;                  
 
         %%% calculate LKC 2
         % find faces having constant z value and integrate using simple
