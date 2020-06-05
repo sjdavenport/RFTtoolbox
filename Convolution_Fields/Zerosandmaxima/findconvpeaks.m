@@ -1,4 +1,4 @@
-function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation, boundary)
+function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % FINDCONVPEAKS(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
@@ -183,22 +183,20 @@ if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
     peak_est_locs = peak_est_locs(2:end);
 end
 
-% % When you have the getboundary function from Fabian implement the below!
-% boundary = getboundary(mask)
+% Obtain the boundary of the mask
+boundary = bdry_voxels_mod( logical(mask), 'full' );
 
-% allowing the function to run even if the boundary is not specified
-if nargin < 7
-    box_sizes = 1.5;
-else
-    npeaks = size(peak_est_locs, 2);
-    mask_size = size(mask);
-    box_sizes = 1.5*ones(1,npeaks);
-    for I = 1:npeaks
-        converted_index = convind( peak_est_locs(:,I), mask_size );
-        if boundary(converted_index)
-            box_sizes(I) = 0.5;
-        end
-    end 
+% Obtain the box sizes within which to search for the maximum
+% Assign boxsize of 0.5 for voxels on the boundary and 1.5 for voxels not
+% on the boundary.
+npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
+s_mask = size(mask);             % Obtain the size of the mask
+box_sizes = 1.5*ones(1,npeaks);
+for I = 1:npeaks
+    converted_index = convind( peak_est_locs(:,I), s_mask );
+    if boundary(converted_index)
+        box_sizes(I) = 0.5;
+    end
 end
 
 [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );

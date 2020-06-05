@@ -50,6 +50,22 @@ function [ smooth_data, xvals_vecs ] = convfield_struct( lat_data, Kernel, resAd
 %             are in high resolution. Default 0. 
 %--------------------------------------------------------------------------
 % OUTPUT
+% smooth_data   an array giving the convolution field
+% xvals_vecs    a D-dimensional cell array whose entries are vectors giving the
+%               xvalues at each each dimension along the lattice. It assumes
+%               a regular, rectangular lattice (though within a given
+%               dimension the voxels can be spaced irregularly).
+%               I.e suppose that your initial lattice grid is a
+%               4by5 2D grid with 4 voxels in the x direction and 5 in
+%               the y direction. And that the x-values take the values:
+%               [1,2,3,4] and the y-values take the values: [0,2,4,6,8].
+%               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
+%               The default is to assume that the spacing between the
+%               voxels is 1. If only one xval_vec direction is set the
+%               others are taken to range up from 1 with increment given by
+%               the set direction.
+%--------------------------------------------------------------------------
+% EXAMPLES
 % %%% 1D
 % %% Smoothing with increased resolution
 % nvox = 10; xvals = 1:nvox; FWHM = 2;

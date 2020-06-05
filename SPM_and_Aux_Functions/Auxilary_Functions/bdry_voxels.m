@@ -32,44 +32,56 @@ function bdry = bdry_voxels( mask, version )
 % -------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% check whether the mask is logical
+%% Check input and get important constants from the mandatory input
+%--------------------------------------------------------------------------
+% Check whether the mask is logical
 if ~islogical( mask )
     error( "The mask must be a logical array!" );
 end
 
-% get the size of the mask
+% Get the size of the mask
 s_mask = size( mask );
 
-% get the dimension
+% Get the dimension
 D = length( s_mask );
 if D == 2 && s_mask(2) == 1
     D = 1;
 end
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Make a larger image so that masked voxels at the boundary of the image
+% will be judged to be on the boundary
+larger_image = zeros(s_mask+2);
+
+% Get the locations to place the inner (original) data
+b = cell(1,D);
+for d = 1:D
+   b{d} = 2:s_mask(d)+1;
+end
+
+% Set the inner locations to be the mask
+larger_image(b{:}) = mask;
+mask = larger_image; %Can remove this line and rep mask with larger image
+
+%% Main function
+%--------------------------------------------------------------------------
 if version == "full"
-    bdry = logical( imdilate( ~mask, ones( ones(1, D) * 3 ) ) ) & ...
-                            mask;
+    bdry = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
+                            larger_image;
 elseif D==2 || D==3
 
     switch D
         case 2
             if version == "y"
-                bdry = logical( imdilate( ~mask,...
+                bdry = logical( imdilate( ~larger_image,...
                                     [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
-                                        mask;
+                                        larger_image;
             elseif version == "x"
-                bdry = logical( imdilate( ~mask,...
+                bdry = logical( imdilate( ~larger_image,...
                                     [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
-                                        mask;
+                                        larger_image;
             else
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
@@ -80,15 +92,15 @@ elseif D==2 || D==3
             if version == "xy"
                 h( 2, 2, 1 ) = 1;
                 h( 2, 2, 3 ) = 1;
-                bdry = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
             elseif version == "yz"
                 h( 2, 1, 2 ) = 1;
                 h( 2, 3, 2 ) = 1;
-                bdry = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
             elseif version == "xz"
                 h( 1,2,  2 ) = 1;
                 h( 3,2,  2 ) = 1;
-                bdry = logical( imdilate( ~mask, h ) ) &  mask;
+                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
             else
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
@@ -98,5 +110,8 @@ else
     error( strcat( "For D not equal to 2 or 3 only the full",...
                    "boundary estimate is implemented" ) );
 end
+
+% Remove the outer voxels
+bdry = bdry(b{:});
 
 return
