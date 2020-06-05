@@ -36,10 +36,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 %              unbiased estimation resAdd needs to be an odd number and
 %              enlarge needs to be set to the default value currently.
 %              Default ceil( resAdd / 2 )
-%   Lambda_est  string indicating which estimator for the Lambda
-%               matrix/Riemannian metric is used. Options are "analytical"
-%               and "numerical". Default "analytical".
-%               Note that "numerical" might be faster.
+%   version    string indicating which estimator for the Lambda
+%              matrix/Riemannian metric is used. Options are "analytical"
+%              and "numerical". Default "analytical".
+%              Note that "numerical" might be faster.
 %--------------------------------------------------------------------------
 % OUTPUT
 %   LKC  structure containing fields:
@@ -120,9 +120,9 @@ if ~exist( 'resAdd', 'var' )
    resAdd = 1;
 end
 
-if ~exist( 'Lambda_est', 'var' )
+if ~exist( 'version', 'var' )
    % default method for Lambda matrix estimation
-   Lambda_est = "analytical";
+   version = "analytical";
 end
 
 if ~exist( 'enlarge', 'var' )
@@ -164,9 +164,9 @@ else
 end
 
 %%% get the Riemannian metric/Lambda matrix from the data
-if strcmp( Lambda_est, "analytical")
+if strcmp( version, "analytical")
     [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
-elseif strcmp( Lambda_est, "numerical")
+elseif strcmp( version, "numerical")
     [ g, xvals ] = Lambda_numeric_est( lat_data, Kernel, resAdd, enlarge );
 else
     % output error message, if not a valid method is chosen
