@@ -1,7 +1,7 @@
 function [ smooth_data, xvals_vecs, Kernel ] = convfield_class( lat_data,...
                                                          Kernel, resAdd, D,...
                                                          derivtype, enlarge )
-% CONVFIELD_STRUCT( lat_data, Kernel, resAdd, D, derivtype, enlarge )
+% CONVFIELD_CLASS( lat_data, Kernel, resAdd, D, derivtype, enlarge )
 % generates a convolution field from lattice data smoothed with an
 % seperable kernel which can be specified. The generated field is evaluated
 % on an equidistant grid with resolution increased by adding resAdd voxels
