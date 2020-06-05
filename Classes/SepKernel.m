@@ -134,7 +134,7 @@ classdef SepKernel
           end          
       end
       
-      function gradcell = Gradient( obj )
+      function gradobj = Gradient( obj )
           % GRADIENT( obj ) constructs a cell array containing the partial
           % derivatives of the kernel in a cell array
           %----------------------------------------------------------------
@@ -144,8 +144,8 @@ classdef SepKernel
           %
           %----------------------------------------------------------------
           % OUTPUT
-          % gradcell  an D by 1 cell array containing the function handles
-          %           for the seperable kernel of the dth derivative.
+          % gradobj  an SepKernel object where only the kernel
+          %          specifications are included, but not the dkernel.
           %
           %----------------------------------------------------------------
           % EXAMPLES
@@ -162,10 +162,19 @@ classdef SepKernel
           %%% Check mandatory input
           
           %%% main function
-          gradcell = cell( [ 1 obj.D ] );
+          % initilize the gradobj
+          gradobj = SepKernel( obj.D );
+          gradobj.truncation = NaN*ones( obj.D );
+          
+          % fill gradobj with the apropriate values
           for d = 1:obj.D
-              gradcell{d} = obj.kernel;
-              gradcell{d}{d} = obj.dkernel{d};
+              % correct kernel functions for each dimension
+              gradobj.kernel{d}    = obj.kernel;
+              gradobj.kernel{d}{d} = obj.dkernel{d};
+              
+              % correct truncation for each dimension
+              gradobj.truncation(:,d) = obj.truncation;
+              gradobj.truncation(d,d) = obj.dtruncation(d);
           end
       end
       
