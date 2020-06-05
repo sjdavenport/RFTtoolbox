@@ -3,20 +3,17 @@
 %%%%    This script tests the Lambda_conv_est.m function
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% prepare workspace
+%%% prepare workspace
 clear all
 close all
 
 addpath( genpath( "/home/drtea/matlabToolboxes/RFTtoolbox/" ) )
 
-% useful function to check equality of two arrays
-sameArray = @(x,y) max(abs( x(:) - y(:) ));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%    Test section D=1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% show that the Gaussian kernel does the same as using the naive method
-%%%% without asuming seperable kernels
+%% %-----------------------------------------------------------------------
+%    Test section D=1
+%--------------------------------------------------------------------------
+%%% show that the Gaussian kernel does the same as using the naive method
+% without asuming seperable kernels
 % Field parameters
 FWHM  = 10;
 D     = 1;

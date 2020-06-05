@@ -3,88 +3,107 @@
 %%%%    This script tests the bdry_voxels.m function
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% prepare workspace
+%%% prepare workspace
 clear all
-close all
-
 addpath( genpath( "/home/drtea/matlabToolboxes/RFTtoolbox/" ) )
 
-%% %%%% 1D
+%% %-----------------------------------------------------------------------
+%    Test section D = 1
+%--------------------------------------------------------------------------
+close all
 % create a mask and show it
 Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 mask = logical( Sig > 0.02 );
 mask = mask(50,:)';
-figure(1), clf,
-plot( mask )
+plot( mask ),
+title( 'mask' )
 clear Sig
 
+% note in 1D there is only the 'full' option
 bdry = bdry_voxels( mask, "full" );
 figure(1), clf,
 plot( mask + bdry )
+title( 'mask + mask of boundary'  )
 
-%% %%%% 2D
+%% %-----------------------------------------------------------------------
+%    Test section D = 2
+%--------------------------------------------------------------------------
+%%%%%% simple box example
 close all
 % create a simple mask and show it
-mask = zeros( [ 5 5 ] );
-mask( 2:4, 2:4 ) = 1;
+mask = zeros( [ 15 15 ] );
+mask( 4:12, 5:10 ) = 1;
 mask = logical( mask );
 figure(1), clf,
-imagesc( mask(:,:) ), colorbar
+imagesc( mask(:,:) ),
+colorbar
+title( 'mask' )
 
+%%% plot the different options of boundary
+% fixed y option
 bdry = bdry_voxels( mask, "x" );
 figure(2), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed y directions")
 
+% fixed x option
 bdry = bdry_voxels( mask, "y" );
 figure(3), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed x directions")
 
+% fixed "full" option
 bdry = bdry_voxels( mask, "full" );
 figure(4), clf,
 imagesc( mask + bdry ), colorbar
 title("all boundary points")
 
-% create a complicated mask and show it
+%% %%%% complicated mask example
+close all
+% generate mask
 Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 mask = logical( Sig > 0.02 & Sig < 1.1 );
-figure(5), clf,
-imagesc( mask ), colorbar
+figure(1), clf,
+imagesc( mask ), colorbar,
+title("mask")
 clear Sig
 
+%%% plot the different options of boundary
+% fixed y option
 bdry = bdry_voxels( mask, "x" );
-figure(6), clf,
+figure(2), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed y directions")
 
+% fixed x option
 bdry = bdry_voxels( mask, "y" );
-figure(7), clf,
+figure(3), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed x directions")
 
+% fixed "full" option
 bdry = bdry_voxels( mask, "full" );
-figure(8), clf,
+figure(4), clf,
 imagesc( mask + bdry ), colorbar
 title("all boundary points")
 
-%% %%%% 3D
+%% %-----------------------------------------------------------------------
+%    Test section D = 3
+%--------------------------------------------------------------------------
+close all
 % create a mask and show it
 mask = zeros( [ 5 5 5 ] );
 mask( 2:4, 2:4, 2:4 ) = 1;
 figure(1), clf,
 imagesc( mask(:,:,2) ), colorbar
+title("slice of mask")
 
+% get boundary voxels lying in z value planes or better having a not to the
+% mask connected face pointing into the z direction
+bdry = bdry_voxels( logical( mask ), "xy" )
 
-bdry = bdry_voxels( logical( mask ), "xy" );
+% same as before for y
+bdry = bdry_voxels( logical( mask ), "xz" )
 
-figure(2), clf,
-imagesc( mask + bdry ), colorbar
-
-bdry = bdry_voxels( mask, "y" );
-figure(3), clf,
-imagesc( mask + bdry ), colorbar
-
-bdry = bdry_voxels( mask, "full" );
-figure(4), clf,
-imagesc( mask + bdry ), colorbar
+% same as before for x
+bdry = bdry_voxels( logical( mask ), "yz" )
