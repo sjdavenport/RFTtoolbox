@@ -1,6 +1,6 @@
-function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
+function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_lat,...
                              enlarge, version )
-% LKC_CONV_EST( lat_data, mask, Kernel, resAdd, mask_opt, enlarge, version )
+% LKC_CONV_EST( lat_data, mask, Kernel, resAdd, mask_lat, enlarge, version )
 % estimates the Lipschitz Killing curvatures for a convolution field
 % derived from a general kernel. Corresponding samples of such fields can
 % be simulated using convfield.m which has the same input variables.
@@ -25,12 +25,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_opt,...
 % Optional
 %   resAdd     integer denoting the amount of voxels padded between 
 %              existing voxels to increase resolution. Default 1.
-%   mask_opt   2 x 1 logical vector. FIRST COMPONENT, if "1" it applies
-%              the mask prior of application of convolution fields.
-%              SECOND COMPONENT, if "1" mask is applied after
-%              computing geometric properties.
-%              Note that [1 1] is possible which means mask is applied in
-%              both stages.
+%   mask_lat   an logical. If 1 the mask is applied to the lat_data prior
+%              to any other calculation. Default 0.
+%              Note that if 0 the mask is only applied after convolutions
+%              are performed.              
 %   enlarge    an integer denoting the amount of voxels the resolution
 %              increased mask is enlarged by dilation. Note that for
 %              unbiased estimation resAdd needs to be an odd number and
@@ -130,12 +128,10 @@ if ~exist( 'enlarge', 'var' )
    enlarge = ceil( resAdd / 2 );
 end
 
-if ~exist( 'mask_opt', 'var' )
-   % default method for mask_opt, which controls when the mask is applied
-   % prior/after application of smoothing using convfield.m
-   % Currently we recommend using it prior and after, yet this might depend
-   % on your application!
-   mask_opt = [ 1 1 ];
+if ~exist( 'mask_lat', 'var' )
+   % default method for mask_lat controlling whether the input lat_data is
+   % masked prior to convolving with the kernel.
+   mask_lat = 1;
 end
 
 %% %-----------------------------------------------------------------------
@@ -149,7 +145,7 @@ geom = struct();
 
 %%% manipulate the mask and mask the data
 % mask the lattice data, if opted for
-if mask_opt(1) == 1
+if mask_lat
     lat_data = repmat( mask, [ ones( [ 1 D ] ), nsubj ] ) .* lat_data;
 end
 
@@ -191,11 +187,9 @@ switch D
         vol_form = sqrt( max( g(:,1), 0 ) );
         
         % restrict vol_form and dx to mask
-        if mask_opt(2) == 1
-            xvec     = xvec( mask );
-            vol_form = vol_form( mask );     
-        end
-        
+        xvec     = xvec( mask );
+        vol_form = vol_form( mask );     
+
         % estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
         L(1) = diff( xvec ) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
@@ -227,9 +221,7 @@ switch D
         vol_form = sqrt( max( g_xx .* g_yy - g_xy.^2, 0 ) );
         
         % restrict vol_form to mask
-        if mask_opt(2) == 1
-            vol_form = vol_form( mask );
-        end
+        vol_form = vol_form( mask );
         
         % integate volume form over the domain. It assumes that each voxel
         % has the same volume dx*dy and simple midpoint integration is used
@@ -293,9 +285,7 @@ switch D
                               - g_xx.*g_yz.^2, 0 ) );
 
         % restrict vol_form to mask
-        if mask_opt(2) == 1 
-            vol_form = vol_form( mask );
-        end
+        vol_form = vol_form( mask );
         
         % integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
