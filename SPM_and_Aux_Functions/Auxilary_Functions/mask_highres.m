@@ -1,5 +1,5 @@
 function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
-% mask_highres( mask, resAdd, enlarge, plots )computes a high resolution
+% mask_highres( mask, resAdd, enlarge, plots ) computes a high resolution
 % version of a mask. It has an option to enlarge the mask region by resAdd.
 % This is used in LKC estimation, since in this toolbox voxels are usually
 % interpreted as the center values of rectangular domains.
@@ -212,31 +212,34 @@ end
 % show plots explaining the output
 if plots
     if D == 1
-        figure(1),clf,
+        figure,clf,
         plot( old_mask_hr ),
-        title( 'fill mask into high res' )
-        figure(2),clf,
+        title( 'fill mask into high res grid' )
+        figure,clf,
         plot( mask_hr )
-        title( 'high res mask' )
-        figure(3),clf,
+        title( 'output high res mask' )
+        figure,clf,
         plot( double( mask_hr ) + double( old_mask_hr ) )
-        title( 'dilate that mask' )
+        title( 'Original mask on high res + Output high res mask' )
     elseif D == 2
-        figure(1),clf,
+        figure,clf,
         imagesc( old_mask_hr ),
+        colorbar,
         title( 'fill mask into high res' )
-        figure(2),clf,
-        imagesc( mask_hr )
-        title( 'high res mask' )
-        figure(3),clf,
-        imagesc( double( mask_hr ) + double( old_mask_hr ) )
-        title( 'dilate that mask ')
+        figure,clf,
+        imagesc( mask_hr ),
+        colorbar,
+        title( 'output high res mask' )
+        figure,clf,
+        imagesc( double( mask_hr ) + double( old_mask_hr ) ),
+        colorbar,
+        title( 'Original mask on high res + Output high res mask' )
     elseif D == 3
         
     end
 end
 
-%%% compute the amount each voxel contribtes to the volume
+%%% compute the amount each voxel contributes to the volume
 % get the number of neighbouring voxels inside the mask
 weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
 weights( ~mask_hr ) = 0;
