@@ -24,27 +24,24 @@ function [ out1, out2 ] = newfun( var1, var2, opt1 )
 %--------------------------------------------------------------------------
 
 
-%% ------------------------------------------------------------------------
-%  Check mandatory input and get important constants
+%% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 %%%%%% HEADLINE 
 %%% SUBHEADLINE
-% line or short paragraph comment
+% Line or short paragraph comment
 
-%% ------------------------------------------------------------------------
-%  add/check optional input
+%% Add/check optional values
 %--------------------------------------------------------------------------
 
-% this kind of code with exists is better than using nargin < xy, since
-% parameter can be easily permuted
+% This kind of code with exists is better than using nargin < xy, since
+% Parameter can be easily permuted
 if ~exist( 'opt1', 'var' )
-   % default option of opt1
+   % Default option of opt1
    opt1 = 0;
 end
 
 
-%% ------------------------------------------------------------------------
-%  main function
+%% Main function  
 %--------------------------------------------------------------------------
 
 return
