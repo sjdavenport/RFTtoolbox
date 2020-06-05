@@ -1,5 +1,5 @@
-function [ LKC, resel ] = LKC_SquareExpField_theory( FWHM, dim, type )
-% LKC_SQUAREEXPFIELD_THEORY( FWHM, dim, type ) returns the theoretical LKCs
+function [ LKC, resel ] = LKC_isogauss_theory( FWHM, dim, type )
+% LKC_ISOGAUSS_THEORY( FWHM, dim, type ) returns the theoretical LKCs
 % for the isotropic Gaussian random field with square exponential
 % covariance function C(s) = exp( -s^2 / 2 / FWHM^2 ) over an rectangle
 % S = T_1 x ... x T_D for D < 4.
