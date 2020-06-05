@@ -13,17 +13,17 @@ function [ Lambda_est, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd,...
 %            samples. Note that N > 1 is required!
 %  Kernel    either a structure or a numeric.
 %            If structure it should contain the following fields:
-%            - kernel:
-%              (D + 1) by 1 cell array containing the function handles for
-%              the kernel (first entry) and its D partial derivatives (2nd
-%              Dth entry).
+%            - kernel: function handle computing the kernel
 %              Optional if the field 'kernel' is numeric the convolution
 %              field is assumed to be derived from a Gaussian kernel and 
-%              the field 'truncation' if missing is chosen automatically.
+%              the field 'dkernel' and 'truncation' is added automatically.
+%            - dkernel: D by 1 cell array containing the function handles
+%                       for the kernels of the derivative
+%                       in each direction.
 %            - truncation:
 %              a window around the points at which to evaluate the kernel
 %              setting this parameter allows for quicker computation of the
-%              convolution field and has very litle effect on the values of
+%              convolution field and has very little effect on the values of
 %              the field for kernels that have light tails such as the 
 %              Gaussian kernel.
 %            The following fields are OPTIONAL:
@@ -136,25 +136,21 @@ elseif isstruct( Kernel )
         end
         
         % check whether the kernel field has enough kernels
-        if length( Kernel.kernel ) == D+1
-            error( strcat( "You need to provide the kernel and",...
-                           " all its derivatives.\n%s" ),...
+        if length( Kernel.dkernel ) == D
+            error( strcat( "You need to provide the dkernel for each",...
+                           " dimension.\n%s" ),...
                            "Please read the input instructions!" )
         end
         
-        % define Kernel structures for the convolution field and for its
-        % derivatives
-        nKernel = Kernel;
-        nKernel.kernel = Kernel.kernel{1};
-        
+        % define Kernel structures for the derivative
         dKernel = Kernel;
-        dKernel.kernel = Kernel.kernel(2:(D+1));
+        dKernel.kernel = Kernel.dkernel;
         
         % get the convolution fields and their derivatives
-        [ convY, xvals ] = convfield_struct( lat_data, nKernel, resAdd,...
+        [ convY, xvals ] = convfield_struct( lat_data, Kernel, resAdd,...
                                              D, 0, enlarge );
         DconvY = convfield_struct( lat_data, dKernel, resAdd,...
-                                             D, 0, enlarge );
+                                             D, 1, enlarge );
         
     end
 else

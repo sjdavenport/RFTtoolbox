@@ -1,5 +1,5 @@
 function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
-% LKC_HPE_est( Y, mask, Mboot, normalize, version ) computes the Lipschitz
+% LKC_HPE_EST( Y, mask, Mboot, normalize, version ) computes the Lipschitz
 % Killing curvature using the Hermite projection estimator proposed in
 % Telschow et al (2020+).
 % It uses a fast and exact way to compute the EC curves by looping through
