@@ -301,14 +301,19 @@ function [ smooth_data, xvals_vecs ] = convfield_struct( lat_data, Kernel, resAd
 % AUTHOR: Samuel Davenport, Fabian Telschow                                              
 %--------------------------------------------------------------------------
 
+
 %% Get constants from the input lat_data field
+%--------------------------------------------------------------------------
+
 % get size of the input data
 slatdata = size( lat_data );
 % get number of dimensions of input data
 D_latdata = length( slatdata );
 
 %% add/check optional values and define the kernel structure
-%%%% D input
+%--------------------------------------------------------------------------
+
+%%% D input
 % If no dimension is specfied it is assumed that nsubj = 1 and you just
 % want to smooth a single field
 if ~exist( 'D', 'var' )
@@ -379,6 +384,8 @@ if ~exist( 'enlarge', 'var' )
 end
 
 %% check and prepare the Kernel input structure
+%--------------------------------------------------------------------------
+
 % indicating whether kernel needs to be adjusted. Will be changed to 1 if needed
 use_adjust = 0;
 
