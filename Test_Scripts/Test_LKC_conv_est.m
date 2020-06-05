@@ -1,49 +1,54 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%
-%%%%    This script tests the LKC estimators and whether they work properly
+%%%%    This script tests the LKC_conv_est.m function
 %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% prepare workspace
+%%% prepare workspace
 clear all
 close all
 
 addpath( genpath( "/home/drtea/matlabToolboxes/RFTtoolbox/" ) )
 
-%% %%%%%%%%%%%%%%%% LKC_conv_est.m
-%%%%%%%% D = 1
-% parameters
+
+%% %-----------------------------------------------------------------------
+%    Test section D = 1
+%--------------------------------------------------------------------------
+% parameter for the field
 T      = 50;
 nsubj  = 500;
 FWHM   = sigma2FWHM(20);
 resAdd = 7;
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
-method = "numerical";
+% method = "numerical";
 method = "analytical";
 
 mask = zeros( [ T+2*pad 1 ] );
 mask( (pad+1):(end-pad) ) = 1;
 
-% get true LKC
-trueL = LKC_SquareExpField_theory( FWHM, T  );
+% get true LKC from continuous theory
+trueL = LKC_isogauss_theory( FWHM, T  );
 
 % generate test data
 lat_data = randn( [ T+2*pad nsubj ] );
 
 % closest approximation of the continuous field
-LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1],...
+LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0,...
                     ceil( resAdd / 2 ), method );
 [ trueL; LKC.hatL ]
 
 
 % estimate of LKCs
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 0], 0 )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1] )
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 1] )
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0, 0 )
+LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0, 1 )
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 1 )
 
-%% %%%%%%%% D = 2
-% parameters
+
+%% %-----------------------------------------------------------------------
+%    Test section D = 2
+%--------------------------------------------------------------------------
+% parameter for the field
 T      = 49;
-nsubj  = 500;
+nsubj  = 100;
 FWHM   = sigma2FWHM(5);
 resAdd = 1;
 mask_opt = [1 1];
@@ -53,22 +58,25 @@ mask = zeros( [ T+2*pad T+2*pad ] );
 mask( (pad+1):(end-pad), (pad+1):(end-pad) ) = 1;
 
 % get true LKC
-trueL = LKC_SquareExpField_theory( FWHM, [ T T ] );
+trueL = LKC_isogauss_theory( FWHM, [ T T ] );
 
 % generate test data
 lat_data = randn( [ T+2*pad T+2*pad nsubj ] );
 
 % closest approximation of the continuous field
-LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1] );
+LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0 );
 [ trueL; LKC.hatL ]
 
 % estimate of LKCs using different options for the mask
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 0] )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1], 0 )
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 1] )
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 1 )
+LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0, 0 )
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0, 1 )
 
-%% %%%%%%%% D = 3
-% parameters
+
+%% %-----------------------------------------------------------------------
+%    Test section D = 3
+%--------------------------------------------------------------------------
+% parameter for the field
 T      = 30;
 nsubj  = 50;
 FWHM   = sigma2FWHM(5);
@@ -80,18 +88,18 @@ mask = zeros( [ T+2*pad T+2*pad T+2*pad ] );
 mask( (pad+1):(end-pad), (pad+1):(end-pad), (pad+1):(end-pad) ) = 1;
 
 % get true LKC
-trueL = LKC_SquareExpField_theory( FWHM, [ T T T ] );
+trueL = LKC_isogauss_theory( FWHM, [ T T T ] );
 
 % generate test data
 lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
 
 % closest approximation of the continuous field
 tic
-LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1] );
+LKC = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0 );
 toc
 [ trueL; LKC.hatL ]
 
 % estimate of LKCs
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 0] )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [0 1], 0 );
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, [1 1] )
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 1, 3 )
+LKC2 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 0, 0 )
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, resAdd, 1 )
