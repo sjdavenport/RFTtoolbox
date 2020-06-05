@@ -19,8 +19,8 @@ classdef SepKernel
    end
    methods
       function obj = SepKernel( D, FWHM )
-          % SEPKERNEL( D, FWHM ) is a basic constructor for a Kernel class
-          % object. If FWHM is provided it outputs an object of class
+          % SEPKERNEL( D, FWHM ) is a basic constructor for a SepKernel
+          % class object. If FWHM is provided it outputs an object of class
           % Kernel representing a seperable Gaussian kernel with FWHM.
           %----------------------------------------------------------------
           % ARGUMENTS
@@ -164,7 +164,7 @@ classdef SepKernel
           %%% main function
           % initilize the gradobj
           gradobj = SepKernel( obj.D );
-          gradobj.truncation = NaN*ones( obj.D );
+          gradobj.truncation = NaN * ones( obj.D );
           
           % fill gradobj with the apropriate values
           for d = 1:obj.D
