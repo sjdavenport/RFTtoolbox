@@ -1,6 +1,6 @@
-function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
-% mask_highres( mask, resAdd, enlarge, plots ) computes a high resolution
-% version of a mask. It has an option to enlarge the mask region by resAdd.
+function [ mask_hr, weights ] = mask_highres( mask, resadd, enlarge, plots )
+% mask_highres( mask, resadd, enlarge, plots ) computes a high resolution
+% version of a mask. It has an option to enlarge the mask region by resadd.
 % This is used in LKC estimation, since in this toolbox voxels are usually
 % interpreted as the center values of rectangular domains.
 %
@@ -8,11 +8,11 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % ARGUMENTS
 % Mandatory
 %   mask    an logical T_1 x ... x T_D array.
-%   resAdd  the amount of equidistant voxels introduced inbetween the
+%   resadd  the amount of equidistant voxels introduced inbetween the
 %           voxels  
 % Optional
 %   enlarge numeric denoting the amount of voxels added by dilating the
-%           high resolution mask. Default ceil(resAdd/2), which if resAdd
+%           high resolution mask. Default ceil(resadd/2), which if resadd
 %           is odd means that the boundary voxels are exactly half the
 %           distance between the voxels shifted with respect to the
 %           original mask voxels.
@@ -33,7 +33,7 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % 
 % %%% 1D
 % % resolution added
-% resAdd  = 1;
+% resadd  = 1;
 % enlarge = 0;
 % % create a mask and show it
 % Sig  = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
@@ -42,11 +42,11 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % plot( mask )
 % clear Sig
 % 
-% mask_hr = mask_highres( mask, resAdd, enlarge, show_plot );
+% mask_hr = mask_highres( mask, resadd, enlarge, show_plot );
 % 
 % %%% 2D
 % % resolution added
-% resAdd  = 3;
+% resadd  = 3;
 % % create a mask and show it
 % Sig  = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % mask = logical( Sig > 0.02 & Sig < 1.1 );
@@ -54,12 +54,12 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % clear Sig
 % 
 % % enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 1, show_plot );
+% mask_hr = mask_highres( mask, resadd, 1, show_plot );
 % % non enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 0, show_plot );
+% mask_hr = mask_highres( mask, resadd, 0, show_plot );
 % 
 % % resolution added
-% resAdd  = 3;
+% resadd  = 3;
 % enlarge = 1;
 % % create a mask and show it
 % mask = logical( ones(50,50) );
@@ -68,14 +68,14 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % clear Sig
 % 
 % % enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 1, show_plot );
+% mask_hr = mask_highres( mask, resadd, 1, show_plot );
 % % non enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 0, show_plot );
+% mask_hr = mask_highres( mask, resadd, 0, show_plot );
 % 
 % 
 % %%% 3D
 % % resolution added
-% resAdd  = 3;
+% resadd  = 3;
 % % create a mask and show it
 % siz = 13;
 % dx  = 0.25;
@@ -87,9 +87,9 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 % clear h
 % 
 % % enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 1, 0 );
+% mask_hr = mask_highres( mask, resadd, 1, 0 );
 % % non enlarged domain
-% mask_hr = mask_highres( mask, resAdd, 0, 0 );
+% mask_hr = mask_highres( mask, resadd, 0, 0 );
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -112,12 +112,12 @@ if D == 2 && s_mask(2) == 1
     D = 1;
 end
 
-% Check whether resAdd is numeric
-if ~isnumeric( resAdd )
-    error( "resAdd must be a positive natural number!" );
+% Check whether resadd is numeric
+if ~isnumeric( resadd )
+    error( "resadd must be a positive natural number!" );
 else
-    % Ensure that resAdd is a positive integer
-    resAdd = ceil( abs( resAdd ) );
+    % Ensure that resadd is a positive integer
+    resadd = ceil( abs( resadd ) );
 end
 
 
@@ -145,16 +145,16 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-%%%%%% return the input mask if resAdd = 0
-if resAdd == 0
+%%%%%% return the input mask if resadd = 0
+if resadd == 0
     mask_hr = mask;
     weights = mask_hr;
     return
 end
 
-%%%%%% resAdd > 0 cases
+%%%%%% resadd > 0 cases
 % size of the output array
-s_hr = ( s_mask - 1 ) * resAdd + s_mask;
+s_hr = ( s_mask - 1 ) * resadd + s_mask;
 if enlarge ~= 0
     if D == 1
         s_hr = s_hr + [ 2 * enlarge, 0 ];
@@ -175,7 +175,7 @@ end
 % resolution mask
 index = cell( [ 1 D ] );
 for d = 1:D
-    index{d} = ( enlarge + 1 ):( resAdd + 1 ):( s_hr(d) - enlarge );
+    index{d} = ( enlarge + 1 ):( resadd + 1 ):( s_hr(d) - enlarge );
 end
 
 % fill the resolution increased mask with the values from the original mask
@@ -188,16 +188,16 @@ if plots
 end
 
 % fill the zero values of the resolution increased mask, which belong to
-% the mask. Note that this enlarges the mask by resAdd
+% the mask. Note that this enlarges the mask by resadd
 mask_hr = logical( imdilate( mask_hr, ones( ones([ 1 D ]) ...
-                                              * (2*ceil(resAdd/2)+1) ) ) );
+                                              * (2*ceil(resadd/2)+1) ) ) );
 
-if enlarge ~= ceil(resAdd/2)
+if enlarge ~= ceil(resadd/2)
     % number of voxels which the inverse mask or the normal mask needs to
     % be shifted in order to obtain the correct mask. If positiv mask is
     % dilated by that amount. If negative ~mask is dilated and then the
     % negative is taken, since we need to erode voxels.
-    denlarge = enlarge - ceil(resAdd/2);
+    denlarge = enlarge - ceil(resadd/2);
     
     if denlarge < 0
         mask_hr = ~logical( imdilate( ~mask_hr, ones( ones([ 1 D ]) ...
