@@ -72,7 +72,7 @@ D = length(Ldim);
 if nargin < 3
     peak_est_locs = 1; %I.e. just consider the maximum.
 end
-if nargin < 4
+if ~exist('mask', 'var') || isequal(mask, NaN)
     if D == 1
         mask = ones(1,Ldim);
     else
@@ -110,7 +110,7 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
-tcf = @(tval) tcfield( tval, lat_data, Kernel, truncation, xvals_vecs, mask );
+tcf = @(tval) applyconvfield_t( tval, lat_data, Kernel, truncation, xvals_vecs, mask );
 
 if ~isequal(mask, ones(Ldim)) && ~isequal(mask, ones([1, Ldim]))
     masked_field = @(x) mask_field( x, mask, xvals_vecs ).*tcf(x);
@@ -150,31 +150,47 @@ if D == 1 && isnan(peak_est_locs(1))
     peak_est_locs = peak_est_locs(2:end);
 end
 
+% Obtain the boundary of the mask
+boundary = bndry_voxels( logical(mask), 'full' );
+
+% Obtain the box sizes within which to search for the maximum
+% Assign boxsize of 0.5 for voxels on the boundary and 1.5 for voxels not
+% on the boundary.
+npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
+s_mask = size(mask);             % Obtain the size of the mask
+box_sizes = 1.5*ones(1,npeaks);
+for I = 1:npeaks
+    converted_index = convind( peak_est_locs(:,I), s_mask );
+    if boundary(converted_index)
+        box_sizes(I) = 0.5;
+    end
+end
+
+% Find local maxima
+[ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );
+
+end
+
+% DEPRECATED:
+% options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
+% for peakI = 1:npeaks
+%     peaklocs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
+%     peakvals(peakI) = tcf(peaklocs(:, peakI));
+% end
 % [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, 1.5 );
-
-npeaks = size(peak_est_locs, 2);
-peaklocs = zeros(D, npeaks);
-peakvals = zeros(1, npeaks); 
-
-A = [eye(D);-eye(D)];
+% npeaks = size(peak_est_locs, 2);
+% peaklocs = zeros(D, npeaks);
+% peakvals = zeros(1, npeaks); 
+% 
+% A = [eye(D);-eye(D)];
 % b = [Ldim(:)+0.5;ones(D,1)-0.5];
-b = zeros(2*D,1);
-for d = 1:D
-    b(d) = xvals_vecs{d}(end);
-end
-for d = 1:D
-    b(d+D) = -xvals_vecs{d}(1);
-end
-% b = [Ldim(:);ones(D,1)] %Need to discuss which boundary to use with Fabian!!!
-
-options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
-for peakI = 1:npeaks
-    peaklocs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
-    peakvals(peakI) = tcf(peaklocs(:, peakI));
-end
-
-end
-
+% b = zeros(2*D,1);
+% for d = 1:D
+%     b(d) = xvals_vecs{d}(end);
+% end
+% for d = 1:D
+%     b(d+D) = -xvals_vecs{d}(1);
+% end
 % for peakI = 1:npeaks
 %     peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b);
 %     peak_vals(peakI) = tcf(peak_locs(:, peakI));

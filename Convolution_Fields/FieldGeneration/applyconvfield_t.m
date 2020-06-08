@@ -1,4 +1,4 @@
-function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, lat_data, Kernel, truncation, xvals_vecs, mask )
+function [T, mu, sigma, d, Xcfields_at_tval] = applyconvfield_t( tval, lat_data, Kernel, truncation, xvals_vecs, mask )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 
 % t-convolution field at the set of points specified by tval
 %--------------------------------------------------------------------------
@@ -49,21 +49,21 @@ function [T, mu, sigma, d, Xcfields_at_tval] = tcfield( tval, lat_data, Kernel, 
 % % 1D t convolution field
 % FWHM = 4; L = 100; nsubj = 40;
 % lat_data = normrnd(0,1, L, nsubj);
-% tcf = @(tval) tcfield( tval, lat_data, FWHM );
+% tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM );
 % plot(1:L, tcf(1:L))
 % hold on
 % plot(1:L, smoothtstat( data, FWHM));
 %
 % % 2D t convolution field. Note this is just illusratation, it is
 % % inefficient to generate a whole 2D t field this way, much better to use
-% % convfield. tcfield is to be used when you just want to calculate
+% % convfield. applyconvfield_t is to be used when you just want to calculate
 % % several points in the field rather than on a regular grid
 % nsubj = 20;
 % Dim = [10,10];
 % xvals_vecs = {1:Dim(1), 1:Dim(2)};
 % xvaluesatvoxels = xvals2voxels(xvals_vecs);
 % lat_field = normrnd(0,1,[Dim, nsubj]);
-% field_at_voxels = reshape(tcfield( xvaluesatvoxels, lat_field, FWHM, -1 ), Dim);
+% field_at_voxels = reshape(applyconvfield_t( xvaluesatvoxels, lat_field, FWHM, -1 ), Dim);
 % smoothfield = smoothtstat( lat_field, FWHM );
 % surf(field_at_voxels)
 % pause
