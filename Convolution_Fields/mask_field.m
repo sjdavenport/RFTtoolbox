@@ -11,7 +11,18 @@ function mfield_out = mask_field( x, mask, xvals_vecs, asnan )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
+% FWHM = 3; 
+% xvals_fine = 1:0.1:3; xvals_vecs = 1:3;
+% xvaluesatvoxels = xvals2voxels({xvals_fine,xvals_fine});
 % 
+% Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
+% mask = [1,1,1;0,1,1;1,1,1];
+% 
+% field = @(tval) applyconvfield(tval, Y, FWHM, -1, xvals_vecs, mask);
+% mfield = @(x) mask_field(x, mask);
+% masked_field = @(x) mfield(x).*field(x);
+% fieldeval = reshape(masked_field(xvaluesatvoxels), [length(xvals_fine),length(xvals_fine)]);
+% surf(fieldeval)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
