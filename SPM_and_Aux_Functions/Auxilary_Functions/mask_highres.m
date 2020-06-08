@@ -95,37 +95,36 @@ function [ mask_hr, weights ] = mask_highres( mask, resAdd, enlarge, plots )
 %--------------------------------------------------------------------------
 
 
-%% %-----------------------------------------------------------------------
-%  check mandatory input and get important constants
+%%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-% check whether the mask is logical
+
+% Check whether the mask is logical
 if ~islogical( mask )
     error( "The mask must be a logical array!" );
 end
 
-% get the size of the mask
+% Get the size of the mask
 s_mask = size( mask );
 
-% get the dimension
+% Get the dimension
 D = length( s_mask );
 if D == 2 && s_mask(2) == 1
     D = 1;
 end
 
-% check whether resAdd is numeric
+% Check whether resAdd is numeric
 if ~isnumeric( resAdd )
     error( "resAdd must be a positive natural number!" );
 else
-    % ensure that resAdd is a positive integer
+    % Ensure that resAdd is a positive integer
     resAdd = ceil( abs( resAdd ) );
 end
 
 
-%% %-----------------------------------------------------------------------
-%  add/check optional input
+%% Add/check optional input
 %--------------------------------------------------------------------------
 if ~exist( 'enlarge', 'var' )
-   % default option of 'enlarge'
+   % Default option of 'enlarge'
    enlarge = 0;
 end
 
@@ -138,14 +137,14 @@ else
 end
 
 if ~exist( 'plots', 'var' )
-   % default option of 'enlarge'
+   % Default option of 'enlarge'
    plots = 0;
 end
 
 
-%% %-----------------------------------------------------------------------
-%  main function
+%% Main function
 %--------------------------------------------------------------------------
+
 %%%%%% return the input mask if resAdd = 0
 if resAdd == 0
     mask_hr = mask;
@@ -239,7 +238,8 @@ if plots
     end
 end
 
-%%% compute the amount each voxel contributes to the volume
+%%% compute the amount each voxel contributes to the volume, if resadd is
+%%% even, this weights do not make se
 % get the number of neighbouring voxels inside the mask
 weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
 weights( ~mask_hr ) = 0;
