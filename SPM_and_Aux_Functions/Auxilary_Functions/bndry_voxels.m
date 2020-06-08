@@ -1,4 +1,4 @@
-function bdry = bdry_voxels( mask, version )
+function bdry = bndry_voxels( mask, version )
 % This function computes a high resolution version of a given mask.
 % It has the option to enlarge the mask region by resAdd to use shifted
 % boundaries in LKC estimation. This is required in the interpretation of
@@ -36,6 +36,7 @@ function bdry = bdry_voxels( mask, version )
 %--------------------------------------------------------------------------
 
 %% Check input and get important constants from the mandatory input
+
 %--------------------------------------------------------------------------
 % Check whether the mask is logical
 if ~islogical( mask )
@@ -53,20 +54,20 @@ end
 
 % Make a larger image so that masked voxels at the boundary of the image
 % will be judged to be on the boundary
-larger_image = zeros(s_mask+2);
+larger_image = zeros( s_mask + 2 );
 
 % Get the locations to place the inner (original) data
-b = cell(1,D);
+b = cell( 1, D );
 for d = 1:D
-   b{d} = 2:s_mask(d)+1;
+   b{d} = 2:s_mask(d) + 1;
 end
 
 % Set the inner locations to be the mask
-larger_image(b{:}) = mask;
-mask = larger_image; %Can remove this line and rep mask with larger image
+larger_image( b{:} ) = mask;
 
 %% Main function
 %--------------------------------------------------------------------------
+
 if version == "full"
     bdry = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
                             larger_image;
@@ -112,6 +113,6 @@ else
 end
 
 % Remove the outer voxels
-bdry = bdry(b{:});
+bdry = bdry( b{:} );
 
 return
