@@ -36,8 +36,8 @@ function bdry = bndry_voxels( mask, version )
 %--------------------------------------------------------------------------
 
 %% Check input and get important constants from the mandatory input
-
 %--------------------------------------------------------------------------
+
 % Check whether the mask is logical
 if ~islogical( mask )
     error( "The mask must be a logical array!" );
