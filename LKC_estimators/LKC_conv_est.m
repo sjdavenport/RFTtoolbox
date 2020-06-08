@@ -1,6 +1,6 @@
-function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_lat,...
+function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
                              enlarge, version )
-% LKC_CONV_EST( lat_data, mask, Kernel, resAdd, mask_lat, enlarge, version )
+% LKC_CONV_EST( lat_data, mask, Kernel, resadd, mask_lat, enlarge, version )
 % estimates the Lipschitz Killing curvatures for a convolution field
 % derived from a general kernel. Corresponding samples of such fields can
 % be simulated using convfield.m which has the same input variables.
@@ -27,7 +27,7 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_lat,...
 %            smoothing with an isotropic Gaussian kernel with FWHM = Kernel.
 %            Truncation and adjust_kernel are set to be default values.
 % Optional
-%  resAdd     integer denoting the amount of voxels padded between 
+%  resadd     integer denoting the amount of voxels padded between 
 %             existing voxels to increase resolution. Default 1.
 %  mask_lat   an logical. If 1 the mask is applied to the lat_data prior
 %             to any other calculation. Default 0.
@@ -35,9 +35,9 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resAdd, mask_lat,...
 %             are performed.              
 %  enlarge    an integer denoting the amount of voxels the resolution
 %             increased mask is enlarged by dilation. Note that for
-%             unbiased estimation resAdd needs to be an odd number and
+%             unbiased estimation resadd needs to be an odd number and
 %             enlarge needs to be set to the default value currently.
-%             Default ceil( resAdd / 2 )
+%             Default ceil( resadd / 2 )
 %  version    string indicating which estimator for the Lambda
 %             matrix/Riemannian metric is used. Options are "analytical"
 %             and "numerical". Default "analytical".
@@ -115,22 +115,28 @@ if D > 3
            'have not been implemented' ) )
 end
 
+% If Kernel is numeric use an isotropic Gaussian Kernel else use the
+% provided Kernel object
+if isnumeric( Kernel ) 
+    % Change numerical Kernel input to an object of class SepKernel
+    Kernel = SepKernel( D, Kernel );
+
+elseif ~isa( Kernel, 'SepKernel' )
+    error( strcat( "The 'Kernel' must be either a numeric or an ",...
+                   "object of class SepKernel!" ) );
+end
+
 %% add/check optional values
 %--------------------------------------------------------------------------
 
-if ~exist( 'resAdd', 'var' )
+if ~exist( 'resadd', 'var' )
    % Default number of resolution increasing voxels between observed voxels
-   resAdd = 1;
-end
-
-if ~exist( 'version', 'var' )
-   % Default method for Lambda matrix estimation
-   version = "analytical";
+   resadd = 1;
 end
 
 if ~exist( 'enlarge', 'var' )
    % Default method for Lambda matrix estimation
-   enlarge = ceil( resAdd / 2 );
+   enlarge = ceil( resadd / 2 );
 end
 
 if ~exist( 'mask_lat', 'var' )
@@ -139,18 +145,9 @@ if ~exist( 'mask_lat', 'var' )
    mask_lat = 1;
 end
 
-% If Kernel is numeric use an isotropic Gaussian Kernel else use the
-% provided Kernel object
-if isnumeric( Kernel )
-    
-    % Change numerical Kernel input to an object of class SepKernel
-    Kernel = SepKernel( D, Kernel );
-
-elseif isa( Kernel, 'SepKernel' )
-
-else
-    error( strcat( "The 'Kernel' must be either a numeric or an ",...
-                   "object of class SepKernel!" ) );
+if ~exist( 'version', 'var' )
+   % Default method for Lambda matrix estimation
+   version = "analytical";
 end
 
 %% Main function
@@ -170,8 +167,8 @@ end
 
 % Get mask on higher resolution and the weights of each voxel for the
 % volume computation.
-if resAdd ~= 0
-    [ mask, weights ] = mask_highres( mask, resAdd, enlarge );
+if resadd ~= 0
+    [ mask, weights ] = mask_highres( mask, resadd, enlarge );
     % Reduce weights matrix only to active voxels for speed up
     weights = weights( mask );
 else
@@ -180,9 +177,9 @@ end
 
 %%% Get the Riemannian metric/Lambda matrix from the data
 if strcmp( version, "analytical")
-    [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resAdd, enlarge );
+    [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resadd, enlarge );
 elseif strcmp( version, "numerical")
-    [ g, xvals ] = Lambda_numeric_est( lat_data, Kernel, resAdd, enlarge );
+    [ g, xvals ] = Lambda_numeric_est( lat_data, Kernel, resadd, enlarge );
 else
     % Output error message, if not a valid method is chosen
     error( strcat( "Choose a valid method for Lambda/Riemannian metric", ...
@@ -245,7 +242,7 @@ switch D
         % Integate volume form over the domain. It assumes that each voxel
         % has the same volume dx*dy and simple midpoint integration is used
         % note that we also use weights to give an appropriate quotient to
-        % boundary voxels, if resAdd > 0, which takes into account that the
+        % boundary voxels, if resadd > 0, which takes into account that the
         % volume of the boundary voxels needs to be halved, or quartered, etc
         L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
             

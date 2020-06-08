@@ -112,13 +112,15 @@ if D > 3
     error( 'fconv not coded for dimension > 3' );
 end
 
-%%% sep_kernel input 
+%%% sep_kernel input
+% Make Kernel a cell with equal kernel functions
+Kernel = cell( [ 1 D ] );
+
 if isnumeric( sep_kern )
     % Numeric sep_kernel defines the FWHM
     FWHM   = sep_kern;
-    % Make Kernel a cell with equal kernel functions
-    Kernel = cell( [ 1 D ] );
-    for  d = 1:D
+
+    for d = 1:D
         Kernel{d} = @(x) Gker( x, FWHM );
     end
     % Get the standard truncation for the Gaussian kernel
@@ -126,22 +128,21 @@ if isnumeric( sep_kern )
     truncation = ceil( 4 * sigma );
     
 else
-    if iscell( sep_kern ) && length( sep_kern ) == 1
-        % Make Kernel a cell with equal kernel functions
-        Kernel = cell( [ 1 D ] );
-        for  d = 1:D
-            Kernel{d} = sep_kern{1};
-        end
-        
-    else
-        % Check whether a kernels for each dimension is provided
-        if length( sep_kern ) == D
+    if iscell( sep_kern ) 
+        if length( sep_kern ) == 1
+            for d = 1:D
+                Kernel{d} = sep_kern{1};
+            end
+        elseif length( sep_kern ) == D
             Kernel = sep_kern;
         else
             error( strcat( 'A Kernel must be specified for each ',...
                        'direction or 1 that will be the same for all' ) )
         end
-        
+    else
+        for d = 1:D
+            Kernel{d} = sep_kern;
+        end
     end
     
     % If kernel is specified manually a truncation is mandatory
