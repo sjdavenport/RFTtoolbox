@@ -17,8 +17,8 @@ function [ smoothed_data, ss ] = fconv2( data, sep_kern, D, truncation, dx,...
 %              If it is a vector the truncation is assumed to be symmetric
 %              around the origin, i.e., in the dth dimension the vector the
 %              kernel is evaluated on is -truncation(d):dx(d):truncation(d).
-%              If it is a numeric the kernel is evaluated on the vector
-%              -truncation:dx:truncation.
+%              If it is a numeric the kernel in each dimension is evaluated
+%              on the vector -truncation:dx:truncation.
 %  dx          either a numeric or a vector which defines the stepsize for
 %              the evaluation grid of the kernel, see also truncation
 %              description. Default is 1.
