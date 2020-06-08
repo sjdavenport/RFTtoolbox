@@ -9,9 +9,9 @@ close all
 
 addpath( genpath( "/home/drtea/matlabToolboxes/RFTtoolbox/" ) )
 
-%% %-----------------------------------------------------------------------
-%    Test section D=1
+%% Test section D=1
 %--------------------------------------------------------------------------
+
 %%% show that the Gaussian kernel does the same as using the naive method
 % without asuming seperable kernels
 % Field parameters
@@ -41,12 +41,11 @@ sameArray( hatLambda_conv, hatLambda_num )
 sameArray( hatLambda_conv, Lambda_array )
 sameArray( Lambda_array, hatLambda_num )
 
+%% Test section D=2
+%--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%    Test section D=2
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% show that the Gaussian kernel does the same as using the naive method
-%%%% without asuming seperable kernels
+%%%%%% show that the Gaussian kernel does the same as using the naive method
+%%% without asuming seperable kernels
 % Field parameters
 FWHM  = 10;
 D     = 2;
@@ -71,11 +70,12 @@ Lambda_est = Lambda_conv_est( Y, FWHM, resAdd, 3 );
 size(Lambda_est)
 Dimhr
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%    Test section D=3
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%% show that the Gaussian kernel does the same as using the naive method
-%%%% without asuming seperable kernels
+
+%% Test section D=3
+%--------------------------------------------------------------------------
+
+%%%%%% show that the Gaussian kernel does the same as using the naive
+%%%%%% method without asuming seperable kernels
 % Field parameters
 FWHM  = 3;
 D     = 3;
