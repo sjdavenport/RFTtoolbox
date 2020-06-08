@@ -1,10 +1,10 @@
 function [ smooth_data, xvals_vecs, Kernel ] = convfield_class2( lat_data,...
-                                                         Kernel, resAdd, D,...
+                                                         Kernel, resadd, D,...
                                                          derivtype, enlarge )
-% CONVFIELD_CLASS2( lat_data, Kernel, resAdd, D, derivtype, enlarge )
+% CONVFIELD_CLASS2( lat_data, Kernel, resadd, D, derivtype, enlarge )
 % generates a convolution field from lattice data smoothed with an
 % seperable kernel which can be specified. The generated field is evaluated
-% on an equidistant grid with resolution increased by adding resAdd voxels
+% on an equidistant grid with resolution increased by adding resadd voxels
 % inbetween each voxel in each dimension.
 %
 %--------------------------------------------------------------------------
@@ -23,7 +23,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_class2( lat_data,...
 %            smoothing with an isotropic Gaussian kernel with FWHM = Kernel.
 %            Truncation and adjust_kernel are set to be default values.
 % Optional
-%  resAdd     the amount of voxels added equidistantly inbetween the
+%  resadd     the amount of voxels added equidistantly inbetween the
 %             existing voxels. Default is 1.
 %  D          the dimension of the data, if this is left blank it is
 %             assumed that nsubj = 1 and that the convolution field has 
@@ -34,7 +34,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_class2( lat_data,...
 %             has not yet been implemented.
 %  enlarge    a numeric which must be a positive integer or zero. The
 %             convolution field is computed on a domain enlarged in each
-%             direction by 'enlarge' voxels. Note if resAdd ~=0 the added
+%             direction by 'enlarge' voxels. Note if resadd ~=0 the added
 %             voxels are in high resolution. Default 0. 
 %--------------------------------------------------------------------------
 % 
@@ -118,7 +118,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_class2( lat_data,...
 % 
 % % Illustration on a fine lattice (not to be used in practice)
 % smoothfield100 = convfield_class( lat_data, FWHM, resadd, 2);
-% % smoothfield100 = convfield( lat_data, FWHM, resAdd, 2, 0);
+% % smoothfield100 = convfield( lat_data, FWHM, resadd, 2, 0);
 % partialderiv_finelat(1) = (smoothfield100(spaced_point(1)+1, spaced_point(2)) - smoothfield100(spaced_point(1),spaced_point(2)))/h;
 % partialderiv_finelat(2) = (smoothfield100(spaced_point(1), spaced_point(2) + 1) - smoothfield100(spaced_point(1),spaced_point(2)))/h;
 % fine_lattice_derivatives = partialderiv_finelat'
@@ -342,17 +342,17 @@ end
 % Index for multidimensional coding
 indexD = repmat( {':'}, 1, D );
 
-%%% resAdd input
+%%% resadd input
 % Add resolution increase if missing
-if ~exist( 'resAdd', 'var' )
-    resAdd = 1;
+if ~exist( 'resadd', 'var' )
+    resadd = 1;
 end
 
 % Get the difference between voxels with resolution increase
-dx = 1 / ( resAdd + 1 );
+dx = 1 / ( resadd + 1 );
 
-% Reject input, if resAdd is to large in 3D
-if D == 3 && ( resAdd > 18 )
+% Reject input, if resadd is to large in 3D
+if D == 3 && ( resadd > 18 )
     error( 'In 3D you shouldn''t use such high resolution for memory reasons' )
 end
 
@@ -386,7 +386,7 @@ end
 %--------------------------------------------------------------------------
 
 % Dimensions for domain of the field with increased resolution
-Dimhr = ( Dim - 1 ) * resAdd + Dim; %Dimhr = Dim with high resolution
+Dimhr = ( Dim - 1 ) * resadd + Dim; %Dimhr = Dim with high resolution
 
 % Modify Dimhr by adding enlarge voxels to all sides
 if enlarge ~= 0 
@@ -409,7 +409,7 @@ end
 % resolution data array
 index = cell( [ 1 D ] );
 for d = 1:D
-    index{d} = ( enlarge + 1 ):( resAdd + 1 ):( Dimhr(d) - enlarge );
+    index{d} = ( enlarge + 1 ):( resadd + 1 ):( Dimhr(d) - enlarge );
 end
 
 % Increase the resolution of the raw data by introducing zeros
@@ -421,8 +421,8 @@ if D < 4
     % run the smoothing using fconv
     if derivtype == 0
         % calculates the convolution field
-        smooth_data = fconv2( expanded_lat_data, Kernel.kernel, dx, D,...
-                              Kernel.truncation(1), Kernel.adjust );
+        smooth_data = fconv2( expanded_lat_data, Kernel.kernel, D,...
+                              Kernel.truncation(1), dx, Kernel.adjust );
         
     elseif derivtype == 1
         % preallocate the output field for speed
@@ -434,8 +434,8 @@ if D < 4
         % calculates the derivatives of the convolution field
         for d = 1:D
             smooth_data(indexD{:},:,d) = fconv2( expanded_lat_data,...
-                                                dKernel.kernel{d}, dx, D, ...
-                                                dKernel.truncation(1),...
+                                                dKernel.kernel{d}, D, ...
+                                                dKernel.truncation(1), dx,...
                                                 dKernel.adjust );
         end
         
