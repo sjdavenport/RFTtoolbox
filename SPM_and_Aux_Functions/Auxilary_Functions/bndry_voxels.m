@@ -88,7 +88,7 @@ elseif D==2 || D==3
             end
             
         case 3
-            h = zeros( ones(1, D)*3 );
+            h = zeros( ones(1, D) * 3 );
             h( 2, 2, 2 ) = 1;
             if version == "xy"
                 h( 2, 2, 1 ) = 1;
