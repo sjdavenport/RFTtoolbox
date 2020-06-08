@@ -115,17 +115,23 @@ if D > 3
            'have not been implemented' ) )
 end
 
+% If Kernel is numeric use an isotropic Gaussian Kernel else use the
+% provided Kernel object
+if isnumeric( Kernel ) 
+    % Change numerical Kernel input to an object of class SepKernel
+    Kernel = SepKernel( D, Kernel );
+
+elseif ~isa( Kernel, 'SepKernel' )
+    error( strcat( "The 'Kernel' must be either a numeric or an ",...
+                   "object of class SepKernel!" ) );
+end
+
 %% add/check optional values
 %--------------------------------------------------------------------------
 
 if ~exist( 'resadd', 'var' )
    % Default number of resolution increasing voxels between observed voxels
    resadd = 1;
-end
-
-if ~exist( 'version', 'var' )
-   % Default method for Lambda matrix estimation
-   version = "analytical";
 end
 
 if ~exist( 'enlarge', 'var' )
@@ -139,18 +145,9 @@ if ~exist( 'mask_lat', 'var' )
    mask_lat = 1;
 end
 
-% If Kernel is numeric use an isotropic Gaussian Kernel else use the
-% provided Kernel object
-if isnumeric( Kernel )
-    
-    % Change numerical Kernel input to an object of class SepKernel
-    Kernel = SepKernel( D, Kernel );
-
-elseif isa( Kernel, 'SepKernel' )
-
-else
-    error( strcat( "The 'Kernel' must be either a numeric or an ",...
-                   "object of class SepKernel!" ) );
+if ~exist( 'version', 'var' )
+   % Default method for Lambda matrix estimation
+   version = "analytical";
 end
 
 %% Main function
