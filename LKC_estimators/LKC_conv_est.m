@@ -115,8 +115,7 @@ if D > 3
            'have not been implemented' ) )
 end
 
-%% %-----------------------------------------------------------------------
-%  add/check optional values
+%% add/check optional values
 %--------------------------------------------------------------------------
 
 if ~exist( 'resAdd', 'var' )
@@ -256,12 +255,12 @@ switch D
         % Note that we later need to remove half of the end points value,
         % of each line segment which are contained in the x and the y shift
         % boundary. They will be count double otherwise.
-        xbdry = bdry_voxels( mask, "x" );      
+        xbdry = bndry_voxels( mask, "x" );      
         L(1)  = sum( sqrt( g_xx( xbdry ) ) ) * dx;
         
         % Find y shift boundary voxels, i.e. vertical boundary parts, and
         % integrate using trapozoid rule.
-        ybdry = bdry_voxels( mask, "y" );      
+        ybdry = bndry_voxels( mask, "y" );      
         L(1)  = L(1) + sum( sqrt( g_yy( ybdry ) ) ) * dy;
         
         % Remove double counted voxels at end of line segments and divide
@@ -314,15 +313,15 @@ switch D
         %%% Calculate LKC 2
         % Find faces having constant z value and integrate using simple
         % midpoint rule.
-        bdry = bdry_voxels( mask, "xy" );
+        bdry = bndry_voxels( mask, "xy" );
         L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
                               - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
                           
-        bdry = bdry_voxels( mask, "xz" );
+        bdry = bndry_voxels( mask, "xz" );
         L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
                               - g_xz( bdry ).^2, 0 ) ) * dx * dz / 2 );
 
-        bdry = bdry_voxels( mask, "yz" );
+        bdry = bndry_voxels( mask, "yz" );
         L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
                               - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
         
