@@ -84,6 +84,18 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 % Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]
 % surf(convfield(Y, 2, 0.1, 2))
 % findconvpeaks(Y, 2, [1,1;4,4]')
+%
+% %% The maximum can lie on the boundary (could set this as an exercise)
+% FWHM = 3; xvals_fine = 1:0.1:3;
+% xvaluesatvoxels = xvals2voxels({xvals_fine,xvals_fine});
+% Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
+% mask = [1,1,1;0,1,1;1,1,1];
+% field = @(tval) applyconvfield(tval, Y, FWHM, -1, xvals_vecs, mask);
+% mfield = @(x) mask_field(x, mask);
+% masked_field = @(x) mfield(x).*field(x);
+% fieldeval = reshape(masked_field(xvaluesatvoxels), [length(xvals_fine),length(xvals_fine)]);
+% surf(fieldeval)
+% findconvpeaks(Y, FWHM, [2,2]', mask)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -106,7 +118,7 @@ end
 if nargin < 3 
     peak_est_locs = 1; %I.e. just consider the maximum.
 end
-if nargin < 4 || isequal(mask, NaN)
+if ~exist('mask', 'var') || isequal(mask, NaN)
     if D == 1
         mask = ones(1,Ldim);
     else
@@ -184,7 +196,7 @@ if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
 end
 
 % Obtain the boundary of the mask
-boundary = bdry_voxels_mod( logical(mask), 'full' );
+boundary = bndry_voxels( logical(mask), 'full' );
 
 % Obtain the box sizes within which to search for the maximum
 % Assign boxsize of 0.5 for voxels on the boundary and 1.5 for voxels not
@@ -199,8 +211,13 @@ for I = 1:npeaks
     end
 end
 
+% Find local maxima
 [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );
-% 
+
+end
+
+
+% DEPRECATED
 % npeaks = size(peak_est_locs, 2);
 % peakvals = zeros(1,npeaks);
 % peaklocs = zeros(D, npeaks);
@@ -221,8 +238,6 @@ end
 %     peaklocs(:, peakI) = fmincon(@(tval) -field(tval), peak_est_locs(:, peakI), A, b, [], [], [], [], [], options);
 %     peakvals(peakI) = field(peaklocs(:, peakI));
 % end
-
-end
 
 % for peakI = 1:npeaks
 %     %     applyconvfield_gen(peak_est_locs(:, peakI), lat_data, Kprime, xvals_vecs )
