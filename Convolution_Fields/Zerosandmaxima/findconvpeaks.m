@@ -153,9 +153,10 @@ if length(xvals_vecs) < D
     end
 end
 
-xvals_vecs_dims = zeros(1,D);
+xvals_vecs_dims = zeros(1,D); xvals_starts_at = zeros(1,D);
 for d = 1:D
     xvals_vecs_dims(d) = length(xvals_vecs{d});
+    xvals_starts_at(d) = xvals_vecs{d}(1);
 end
 if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
@@ -205,7 +206,7 @@ npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 s_mask = size(mask);             % Obtain the size of the mask
 box_sizes = 1.5*ones(1,npeaks);
 for I = 1:npeaks
-    converted_index = convind( peak_est_locs(:,I), s_mask );
+    converted_index = convind( peak_est_locs(:,I) - xvals_starts_at + 1, s_mask );
     if boundary(converted_index)
         box_sizes(I) = 0.5;
     end
