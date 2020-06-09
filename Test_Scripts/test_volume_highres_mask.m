@@ -49,6 +49,36 @@ clear Sig
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
 
+%% Bug, note comments in getweights
+D = 2
+% Here is something wrong
+mask = true(3,3);
+mask(1,2) = 0;
+
+% weights for resolution added
+[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+
+[[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
+   get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
+ [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
+   get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
+% Your example (Here not, so the boundary of the image is treated wrongly)
+mask = false(5,5);
+mask(2:4,2:4) = 1;
+mask(2,3) = 0;
+
+% weights for resolution added
+[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+
+[[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
+   get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
+ [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
+   get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
 
 %%
 %%% 3D
@@ -71,8 +101,7 @@ clear h
 [[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
-   get_volume( old3, 3, D ),
-   get_volume( old5, 5, D ) ]]
+   get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
 
 %%
 D = 3
@@ -89,7 +118,7 @@ mask(1,1,1) = 0;
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
 
-%%
+%% Bug, note comments in getweights
 % Here is something wrong
 mask = true(3,3,3);
 mask(1,1,2) = 0;
