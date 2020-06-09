@@ -70,26 +70,26 @@ imagesc( mask ), colorbar,
 title("mask")
 clear Sig
 
-%% plot the different options of boundary
-% fixed y option
+%% % plot the different options of boundary
+%% fixed y option
 bdry = bndry_voxels( mask, "x" );
 figure(2), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed y directions")
 
-% fixed x option
+%% fixed x option
 bdry = bndry_voxels( mask, "y" );
 figure(3), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed x directions")
 
-% fixed "full" option
+%% fixed "full" option
 bdry = bndry_voxels( mask, "full" );
 figure(4), clf,
 imagesc( mask + bdry ), colorbar
 title("all boundary points")
 
-%% Test section D = 3
+%% %% Test section D = 3
 % create a mask and show it
 mask = zeros( [ 5 5 5 ] );
 mask( 2:4, 2:4, 2:4 ) = 1;
