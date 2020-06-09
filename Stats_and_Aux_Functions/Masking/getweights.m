@@ -42,10 +42,39 @@ function weights = getweights( mask_hr )
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-Dim_hr = size(mask_hr); D = length(Dim_hr);
+
+% Get size of the mask
+Dim_hr = size(mask_hr);
+
+% Get Dimension of the mask
+D = length(Dim_hr);
+if D == 2 && ( Dim_hr(1) == 1 || Dim_hr(2) == 1 )
+    D = 1;
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
+
+% easy fix for the bug. Shown in test_volume_highres_mask.
+% Maybe there is something more smart possible. To see the bug uncomment
+% line 61:77
+index = cell( [ 1 D ] );
+for d = 1:D
+    index{d} = 2:(Dim_hr(d)+1);
+end
+
+tmp = mask_hr;
+if D > 1
+    mask_hr = false( Dim_hr + 2 );
+else
+    mask_hr = false( Dim_hr + [ 2, 0] );
+end
+
+% fill mask into slightly bigger mask
+mask_hr(index{:}) = tmp;
+% get new resolution
+Dim_hr = size(mask_hr);
+clear tmp
 
 % Divide voxels in the high res mask in two in each dimension 
 mask_with_divided_voxels = mask_highres_divide( mask_hr, 2 );
