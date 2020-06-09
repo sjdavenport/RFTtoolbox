@@ -57,10 +57,10 @@ end
 
 % easy fix for the bug. Shown in test_volume_highres_mask.
 % Maybe there is something more smart possible. To see the bug uncomment
-% line 61:77
+% line 61:77. Also uncomment line 98/99
 index = cell( [ 1 D ] );
 for d = 1:D
-    index{d} = 2:(Dim_hr(d)+1);
+    indexD{d} = 2:(Dim_hr(d)+1);
 end
 
 tmp = mask_hr;
@@ -71,7 +71,7 @@ else
 end
 
 % fill mask into slightly bigger mask
-mask_hr(index{:}) = tmp;
+mask_hr(indexD{:}) = tmp;
 % get new resolution
 Dim_hr = size(mask_hr);
 clear tmp
@@ -95,5 +95,7 @@ for d = 1:D
 end
 weights = sum_within_each_voxel_large( index{:} ) / 2^D;
 
+% remove the padded 0 values
+weights = weights(indexD{:});
 end
 
