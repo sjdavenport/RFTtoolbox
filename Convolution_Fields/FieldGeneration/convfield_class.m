@@ -37,7 +37,6 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield_class( lat_data,...
 %             direction by 'enlarge' voxels. Note if resAdd ~=0 the added
 %             voxels are in high resolution. Default 0. 
 %--------------------------------------------------------------------------
-% 
 % %%% 1D
 % %% Smoothing with increased resolution
 % nvox = 10; xvals = 1:nvox; FWHM = 2;
@@ -386,7 +385,7 @@ else
                    "object of class SepKernel!" ) );
 end
 
-%% Main function
+%% Main function - separable case
 %--------------------------------------------------------------------------
 
 % Dimensions for domain of the field with increased resolution
@@ -456,5 +455,9 @@ if D < 4
 else
     error('D != 1,2,3 has not been implemented yet!')
 end
+
+%% Main function - non separable case
+%--------------------------------------------------------------------------
+
 
 return

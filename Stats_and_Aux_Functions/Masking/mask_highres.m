@@ -1,4 +1,4 @@
-function [ mask_hr, weights ] = mask_highres( mask, resadd, enlarge, plots )
+function [ mask_hr, weights, old_weights ] = mask_highres( mask, resadd, enlarge, plots )
 % mask_highres( mask, resadd, enlarge, plots ) computes a high resolution
 % version of a mask. It has an option to enlarge the mask region by 'resadd'.
 % If 'resadd' is used every voxel is considered to have 1/(resadd+1)^D, where
@@ -93,7 +93,7 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd, enlarge, plots )
 % % non enlarged domain
 % mask_hr = mask_highres( mask, resadd, 0, 0 );
 %--------------------------------------------------------------------------
-% AUTHORS: Fabian Telschow
+% AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
 
@@ -151,6 +151,7 @@ end
 if resadd == 0
     mask_hr = mask;
     weights = mask_hr;
+    old_weights = mask_hr;
     return
 end
 
@@ -168,7 +169,8 @@ end
 % return logical array of size s_hr, if mask is always 1
 if all( mask(:) )
     mask_hr = true( s_hr );
-    weights = msk_hr;
+    weights = mask_hr;
+    old_weights = mask_hr;
     return
 end
 
@@ -240,33 +242,37 @@ if plots
     end
 end
 
-%%% compute the amount each voxel contributes to the volume, if resadd is
-%%% even, this weights do not make se
-% get the number of neighbouring voxels inside the mask
-weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
-weights( ~mask_hr ) = 0;
+if mod(resadd, 2) == 0 
+    weights = NaN;
+else
+    weights = getweights(mask_hr);
+end
 
+% Old weight calculations
+old_weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
+old_weights( ~mask_hr ) = 0;
 switch D
     case 1
-        weights( weights == 3 ) = 1;
-        weights( weights == 2 ) = 1 / 2;
+        old_weights( old_weights == 3 ) = 1;
+        old_weights( old_weights == 2 ) = 1 / 2;
     case 2
-        weights( weights == 4 ) = 1 / 4;
-        weights( weights == 5 ) = 1 / 4;
-        weights( weights == 6 ) = 1 / 2;
-        weights( weights == 7 ) = 1 / 2;
-        weights( weights == 8 ) = 3 / 4;
-        weights( weights == 9 ) = 1;
+        old_weights( old_weights == 4 ) = 1 / 4;
+        old_weights( old_weights == 5 ) = 1 / 4;
+        old_weights( old_weights == 6 ) = 1 / 2;
+        old_weights( old_weights == 7 ) = 1 / 2;
+        old_weights( old_weights == 8 ) = 3 / 4;
+        old_weights( old_weights == 9 ) = 1;
     case 3
         % note that this is only approximate. Getting the correct weights
         % requires more thought, As an example weights=26 can lead to a
         % weight of 1/2 or 3/4 depending on how the voxels are spread.
         % Maybe we fix that later.
-        tmp = weights;
-        weights( mask_hr )   = 1/2;
-        weights( tmp == 27 ) = 1;
-        weights( tmp == 8 )  = 1/8;
-
+        tmp = old_weights;
+        old_weights( mask_hr )   = 1/2;
+        old_weights( tmp == 27 ) = 1;
+        old_weights( tmp == 8 )  = 1/8;
 end
         
 return
+
+% Deprecated

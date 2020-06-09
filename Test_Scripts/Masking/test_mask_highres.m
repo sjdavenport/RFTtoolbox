@@ -22,17 +22,25 @@ clear Sig
 mask_hr = mask_highres( mask, resAdd, enlarge, 1 ); % What is shown exactly in these plots??
 
 %% 2D issue (there is a bug here!)
-Dim = [3,3]; mask = ones(Dim); mask(2,1) = 0; resadd = 3;
-mask_hr = mask_highres(logical(mask), resadd, 0);
+Dim = [3,3]; mask = true(Dim); mask(2,1) = 0; resadd = 2;
+mask_hr = mask_highres(mask, resadd, 0);
 imagesc(mask_hr)
 
-mask_hr = mask_highres(logical(mask), resadd);
+mask_hr = mask_highres(mask, resadd, ceil(resadd/2),1);
 imagesc(mask_hr)
 
 % This isn't right, in the enlarged version the voxels should be the same
 % size as in the original version. They shouldn't change shape or size?
 % Voxels should still be square but clearly not here!
 % The "enlarged" version should match the original mask not reshape it!
+
+%% Dividing things into 8
+mask = true(2);
+mask_highres(mask, 2, 1)
+
+mask = true(3); mask(2,2) = 0;
+mask_highres(mask, 3, 0)
+
 
 %% 2D
 % resolution added
@@ -44,7 +52,7 @@ imagesc( mask )
 clear Sig
 
 % enlarged domain
-mask_hr = mask_highres( mask, resAdd, 100); %This is definitely not what we want for the enlarged mask?
+mask_hr = mask_highres( mask, resAdd, ceil(resadd/2),1); %This is definitely not what we want for the enlarged mask?
 imagesc(mask_hr)
 %% non enlarged domain
 mask_hr = mask_highres( mask, resAdd, 0 );

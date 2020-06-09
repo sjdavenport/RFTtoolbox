@@ -25,11 +25,11 @@ function bdry = bndry_voxels( mask, version )
 %                       fixed x-value
 %--------------------------------------------------------------------------
 % OUTPUT
-%   bdry     an logical T_1 x ... x T_D array having 1 whenever the point
+%   bdry     a logical T_1 x ... x T_D array having 1 whenever the point
 %            is part of the boundary (or the chosen subpart).
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-% -------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow, Samuel Davenport
