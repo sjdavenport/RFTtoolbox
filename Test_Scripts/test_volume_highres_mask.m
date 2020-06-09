@@ -31,6 +31,16 @@ clear Sig
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
 
+%% 1D with boundary
+mask = true(1,10);
+[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+[[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
+   get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
+ [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
+   get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
 %%
 %%% 2D
 D = 2
