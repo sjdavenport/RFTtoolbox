@@ -1,4 +1,5 @@
-function [ mask_hr, weights, old_weights ] = mask_highres( mask, resadd, enlarge, plots )
+function [ mask_hr, weights, old_weights ] = mask_highres( mask, resadd,...
+                                                           enlarge, plots )
 % mask_highres( mask, resadd, enlarge, plots ) computes a high resolution
 % version of a mask. It has an option to enlarge the mask region by 'resadd'.
 % If 'resadd' is used every voxel is considered to have 1/(resadd+1)^D, where

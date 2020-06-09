@@ -39,16 +39,16 @@ index = cell( [ 1 D ] );
 for d = 1:D
     index{d} = divide:divide:dividedDim(d);
 end
-D_vec = divide*ones(1,D);
-divided_mask = zeros(dividedDim);
-divided_mask(index{:}) = mask;
-divided_mask = convn(divided_mask, ones(D_vec));
+D_vec = divide*ones( 1, D );
+divided_mask = zeros( dividedDim );
+divided_mask( index{:} ) = mask;
+divided_mask = convn( divided_mask, ones( D_vec ) );
 
 inner_index = cell( [ 1 D ] );
 for d = 1:D
-    inner_index{d} = divide:(dividedDim(d)+divide-1);
+    inner_index{d} = divide:( dividedDim(d) + divide - 1 );
 end
-divided_mask = divided_mask(inner_index{:});
+divided_mask = divided_mask( inner_index{:} );
 
 % D_vec = D*ones(1,D);
 % mask_hr = convn(mask, ones(D_vec));
