@@ -36,8 +36,11 @@ function weights = getweights( mask_hr )
 % 
 % weights = getweights(example_mask)
 % weights(2,2,2) 
+%
+% %% Testing that the volume works correctly!
+% get_volume = @( weights, resadd, D ) sum( weights(:) ) * 1/(resadd+1)^D;
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport
+% AUTHOR: Samuel Davenport, Fabian Telschow
 %--------------------------------------------------------------------------
 
 %%  Check mandatory input and get important constants
@@ -58,7 +61,7 @@ end
 % easy fix for the bug. Shown in test_volume_highres_mask.
 % Maybe there is something more smart possible. To see the bug uncomment
 % line 61:77. Also uncomment line 98/99
-index = cell( [ 1 D ] );
+indexD = cell( [ 1 D ] );
 for d = 1:D
     indexD{d} = 2:(Dim_hr(d)+1);
 end
@@ -81,10 +84,12 @@ mask_with_divided_voxels = mask_highres_divide( mask_hr, 2 );
 
 % Erode the new mask by one voxel
 dilatedanddividedmask = dilate_mask( mask_with_divided_voxels, -1 );
+clear mask_with_divided_voxels
 
-% Sum up the numer of small voxels within each larger voxel
+% Sum up the number of small voxels within each larger voxel
 ones_array = ones( ones( 1, D ) * 2 );
 sum_within_each_voxel_large = convn( dilatedanddividedmask, ones_array );
+clear dilatedanddividedmask
 
 % The above has too much information due to the convolution we only want
 % the corner sum. Then we need to divide by the total number of small
@@ -95,7 +100,7 @@ for d = 1:D
 end
 weights = sum_within_each_voxel_large( index{:} ) / 2^D;
 
-% remove the padded 0 values
+% remove the extra padded 0 values
 weights = weights(indexD{:});
 end
 
