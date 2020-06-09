@@ -1,7 +1,9 @@
 function [ mask_hr, weights ] = mask_highres( mask, resadd, enlarge, plots )
 % mask_highres( mask, resadd, enlarge, plots ) computes a high resolution
-% version of a mask. It has an option to enlarge the mask region by resadd.
-% This is used in LKC estimation, since in this toolbox voxels are usually
+% version of a mask. It has an option to enlarge the mask region by 'resadd'.
+% If 'resadd' is used every voxel is considered to have 1/(resadd+1)^D, where
+% D is the dimension of the mask volume.
+% Optionally, 'weights' can be output, which assign the weights This is used in LKC estimation, since in this toolbox voxels are usually
 % interpreted as the center values of rectangular domains.
 %
 %--------------------------------------------------------------------------
