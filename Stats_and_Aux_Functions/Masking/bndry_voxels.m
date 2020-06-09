@@ -150,7 +150,11 @@ end
 
 % Make a larger image so that masked voxels at the boundary of the image
 % will be judged to be on the boundary
-larger_image = zeros( s_mask + 2 );
+if D == 1
+    larger_image = zeros( s_mask + [2 0] );
+else
+    larger_image = zeros( s_mask + 2 );    
+end
 
 % Get the locations to place the inner (original) data
 b = cell( 1, D );
