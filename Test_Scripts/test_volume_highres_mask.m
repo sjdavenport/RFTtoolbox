@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
-%%%    This script tests Sams weight function
+%%%    This script tests volumes of parts of the boundary on different
+%%%    resolutions
 %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% prepare workspace
@@ -40,14 +41,23 @@ imagesc( mask )
 clear Sig
 
 % weights for resolution added
-[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
-[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
-[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+[mask1, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[mask2, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[mask3, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
 
 [[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
+% Check volume of boundary in diffent resolutions
+dmask  = bndry_voxels( mask,  "x" ) +  bndry_voxels( mask,  "y" );
+dmask1 = bndry_voxels( mask1, "x" ) +  bndry_voxels( mask1, "y" );
+dmask3 = bndry_voxels( mask2, "x" ) +  bndry_voxels( mask2, "y" );
+dmask5 = bndry_voxels( mask3, "x" ) +  bndry_voxels( mask3, "y" );
+
+[ get_volume( dmask, 0, D-1 ), get_volume( dmask1, 1, D-1 ),...
+  get_volume( dmask3, 3, D-1 ), get_volume( dmask5, 5, D-1 )]
 
 %% Bug, note comments in getweights
 D = 2
@@ -56,9 +66,9 @@ mask = true(3,3);
 mask(1,2) = 0;
 
 % weights for resolution added
-[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
-[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
-[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+[mask1, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[mask2, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[mask3, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
 
 [[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
@@ -71,14 +81,15 @@ mask(2:4,2:4) = 1;
 mask(2,3) = 0;
 
 % weights for resolution added
-[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
-[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
-[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+[mask1, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
+[mask2, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
+[mask3, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
 
 [[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
 
 %%
 %%% 3D
@@ -102,6 +113,16 @@ clear h
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
+% Check volume of boundary in diffent resolutions
+dmask  = bndry_voxels( mask,  "x" ) +  bndry_voxels( mask,  "y" );
+dmask1 = bndry_voxels( mask1, "x" ) +  bndry_voxels( mask1, "y" );
+dmask3 = bndry_voxels( mask2, "x" ) +  bndry_voxels( mask2, "y" );
+dmask5 = bndry_voxels( mask3, "x" ) +  bndry_voxels( mask3, "y" );
+
+[ get_volume( dmask, 0, D-1 ), get_volume( dmask1, 1, D-1 ),...
+  get_volume( dmask3, 3, D-1 ), get_volume( dmask5, 5, D-1 )]
+
 
 %%
 D = 3
