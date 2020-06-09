@@ -1,9 +1,9 @@
 classdef SepKernel
    % SepKernel is a class to make the use of seperable kernels easy.
-   %   The class implements an object consisting keeping track of the
-   %   functions which need to be applied in each dimension, if a seperable
-   %   kernel is used. The fields  containing 1 by D arrays. The d-th entry
-   %   represents what the sperable kernel is doing in the d-th component.
+   %   The class implements an object keeping track of the functions which
+   %   need to be applied in each dimension, if a seperable kernel is used. 
+   %   The fields  containing 1 by D arrays. The d-th entry represents what
+   %   the sperable kernel is doing in the d-th component.
    properties
       D           % the dimension of the seperable kernel
       kernel      % a 1 by D cell array containing the function handles for
