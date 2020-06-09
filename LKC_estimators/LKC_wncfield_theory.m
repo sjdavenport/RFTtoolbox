@@ -157,12 +157,27 @@ switch D
     case 2
         % get the theoretical variance of the field and the variance of
         % derivatives
-        VY      = convn( onesField, h.^2, 'same' );
-        VdxY    = convn( onesField, dxh.^2, 'same' );
-        VdyY    = convn( onesField, dyh.^2, 'same' );
-        CYdyY   = convn( onesField, dyh.*h, 'same' );
-        CYdxY   = convn( onesField, dxh.*h, 'same' );
-        CdxYdyY = convn( onesField, dxh.*dyh, 'same' );
+        VY      = fconv2( onesField, { @(x) Kernel.kernel{1}(x).^2,...
+                                       @(x) Kernel.kernel{2}(x).^2 }, D,...
+                          Kernel.truncation, dx );
+        VdxY    = fconv2( onesField, { @(x) Kernel.dkernel{1}(x).^2,...
+                                       @(x)  Kernel.kernel{2}(x).^2 }, D,...
+                          Kernel.truncation, dx );
+        VdyY    = fconv2( onesField, { @(x)  Kernel.kernel{1}(x).^2,...
+                                       @(x) Kernel.dkernel{2}(x).^2 }, D,...
+                          Kernel.truncation, dx );
+        CYdyY   = fconv2( onesField,...
+                          { @(x) Kernel.kernel{1}(x) .* Kernel.kernel{1}(x),...
+                            @(x) Kernel.kernel{2}(x) .* Kernel.dkernel{2}(x) },...
+                            D, Kernel.truncation, dx );
+        CYdxY   = fconv2( onesField,...
+                          { @(x) Kernel.kernel{1}(x) .* Kernel.dkernel{1}(x),...
+                            @(x) Kernel.kernel{2}(x) .* Kernel.kernel{2}(x) },...
+                            D, Kernel.truncation, dx );
+        CdxYdyY = fconv2( onesField,...
+                          { @(x) Kernel.kernel{1}(x) .* Kernel.dkernel{1}(x),...
+                            @(x) Kernel.kernel{2}(x) .* Kernel.dkernel{2}(x) },...
+                            D, Kernel.truncation, dx );
 
         % entries of riemanian metric
         g( :, :, 1, 1 ) = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
@@ -203,84 +218,97 @@ end
 % change nan to zero because there is a division by zero if masking
 g = nan2zero( g );
 
+% Setting up the default xvals_vecs
+xvals  = cell( 1, D );
+
+for d = 1:D
+    xvals{d} = ( ( 1 - enlarge*dx ):dx:( sM(d) + enlarge*dx ) )...
+        + Kernel.adjust(d);
+end
+
 %%%%%% BEGIN estimate the LKCs in different dimensions
-%%% compute 0th LKC
+%%% Compute 0th LKC
 L0 = EulerChar( mask, 0.5, D );
 
-%%% compute LKCs for 0 < d <= D
+%%% Compute LKCs for 0 < d < D
 switch D
     case 1
-        %%% calculate LKC1        
-        % voxel size
+        %%% Calculate LKC1        
+        % Voxel size
         xvec = xvals{1};
         
-        % get the volume form
+        % Get the volume form
         vol_form = sqrt( max( g(:,1), 0 ) );
         
-        % restrict vol_form and dx to mask
-        if mask_opt(2) == 1
-            xvec     = xvec( mask );
-            vol_form = vol_form( mask );     
-        end
-        
-        % estimate of L1 by integrating volume form over the domain using
+        % Restrict vol_form and dx to mask
+        xvec     = xvec( mask );
+        vol_form = vol_form( mask );     
+
+        % Estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
         L(1) = diff( xvec ) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
         
+        %%% Fill the output structure
+        geom.vol_form    = vol_form;
+        geom.riem_metric = g;
+        
     case 2
-        % get the voxel grid dimensions after resolution increase
+        % Get the voxel grid dimensions after resolution increase
         dx = diff( xvals{1} );
         dx = dx(1);
         dy = diff( xvals{2} );
         dy = dy(1);
         
-        % short cuts for the metric entries
+        % Short cuts for the metric entries
         g_xx = g(:, :, 1, 1 );
         g_yy = g(:, :, 2, 2 );
         g_xy = g(:, :, 1, 2 );
         
+        % Save g to the output structure and clear
+        geom.riem_metric = g;
         clear g
         
-        %%% calculate LKC 2
-        % get the volume form, max introduced for stability, since at the
+        %%% Calculate LKC 2
+        % Get the volume form, max introduced for stability, since at the
         % boundaries there might be tiny negative numbers due to numerical
         % calculations
         vol_form = sqrt( max( g_xx .* g_yy - g_xy.^2, 0 ) );
         
-        % restrict vol_form to mask
-        if mask_opt(2) == 1
-            vol_form = vol_form( mask );
-        end
+        % Restrict vol_form to mask
+        vol_form = vol_form( mask );
         
-        % integate volume form over the domain. It assumes that each voxel
+        % Integate volume form over the domain. It assumes that each voxel
         % has the same volume dx*dy and simple midpoint integration is used
         % note that we also use weights to give an appropriate quotient to
         % boundary voxels, if resadd > 0, which takes into account that the
         % volume of the boundary voxels needs to be halved, or quartered, etc
         L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
             
-        %%% calculate LKC 1
-        % find x shift boundary voxels, i.e. horizontal boundary parts, and
+        %%% Calculate LKC 1
+        % Find x shift boundary voxels, i.e. horizontal boundary parts, and
         % integrate using trapozoid rule.
         % Note that we later need to remove half of the end points value,
         % of each line segment which are contained in the x and the y shift
         % boundary. They will be count double otherwise.
-        xbdry = bdry_voxels( mask, "x" );      
+        xbdry = bndry_voxels( mask, "x" );      
         L(1)  = sum( sqrt( g_xx( xbdry ) ) ) * dx;
         
-        % find y shift boundary voxels, i.e. vertical boundary parts, and
+        % Find y shift boundary voxels, i.e. vertical boundary parts, and
         % integrate using trapozoid rule.
-        ybdry = bdry_voxels( mask, "y" );      
+        ybdry = bndry_voxels( mask, "y" );      
         L(1)  = L(1) + sum( sqrt( g_yy( ybdry ) ) ) * dy;
         
-        % remove double counted voxels at end of line segments and divide
+        % Remove double counted voxels at end of line segments and divide
         % length of boundary by 2, since that is what LKC1 is.
         xybdry = ybdry + xbdry == 2;
         L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
                       - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
+                        
+        %%% Fill the output structure
+        geom.vol_form = vol_form;
         
     case 3
-        % get the voxel grid dimensions after resolution increase
+        % Get the voxel grid dimensions after resolution increase
         dx = diff( xvals{1} );
         dx = dx(1);
         dy = diff( xvals{2} );
@@ -288,7 +316,7 @@ switch D
         dz = diff( xvals{3} );
         dz = dz(1);
         
-        % short cuts for the metric entries
+        % Short cuts for the metric entries
         g_xx = g(:, :, :, 1, 1 );
         g_yy = g(:, :, :, 2, 2 );
         g_zz = g(:, :, :, 3, 3 );
@@ -296,8 +324,12 @@ switch D
         g_xz = g(:, :, :, 1, 3 );
         g_yz = g(:, :, :, 2, 3 );
         
-        %%% calculate LKC 3
-        % get the volume form, i.e. sqrt(det g), max introduced for
+        % Save g to the output structure and clear
+        geom.riem_metric = g;
+        clear g
+        
+        %%% Calculate LKC 3
+        % Get the volume form, i.e. sqrt(det g), max introduced for
         % stability
         vol_form = sqrt( max(   g_xx.*g_yy.*g_zz...
                               + g_xy.*g_yz.*g_xz...
@@ -306,33 +338,31 @@ switch D
                               - g_xy.^2.*g_zz...
                               - g_xx.*g_yz.^2, 0 ) );
 
-        % restrict vol_form to mask
-        if mask_opt(2) == 1 
-            vol_form = vol_form( mask );
-        end
+        % Restrict vol_form to mask
+        vol_form = vol_form( mask );
         
-        % integate volume form over the domain assuming each voxel having
+        % Integate volume form over the domain assuming each voxel having
         % the same volume dxdydz. Simple midpoint integration is used.
-        L(3) = sum( vol_form(:) * weights(:) ) * dx * dy * dz;                  
+        L(3) = vol_form(:)' * weights(:) * dx * dy * dz;                  
 
-        %%% calculate LKC 2
-        % find faces having constant z value and integrate using simple
+        %%% Calculate LKC 2
+        % Find faces having constant z value and integrate using simple
         % midpoint rule.
-        bdry = bdry_voxels( mask, "xy" );
+        bdry = bndry_voxels( mask, "xy" );
         L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
                               - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
                           
-        bdry = bdry_voxels( mask, "xz" );
+        bdry = bndry_voxels( mask, "xz" );
         L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
                               - g_xz( bdry ).^2, 0 ) ) * dx * dz / 2 );
 
-        bdry = bdry_voxels( mask, "yz" );
+        bdry = bndry_voxels( mask, "yz" );
         L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
                               - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
         
-        %%% calculate LKC 1
-        % work in progress
+        %%% Calculate LKC 1
+        % Work in progress
 end
 %%%%%% END estimate the LKCs in different dimensions
-           
+
 return
