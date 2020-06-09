@@ -20,7 +20,7 @@ clear Sig
 % Note that in 1D there is only the 'full' option
 bdry = bndry_voxels( mask, 'full' );
 figure(1), clf,
-plot( mask + bdry ) %@Fabian, not sure what this is plotting here.
+plot( mask + bdry )
 title( 'mask + mask of boundary'  )
 
 %% %% Test section D = 2
