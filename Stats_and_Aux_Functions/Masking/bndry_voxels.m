@@ -185,7 +185,11 @@ if D==2 || D==3
             end
             
         case 3
+            % Preallocate the weights array
+            weights = zeros( s_mask + 2 );
+            % Preallocate array for the dilate array
             h = zeros( ones(1, D) * 3 );
+            
             % First dilation removes the edges, which do not belong to a
             % face in the specified plane. Second dilation recovers the
             % edges in the plane which belonged to a face and have been
@@ -194,58 +198,70 @@ if D==2 || D==3
                 h( :, :, 2 ) = 1;
                 bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
                 
-                % modify filter to count orthogonal neighbours, since they
-                % define to how many faces the bdry voxel belongs to
-                h( :, :, 2) = 0;
-                h( 2, :, 2) = 1;
-                h( :, 2, 2) = 1;
-                h( 2, 2, 2) = 0;
-                % count neighbours in the surface
-                weights =  convn( bdry, h, 'same' );
+                for z = 2:(s_mask(3) + 1)
+                    weights( :, :, z ) = getweights( bdry( :, :, z ) );
+                end
                 
-                % set the weights correctly
-                weights( ~bdry ) = 0;
-                weights( weights == 2 ) = 1/4;
-                weights( weights == 3 ) = 2/4;
-                weights( weights == 4 ) = 1;
-                
-            elseif version == "yz"
-                h( :, 2, : ) = 1;
-                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
-                
-                % modify filter to count orthogonal neighbours, since they
-                % define to how many faces the bdry voxel belongs to
-                h( :, 2, :) = 0;
-                h( 2, 2, :) = 1;
-                h( :, 2, 2) = 1;
-                h( 2, 2, 2) = 0;
-                % count neighbours in the surface
-                weights =  convn( bdry, h, 'same' );
-                
-                % set the weights correctly
-                weights( ~bdry ) = 0;
-                weights( weights == 2 ) = 1/4;
-                weights( weights == 3 ) = 2/4;
-                weights( weights == 4 ) = 1;
+%                 % modify filter to count orthogonal neighbours, since they
+%                 % define to how many faces the bdry voxel belongs to
+%                 h( :, :, 2) = 0;
+%                 h( 2, :, 2) = 1;
+%                 h( :, 2, 2) = 1;
+%                 h( 2, 2, 2) = 0;
+%                 % count neighbours in the surface
+%                 weights =  convn( bdry, h, 'same' );
+%                 
+%                 % set the weights correctly
+%                 weights( ~bdry ) = 0;
+%                 weights( weights == 2 ) = 1/4;
+%                 weights( weights == 3 ) = 2/4;
+%                 weights( weights == 4 ) = 1;
                 
             elseif version == "xz"
+                h( :, 2, : ) = 1;
+                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
+
+                for y = 2:(s_mask(2) + 1)
+                    weights( :, y, : ) = getweights( squeeze( ...
+                                                     bdry( :, y, : ) ) );
+                end
+%                 % modify filter to count orthogonal neighbours, since they
+%                 % define to how many faces the bdry voxel belongs to
+%                 h( :, 2, :) = 0;
+%                 h( 2, 2, :) = 1;
+%                 h( :, 2, 2) = 1;
+%                 h( 2, 2, 2) = 0;
+%                 % count neighbours in the surface
+%                 weights =  convn( bdry, h, 'same' );
+%                 
+%                 % set the weights correctly
+%                 weights( ~bdry ) = 0;
+%                 weights( weights == 2 ) = 1/4;
+%                 weights( weights == 3 ) = 2/4;
+%                 weights( weights == 4 ) = 1;
+                
+            elseif version == "yz"
                 h( 2, :, : ) = 1;
                 bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
-                
-                % modify filter to count orthogonal neighbours, since they
-                % define to how many faces the bdry voxel belongs to
-                h( 2, :, :) = 0;
-                h( 2, 2, :) = 1;
-                h( 2, :, 2) = 1;
-                h( 2, 2, 2) = 0;
-                % count neighbours in the surface
-                weights =  convn( bdry, h, 'same' );
-                
-                % set the weights correctly
-                weights( ~bdry ) = 0;
-                weights( weights == 2 ) = 1/4;
-                weights( weights == 3 ) = 2/4;
-                weights( weights == 4 ) = 1;
+
+                for x = 2:(s_mask(1) + 1)
+                    weights( x, :, : ) = getweights( squeeze( ...
+                                                     bdry( x, :, : ) ) );
+                end
+%                 % modify filter to count orthogonal neighbours, since they
+%                 % define to how many faces the bdry voxel belongs to
+%                 h( 2, :, :) = 0;
+%                 h( 2, 2, :) = 1;
+%                 h( 2, :, 2) = 1;
+%                 h( 2, 2, 2) = 0;
+%                 % count neighbours in the surface
+%                 weights =  convn( bdry, h, 'same' );
+%                 
+%                 % set the weights correctly
+%                 weights( ~bdry ) = 0;
+%                 weights( weights == 2 ) = 1/4;
+%                 weights( weights == 3 ) = 2/4;
+%                 weights( weights == 4 ) = 1;
                 
             elseif version == "full"
                 bdry = bdry_full;
