@@ -68,7 +68,7 @@ classdef SepKernel
             obj.adjust = zeros( [ 1 D] );
           else
               if length( FWHM ) == 1 || length( FWHM ) == D
-                  % create a standard SepKernel object of dimension D
+                  % Create a standard SepKernel object of dimension D
                   obj = GaussKernel( SepKernel( D ), FWHM );           
               else
                 error( "FWHM needs to be either of length 1 or D." )
@@ -108,25 +108,25 @@ classdef SepKernel
           %----------------------------------------------------------------
           % Author: Fabian Telschow
           %----------------------------------------------------------------
-          %%% check input
-          % check input argument and make it a vector
+          %%% Check input
+          % Check input argument and make it a vector
           if length( FWHM ) == 1
               FWHM = FWHM * ones( [ 1 obj.D ] );
           end
           
-          %%% main function
+          %%% Main function
           if  length( FWHM ) == obj.D
-            % fill the field kernel with Gaussians
+            % Fill the field kernel with Gaussians
             for d = 1:obj.D
                 obj.kernel{d} = @(x) Gker( x, FWHM(d) );
             end
             
-            % fill the field dkernel with derivatives of the Gaussians
+            % Fill the field dkernel with derivatives of the Gaussians
             for d = 1:obj.D
                 obj.dkernel{d} = @(x) Gkerderiv( x, FWHM(d) );
             end
                         
-            % fill the field truncation and dtruncation
+            % Fill the field truncation and dtruncation
             obj.truncation  = ceil( 4 * FWHM2sigma( FWHM ) );
             obj.dtruncation = obj.truncation;
           else
@@ -134,7 +134,7 @@ classdef SepKernel
           end          
       end
       
-      function gradobj = Gradient( obj )
+      function grad = Gradient( obj )
           % GRADIENT( obj ) constructs a cell array containing the partial
           % derivatives of the kernel in a cell array
           %----------------------------------------------------------------
@@ -144,8 +144,8 @@ classdef SepKernel
           %
           %----------------------------------------------------------------
           % OUTPUT
-          % gradobj  an SepKernel object where only the kernel
-          %          specifications are included, but not the dkernel.
+          % grad  a 1 x obj.D cell array containing an SepKernel object for
+          %       each partial derivative of the inputed SepKernel.
           %
           %----------------------------------------------------------------
           % EXAMPLES
@@ -161,20 +161,22 @@ classdef SepKernel
           %----------------------------------------------------------------
           %%% Check mandatory input
           
-          %%% main function
-          % initilize the gradobj
-          gradobj = SepKernel( obj.D );
-          gradobj.truncation = NaN * ones( obj.D );
+          %%% Main function
+          % Initialize the gradobj
+          grad = cell( [ 1 obj.D ] );
           
-          % fill gradobj with the apropriate values
+          % Fill grad with the apropriate values
           for d = 1:obj.D
-              % correct kernel functions for each dimension
-              gradobj.kernel{d}    = obj.kernel;
-              gradobj.kernel{d}{d} = obj.dkernel{d};
+              % Initialize SepKernel object for the d-th partial derivative
+              % by setting it to be the obj itself
+              grad{d} = obj;
               
-              % correct truncation for each dimension
-              gradobj.truncation(:,d) = obj.truncation;
-              gradobj.truncation(d,d) = obj.dtruncation(d);
+              % Correct kernel functions by taking the derivative in the
+              % dth component
+              grad{d}.kernel{d} = obj.dkernel{d};
+              
+              % Correct truncation for the derivative kernel
+              grad{d}.truncation(d) = obj.dtruncation(d);
           end
       end
       
