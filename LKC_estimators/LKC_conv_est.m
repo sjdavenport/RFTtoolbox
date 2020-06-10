@@ -10,6 +10,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % used, which are precise approximations of the true derivative, since
 % convolution fields can be computed for any location.
 %
+% Theoretical values for the LKCs of such processes under the assumption
+% that lat_data has independent mean zero unit variance voxels can be
+% obtained from the function LKC_wncfield_theory.m
+%
 % Currently, only 1D and 2D provide estimates for all LKCs.
 % 3D only allows for estimation of L2 and L3.
 %
@@ -36,7 +40,7 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 %  enlarge    an integer denoting the amount of voxels the resolution
 %             increased mask is enlarged by dilation. Note that for
 %             unbiased estimation resadd needs to be an odd number and
-%             enlarge needs to be set to the default value currently.
+%             enlarge needs to be set to the default value.
 %             Default ceil( resadd / 2 )
 %  version    string indicating which estimator for the Lambda
 %             matrix/Riemannian metric is used. Options are "analytical"
@@ -45,28 +49,131 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 %--------------------------------------------------------------------------
 % OUTPUT
 %   LKC  structure containing fields:
-%        - hatL: D x 1 vector of estimates of LKC for the sample Y. It
-%                is the average of hatL1.
-%        - L0:   integer containing the Euler characteristic of the mask
+%        - hatL: 1 x D vector of estimates of LKC for the sample Y.
+%        - L0:   integer containing the Euler characteristic of the mask or
 %                equivalently the zeroth LKC of the random fields.
 %        - geom: structure containing geometric quantities of the
 %                induced metric of the random field.
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %   - add full 3D estimation
-% -------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % EXAMPLES
-% %1D
-% rf   = noisegen( [35 35], 50, 6 );
-% mask = ones([35 35);
-% L = LKCestim_GaussConv( rf, 3, mask, 1 );
-%
-% %2D
-% rf   = noisegen( [35 35], 50, 6 );
-% mask = ones([35 35);
-% L = LKCestim_GaussConv( rf, 3, mask, 1 );
+% %% %% D = 1 
+% %% % Field parameters
+% T      = 100;
+% nsubj  = 120;
+% FWHM   = 20;
+% pad    = ceil( 4*FWHM2sigma( FWHM ) );
+% % Method = "numerical";
+% method = "analytical";
 % 
-% %3D
+% %% Example with recangular mask
+% % Generate mask
+% mask = pad_vals( true( [ T, 1 ] ), pad, 0 );
+% 
+% % LKC from continuous theory
+% theoryL = LKC_isogauss_theory( FWHM, T  );
+% 
+% % Generate test data
+% lat_data = randn( [ T+2*pad nsubj ] );
+% 
+% % Closest approximation of the continuous field uses thresholding
+% % mask_lat = 0, since otherwise there are boundary effects
+% mask_lat = 0;
+% LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+% LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+% LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
+% 
+% % Values are stable accross different resadd increases. Note that resadd
+% % should be odd.
+% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+% 
+% % Masking the data shows a boundary effect, validating departure
+% % from the theoretical value
+% LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
+% [ theoryL; LKC_masked.hatL ]'
+% 
+% %% %% D = 2 
+% %% % Parameters for the field
+% T      = 49;
+% nsubj  = 100;
+% FWHM   = sigma2FWHM(5);
+% pad = ceil( 4*FWHM2sigma( FWHM ) );
+% 
+% %% Example with recangular mask
+% % Get mask
+% mask = pad_vals( true( [ T T ] ), pad );
+% 
+% % Get LKC for the theoretical field
+% theoryL = LKC_isogauss_theory( FWHM, [ T T ] );
+% 
+% % Generate test data
+% lat_data = randn( [ T+2*pad T+2*pad nsubj ] );
+% 
+% % Closest approximation of the continuous field uses thresholding
+% % mask_lat = 0, since otherwise there are boundary effects
+% mask_lat = 0;
+% LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+% LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+% LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
+% 
+% % Values are stable accross different resadd increases. Note that resadd
+% % should be odd.
+% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+% 
+% %% Example with complicated mask
+% Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
+% mask = logical( Sig > 0.02 & Sig < 1.1 );
+% figure(1), clf,
+% imagesc( mask ), colorbar,
+% title("mask")
+% clear Sig
+% 
+% lat_data = randn( [ size(mask) nsubj ] );
+% 
+% % Closest approximation of the continuous field uses thresholding
+% % mask_lat = 0, since otherwise there are boundary effects
+% mask_lat = 0;
+% LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+% LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+% LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
+% 
+% % Values are stable accross different resadd increases. Note that resadd
+% % should be odd.
+% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+% 
+% % Masking the data gives different LKCs
+% LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
+% [ theoryL; LKC_masked.hatL ]'
+% 
+% %% %% D = 3 
+% % Parameters for the field
+% T      = 20;
+% nsubj  = 10;
+% FWHM   = sigma2FWHM(1.5);
+% pad    = ceil( 4*FWHM2sigma( FWHM ) );
+% 
+% %% Rectangular domain example
+% % generate rectangular mask with a padded zero collar 
+% mask = pad_vals( ones( [ T T T] ), pad );
+% 
+% % Get true LKC
+% theoryL = LKC_isogauss_theory( FWHM, [ T T T ] );
+% 
+% % Generate test data
+% lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
+% 
+% % Closest approximation of the continuous field uses thresholding
+% % mask_lat = 0, since otherwise there are boundary effects
+% mask_lat = 0;
+% LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+% LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+% LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
+% 
+% % Values are stable accross different resadd increases. Note that resadd
+% % should be odd.
+% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -310,17 +417,20 @@ switch D
         %%% Calculate LKC 2
         % Find faces having constant z value and integrate using simple
         % midpoint rule.
-        bdry = bndry_voxels( mask, "xy" );
+        [ bdry, weights ] = bndry_voxels( mask, "xy" );
+        weights = weights( weights ~= 0 );
         L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
-                              - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
+                              - g_xy( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dy / 2;
                           
-        bdry = bndry_voxels( mask, "xz" );
+        [ bdry, weights ] = bndry_voxels( mask, "xz" );
+        weights = weights( weights ~= 0 );
         L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
-                              - g_xz( bdry ).^2, 0 ) ) * dx * dz / 2 );
+                              - g_xz( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dz / 2;
 
-        bdry = bndry_voxels( mask, "yz" );
+        [ bdry, weights ] = bndry_voxels( mask, "yz" );
+        weights = weights( weights ~= 0 );
         L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
-                              - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
+                              - g_yz( bdry ).^2, 0 ) ) .* weights(:) ) * dy * dz / 2;
         
         %%% Calculate LKC 1
         % Work in progress
@@ -330,7 +440,7 @@ end
 
 %% Prepare output structure
 %--------------------------------------------------------------------------
-% summarize output
+% Summarize output
 LKC  = struct( 'hatL', L, 'L0', L0, 'geomQuants',...
                geom );
            
