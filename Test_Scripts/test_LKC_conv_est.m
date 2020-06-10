@@ -6,99 +6,125 @@
 %%% prepare workspace
 clear all
 close all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-addpath( genpath( "/home/drtea/matlabToolboxes/RFTtoolbox/" ) )
-
-
-%% %-----------------------------------------------------------------------
-%    Test section D = 1
-%--------------------------------------------------------------------------
-% parameter for the field
-T      = 50;
-nsubj  = 500;
-FWHM   = sigma2FWHM(20);
+%% %% D = 1 
+%% % Field parameters
+T      = 100;
+nsubj  = 120;
+FWHM   = 20;
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
-% method = "numerical";
+% Method = "numerical";
 method = "analytical";
 
-mask = zeros( [ T+2*pad 1 ] );
-mask( (pad+1):(end-pad) ) = 1;
+%% Example with recangular mask
+% Generate mask
+mask = pad_vals( true( [ T, 1 ] ), pad, 0 );
 
-% get true LKC from continuous theory
-trueL = LKC_isogauss_theory( FWHM, T  );
+% LKC from continuous theory
+theoryL = LKC_isogauss_theory( FWHM, T  );
 
-% generate test data
+% Generate test data
 lat_data = randn( [ T+2*pad nsubj ] );
 
-% closest approximation of the continuous field
-resadd = 7
-LKC = LKC_conv_est( lat_data, mask, FWHM, resadd, 0,...
-                    ceil( resadd / 2 ), method );
-[ trueL; LKC.hatL ]
+% Closest approximation of the continuous field uses thresholding
+% mask_lat = 0, since otherwise there are boundary effects
+mask_lat = 0;
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
+% Values are stable accross different resadd increases. Note that resadd
+% should be odd.
+[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 
-% estimate of LKCs
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resadd, 0, 0 )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resadd, 0, 1 )
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resadd, 1 )
+% Masking the data shows a boundary effect, validating departure
+% from the theoretical value
+LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
+[ theoryL; LKC_masked.hatL ]'
 
-
-%% %-----------------------------------------------------------------------
-%    Test section D = 2
-%--------------------------------------------------------------------------
-% parameter for the field
+%% %% D = 2 
+%% % Parameters for the field
 T      = 49;
 nsubj  = 100;
-FWHM   = sigma2FWHM(0.5);
+FWHM   = sigma2FWHM(5);
 pad = ceil( 4*FWHM2sigma( FWHM ) );
 
-mask = zeros( [ T+2*pad T+2*pad ] );
-mask( (pad+1):(end-pad), (pad+1):(end-pad) ) = 1;
+%% Example with recangular mask
+% Get mask
+mask = pad_vals( true( [ T T ] ), pad );
 
-% get true LKC
-trueL = LKC_isogauss_theory( FWHM, [ T T ] );
+% Get LKC for the theoretical field
+theoryL = LKC_isogauss_theory( FWHM, [ T T ] );
 
-% generate test data
+% Generate test data
 lat_data = randn( [ T+2*pad T+2*pad nsubj ] );
 
-resadd = 3;
-% closest approximation of the continuous field
-LKC = LKC_conv_est( lat_data, mask, FWHM, resadd, 0 );
-[ trueL; LKC.hatL ]
+% Closest approximation of the continuous field uses thresholding
+% mask_lat = 0, since otherwise there are boundary effects
+mask_lat = 0;
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
-% estimate of LKCs using different options for the mask
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resadd, 1 )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resadd, 0, 0 )
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resadd, 0, 1 )
+% Values are stable accross different resadd increases. Note that resadd
+% should be odd.
+[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 
+%% Example with complicated mask
+Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
+mask = logical( Sig > 0.02 & Sig < 1.1 );
+figure(1), clf,
+imagesc( mask ), colorbar,
+title("mask")
+clear Sig
 
-%% %-----------------------------------------------------------------------
-%    Test section D = 3
-%--------------------------------------------------------------------------
-% parameter for the field
-T      = 30;
-nsubj  = 50;
-FWHM   = sigma2FWHM(5);
-resadd = 1;
+% Get LKC for the theoretical field
+theoryL = LKC_wncfield_theory( mask, FWHM, 3, mask_lat );
+
+% Generate test data
+lat_data = randn( [ size(mask) nsubj ] );
+
+% Closest approximation of the continuous field uses thresholding
+% mask_lat = 0, since otherwise there are boundary effects
+mask_lat = 0;
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
+
+% Values are stable accross different resadd increases. Note that resadd
+% should be odd.
+[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+
+% Masking the data gives different LKCs
+theoryL_masked = LKC_wncfield_theory( mask, FWHM, 3, 1 );
+LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
+[ theoryL; theoryL_masked; LKC_masked.hatL ]'
+
+%% %% D = 3 
+% Parameters for the field
+T      = 20;
+nsubj  = 10;
+FWHM   = sigma2FWHM(1.5);
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
-% generate rectangular mask with a padded zero collar 
-mask = zeros( [ T+2*pad T+2*pad T+2*pad ] );
-mask( (pad+1):(end-pad), (pad+1):(end-pad), (pad+1):(end-pad) ) = 1;
+%% Rectangular domain example
+% Generate rectangular mask with a padded zero collar 
+mask = pad_vals( ones( [ T T T] ), pad );
 
-% get true LKC
-trueL = LKC_isogauss_theory( FWHM, [ T T T ] );
+% Get theoretical LKC
+theoryL = LKC_wncfield_theory( mask, FWHM, 3, 0 );
 
-% generate test data
+% Generate test data
 lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
 
-% closest approximation of the continuous field
-tic
-LKC = LKC_conv_est( lat_data, mask, FWHM, resadd, 0 );
-toc
-[ trueL; LKC.hatL ]
+% Closest approximation of the continuous field uses thresholding
+% mask_lat = 0, since otherwise there are boundary effects
+mask_lat = 0;
+LKC1 = LKC_conv_est( lat_data, mask, FWHM, 1, mask_lat );
+LKC3 = LKC_conv_est( lat_data, mask, FWHM, 3, mask_lat );
+LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
-% estimate of LKCs
-LKC1 = LKC_conv_est( lat_data, mask, FWHM, resadd, 1, 3 )
-LKC2 = LKC_conv_est( lat_data, mask, FWHM, resadd, 0, 0 )
-LKC3 = LKC_conv_est( lat_data, mask, FWHM, resadd, 1 )
+% Values are stable accross different resadd increases. Note that resadd
+% should be odd.
+[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
