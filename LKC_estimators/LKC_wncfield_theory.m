@@ -199,6 +199,41 @@ function LKC = LKC_wncfield_theory( mask, Kernel, resadd, mask_lat, enlarge )
 % lat_data = randn( [ size( mask ) 200 ] );
 % LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
 % LKChat.hatL
+% %% % Circular mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 3, 2 );
+% % Create a mask and show it
+% siz = 3;
+% dx  = 0.5;
+% [x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
+% xvals = [x(:), y(:), z(:)]';
+% h     = reshape( GkerMV( xvals, 5 ), size(x) );
+% mask  = logical( h > 0.003 );
+% imagesc( mask(:,:,7) )
+% clear h
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (maybe L2 needs a small fix)
+% lat_data = randn( [ size( mask ) 10 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (maybe L2 needs a small fix)
+% lat_data = randn( [ size( mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
+% LKChat.hatL
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
