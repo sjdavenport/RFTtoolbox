@@ -1,4 +1,4 @@
-function bdry = bndry_voxels( mask, version )
+function [ bdry, weights ] = bndry_voxels( mask, version )
 % This function computes a high resolution version of a given mask.
 % It has the option to enlarge the mask region by resAdd to use shifted
 % boundaries in LKC estimation. This is required in the interpretation of
@@ -150,20 +150,7 @@ end
 
 % Make a larger image so that masked voxels at the boundary of the image
 % will be judged to be on the boundary
-if D == 1
-    larger_image = zeros( s_mask + [2 0] );
-else
-    larger_image = zeros( s_mask + 2 );    
-end
-
-% Get the locations to place the inner (original) data
-b = cell( 1, D );
-for d = 1:D
-   b{d} = 2:s_mask(d) + 1;
-end
-
-% Set the inner locations to be the mask
-larger_image( b{:} ) = mask;
+[ larger_image, locs ] = pad_vals( mask );
 
 %%  add/check optional values
 %--------------------------------------------------------------------------
@@ -175,40 +162,94 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-if version == "full"
-    bdry = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
-                            larger_image;
-elseif D==2 || D==3
-
+% compute the full boundary
+bdry_full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
+                        larger_image;
+                    
+% compute parts of the boundary if neccessary
+if D==2 || D==3
     switch D
         case 2
+            weights = NaN * bdry_full;
+            bdry = bdry_full;
             if version == "y"
-                bdry = logical( imdilate( ~larger_image,...
+                bdry = logical( imdilate( ~bdry,...
                                     [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
-                                        larger_image;
+                                        bdry;
             elseif version == "x"
-                bdry = logical( imdilate( ~larger_image,...
+                bdry = logical( imdilate( ~bdry,...
                                     [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
-                                        larger_image;
-            else
+                                        bdry;
+            elseif version ~= "full"
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
             
         case 3
             h = zeros( ones(1, D) * 3 );
-            h( 2, 2, 2 ) = 1;
+            % First dilation removes the edges, which do not belong to a
+            % face in the specified plane. Second dilation recovers the
+            % edges in the plane which belonged to a face and have been
+            % removed
             if version == "xy"
-                h( 2, 2, 1 ) = 1;
-                h( 2, 2, 3 ) = 1;
-                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
+                h( :, :, 2 ) = 1;
+                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
+                
+                % modify filter to count orthogonal neighbours, since they
+                % define to how many faces the bdry voxel belongs to
+                h( :, :, 2) = 0;
+                h( 2, :, 2) = 1;
+                h( :, 2, 2) = 1;
+                h( 2, 2, 2) = 0;
+                % count neighbours in the surface
+                weights =  convn( bdry, h, 'same' );
+                
+                % set the weights correctly
+                weights( ~bdry ) = 0;
+                weights( weights == 2 ) = 1/4;
+                weights( weights == 3 ) = 2/4;
+                weights( weights == 4 ) = 1;
+                
             elseif version == "yz"
-                h( 2, 1, 2 ) = 1;
-                h( 2, 3, 2 ) = 1;
-                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
+                h( :, 2, : ) = 1;
+                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
+                
+                % modify filter to count orthogonal neighbours, since they
+                % define to how many faces the bdry voxel belongs to
+                h( :, 2, :) = 0;
+                h( 2, 2, :) = 1;
+                h( :, 2, 2) = 1;
+                h( 2, 2, 2) = 0;
+                % count neighbours in the surface
+                weights =  convn( bdry, h, 'same' );
+                
+                % set the weights correctly
+                weights( ~bdry ) = 0;
+                weights( weights == 2 ) = 1/4;
+                weights( weights == 3 ) = 2/4;
+                weights( weights == 4 ) = 1;
+                
             elseif version == "xz"
-                h( 1,2,  2 ) = 1;
-                h( 3,2,  2 ) = 1;
-                bdry = logical( imdilate( ~larger_image, h ) ) &  larger_image;
+                h( 2, :, : ) = 1;
+                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
+                
+                % modify filter to count orthogonal neighbours, since they
+                % define to how many faces the bdry voxel belongs to
+                h( 2, :, :) = 0;
+                h( 2, 2, :) = 1;
+                h( 2, :, 2) = 1;
+                h( 2, 2, 2) = 0;
+                % count neighbours in the surface
+                weights =  convn( bdry, h, 'same' );
+                
+                % set the weights correctly
+                weights( ~bdry ) = 0;
+                weights( weights == 2 ) = 1/4;
+                weights( weights == 3 ) = 2/4;
+                weights( weights == 4 ) = 1;
+                
+            elseif version == "full"
+                bdry = bdry_full;
+                weights = NaN * bdry;
             else
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
@@ -220,6 +261,7 @@ else
 end
 
 % Remove the outer voxels
-bdry = bdry( b{:} );
+bdry    = bdry( locs{:} );
+weights = weights( locs{:} );
 
 return
