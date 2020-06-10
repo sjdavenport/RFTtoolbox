@@ -309,7 +309,7 @@ if ~exist( 'D', 'var' )
     D = D_latdata;
 end
 
-% get size of the domain and number of subjects from lat_data
+% Get size of the domain and number of subjects from lat_data
 if D > 1
     if D_latdata == D
         nsubj = 1;
@@ -366,11 +366,11 @@ if ~exist( 'enlarge', 'var' )
     enlarge = 0;
 end
 
-%% check and prepare the Kernel input structure
+%% Check and prepare the Kernel input structure
 %--------------------------------------------------------------------------
 
-if isnumeric( Kernel ) % If Kernel is numeric use an isotropic Gaussian Kernel
-    
+if isnumeric( Kernel )
+    %%% If Kernel is numeric use an isotropic Gaussian Kernel
     % Change numerical Kernel input to structure
     Kernel = SepKernel( D, Kernel );
 
@@ -428,15 +428,15 @@ if D < 4
         % preallocate the output field for speed
         smooth_data = ones( [ Dimhr nsubj D ] );
         
-        % get the gradient object of the Kernel
+        % Get the gradient object of the Kernel
         dKernel = Gradient( Kernel );
         
-        % calculates the derivatives of the convolution field
+        % Calculates the derivatives of the convolution field
         for d = 1:D
             smooth_data(indexD{:},:,d) = fconv2( expanded_lat_data,...
-                                                dKernel.kernel{d}, D, ...
-                                                dKernel.truncation(1), dx,...
-                                                dKernel.adjust );
+                                                 dKernel{d}.kernel, D, ...
+                                                 dKernel{d}.truncation,...
+                                                 dx, dKernel{d}.adjust );
         end
         
     else
