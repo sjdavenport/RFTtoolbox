@@ -1,5 +1,5 @@
-function L = LKC_wncfield_theory( mask, Kernel, resadd, mask_opt, enlarge )
-% LKC_WNCFIELD_THEORY( mask, Kernel, resadd, mask_opt, enlarge ) computes
+function LKC = LKC_wncfield_theory( mask, Kernel, resadd, mask_lat, enlarge )
+% LKC_WNCFIELD_THEORY( mask, Kernel, resadd, mask_lat, enlarge ) computes
 % theoretical Lipschitz Killing curvatures for a convolution field
 % derived from a seperable kernel with underlying discrete independent
 % Gaussian white noise process on a lattice.
@@ -34,18 +34,181 @@ function L = LKC_wncfield_theory( mask, Kernel, resadd, mask_opt, enlarge )
 %      of voxels mean zero and variance 1
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %% %% D = 1 
+% %% % Rectangular mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 1, 3 );
+% 
+% % Create a mask and show it
+% mask = ones( [ 30 1 ] );
+% mask = pad_vals( mask, Kernel.truncation );
+% plot(mask)
+% title('mask')
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask,1 ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [  size( mask,1 ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
+% LKChat.hatL
+% 
+% %% % Complicated Mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 1, 20 );
+% 
+% % Create a mask and show it
+% Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
+% mask = logical( Sig > 0.02 );
+% mask = mask(50,:)';
+% plot( mask ),
+% title( 'mask' )
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result
+% lat_data = randn( [ size( mask,1 ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result
+% lat_data = randn( [ size( mask,1 ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
+% LKChat.hatL
+% 
+% %% %% D = 2 
+% %% % Rectangular mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 2, 3 );
+% 
+% % Create a mask and show it
+% mask = ones( [ 30 30 ] );
+% mask = pad_vals( mask, Kernel.truncation );
+% imagesc(mask)
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% pad_mask = pad_vals( mask, Kernel.truncation );
+% lat_data = randn( [ size(pad_mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, pad_mask, Kernel, 1, 0 );
+% LKChat.hatL
+% 
+% %% % Complicated mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 2, 20 );
+% 
+% % Create a mask and show it
+% Sig  = gensig( [1,2], 3, [10,20], [70,100], {[30,20], [50,70]} );
+% mask = logical( Sig > 0.02 & Sig < 1.1 );
+% imagesc(mask)
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
+% LKChat.hatL
+% 
+% %% %% D = 3
+% %% % Rectangular mask and Kernel
+% % Set Kernel to be isotropic Gaussian with FHWM
+% Kernel = SepKernel( 3, 2 );
+% 
+% % Create a mask
+% mask = ones( [ 10 10 10 ] );
+% mask = pad_vals( mask, Kernel.truncation );
+% 
+% %% Stability for increasing resadd
+% % mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask ) 10 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 1 );
+% LKChat.hatL
+% 
+% % do not mask the lattice data
+% LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 0 );
+% LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 0 );
+% LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 0 );
+% [ LKC1.L; LKC3.L; LKC5.L ]
+% 
+% % Show that LKC_conv_est provides similar result (seems to agree)
+% lat_data = randn( [ size( mask ) 200 ] );
+% LKChat = LKC_conv_est( lat_data, mask, Kernel, 1, 0 );
+% LKChat.hatL
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
-
 
 %% check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
 % Get size of the mask
 sM = size( mask );
-
-% @Sam: design question, do we want to force the user to use logicals?
+% make mask logical
 mask = logical( mask );
 
 % Dimension of the domain, since matlab is not consistent for D<1, we need
@@ -73,7 +236,6 @@ elseif ~isa( Kernel, 'SepKernel' )
                    "object of class SepKernel!" ) );
 end
 
-
 %% Add/check optional input
 %--------------------------------------------------------------------------
 
@@ -93,7 +255,7 @@ if ~exist( 'mask_lat', 'var' )
    mask_lat = 1;
 end
 
-%% main function
+%% Main function
 %--------------------------------------------------------------------------
 
 % Allocate vector for Lipschitz Killing curvature
@@ -112,23 +274,23 @@ else
     weights = ones( [ sum( mask(:) ), 1 ] );
 end
 
-% get the size of the resolution increased domain
+% Get the size of the resolution increased domain
 Dimhr = size( mask );
 
 
 %%%%%% BEGIN get the Riemannian metric/Lambda matrix assuming that the
 %%%%%% voxels are independent Gaussian white noise
-% preallocate the Riemannian metric
+% Preallocate the Riemannian metric
 g = zeros( [ Dimhr D D ] );
 
-% create index to fill the original mask at the correct voxels of the high
+% Create index to fill the original mask at the correct voxels of the high
 % resolution mask
 index = cell( [ 1 D ] );
 for d = 1:D
     index{d} = ( enlarge + 1 ):( resadd + 1 ):( Dimhr(d) - enlarge );
 end
 
-% fill the resolution increased mask with the values from the original mask
+% Fill the resolution increased mask with the values from the original mask
 % at the correct locations
 onesField = zeros( Dimhr );
 onesField( index{:} ) = 1;
@@ -138,10 +300,10 @@ if mask_lat
     onesField = mask .* onesField;
 end
 
-%%% get the entries of the Riemannian metric
+%%% Get the entries of the Riemannian metric
 switch D
     case 1
-        % get the theoretical variance of the field and the variance of
+        % Get the theoretical variance of the field and the variance of
         % derivatives
         VY    = fconv2( onesField, @(x) Kernel.kernel{1}(x).^2, D,...
                         Kernel.truncation, dx );
@@ -151,61 +313,112 @@ switch D
                                                 Kernel.dkernel{1}(x), D,...
                         min( Kernel.truncation,  Kernel.dtruncation ), dx );
         
-        % get the volume form
-        g = ( VdxY.*VY - CYdxY.^2 ) ./ VY;
-
+        % Get the volume form
+        g = ( VdxY .* VY - CYdxY.^2 ) ./ VY.^2;
+        
     case 2
-        % get the theoretical variance of the field and the variance of
+        % Get the partial derivatives of the Kernel
+        grad_Kernel = Gradient( Kernel );
+        dxKernel = grad_Kernel{1};
+        dyKernel = grad_Kernel{2};
+        clear grad_Kernel
+        
+        % Get the theoretical variance of the field and the variance of
         % derivatives
-        VY      = fconv2( onesField, { @(x) Kernel.kernel{1}(x).^2,...
-                                       @(x) Kernel.kernel{2}(x).^2 }, D,...
+        VY      = fconv2( onesField,...
+                          { @(x) Kernel.kernel{1}(x).^2,...
+                            @(x) Kernel.kernel{2}(x).^2 }, D,...
                           Kernel.truncation, dx );
-        VdxY    = fconv2( onesField, { @(x) Kernel.dkernel{1}(x).^2,...
-                                       @(x)  Kernel.kernel{2}(x).^2 }, D,...
+        VdxY    = fconv2( onesField,...
+                          { @(x) dxKernel.kernel{1}(x).^2,...
+                            @(x) dxKernel.kernel{2}(x).^2 }, D,...
                           Kernel.truncation, dx );
-        VdyY    = fconv2( onesField, { @(x)  Kernel.kernel{1}(x).^2,...
-                                       @(x) Kernel.dkernel{2}(x).^2 }, D,...
+        VdyY    = fconv2( onesField,...
+                          { @(x) dyKernel.kernel{1}(x).^2,...
+                            @(x) dyKernel.kernel{2}(x).^2 }, D,...
                           Kernel.truncation, dx );
         CYdyY   = fconv2( onesField,...
-                          { @(x) Kernel.kernel{1}(x) .* Kernel.kernel{1}(x),...
-                            @(x) Kernel.kernel{2}(x) .* Kernel.dkernel{2}(x) },...
+                          { @(x) Kernel.kernel{1}(x) .* dyKernel.kernel{1}(x),...
+                            @(x) Kernel.kernel{2}(x) .* dyKernel.kernel{2}(x) },...
                             D, Kernel.truncation, dx );
         CYdxY   = fconv2( onesField,...
-                          { @(x) Kernel.kernel{1}(x) .* Kernel.dkernel{1}(x),...
-                            @(x) Kernel.kernel{2}(x) .* Kernel.kernel{2}(x) },...
+                          { @(x) Kernel.kernel{1}(x) .* dxKernel.kernel{1}(x),...
+                            @(x) Kernel.kernel{2}(x) .* dxKernel.kernel{2}(x) },...
                             D, Kernel.truncation, dx );
         CdxYdyY = fconv2( onesField,...
-                          { @(x) Kernel.kernel{1}(x) .* Kernel.dkernel{1}(x),...
-                            @(x) Kernel.kernel{2}(x) .* Kernel.dkernel{2}(x) },...
+                          { @(x) dxKernel.kernel{1}(x) .* dyKernel.dkernel{1}(x),...
+                            @(x) dxKernel.kernel{2}(x) .* dyKernel.dkernel{2}(x) },...
                             D, Kernel.truncation, dx );
 
-        % entries of riemanian metric
+        % Entries of riemanian metric
         g( :, :, 1, 1 ) = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
         g( :, :, 2, 2 ) = -CYdyY.^2 ./ VY.^2 + VdyY ./ VY;
         g( :, :, 1, 2 ) = -CYdyY .* CYdxY ./ VY.^2 + CdxYdyY ./ VY;
 
      case 3
-        % get the estimates of the covariances
-        VY   = var( convY,  0, D+1 );
-        VdxY = var( convYx, 0, D+1 );
-        VdyY = var( convYy, 0, D+1 );
-        VdzY = var( convYy, 0, D+1 );
+        % Get the partial derivatives of the Kernel
+        grad_Kernel = Gradient( Kernel );
+        dxKernel = grad_Kernel{1};
+        dyKernel = grad_Kernel{2};
+        dzKernel = grad_Kernel{3};
+        clear grad_Kernel
         
-        CdxYdyY = sum( ( convYy - mean( convYy, D+1 ) ) .* ...
-                       ( convYx - mean( convYx, D+1 ) ), D+1 ) / (nsubj-1);
-        CdxYdzY = sum( ( convYx - mean( convYx, D+1 ) ) .* ...
-                       ( convYz - mean( convYz, D+1 ) ), D+1 ) / (nsubj-1);
-        CdyYdzY = sum( ( convYy - mean( convYy, D+1 ) ) .* ...
-                       ( convYz - mean( convYz, D+1 ) ), D+1 ) / (nsubj-1);
+        % Get the estimates of the covariances        
+        VY   = fconv2( onesField,...
+                       { @(x) Kernel.kernel{1}(x).^2,...
+                         @(x) Kernel.kernel{2}(x).^2,...
+                         @(x) Kernel.kernel{3}(x).^2 }, D,...
+                       Kernel.truncation, dx );
+        VdxY = fconv2( onesField,...
+                       { @(x) dxKernel.kernel{1}(x).^2,...
+                         @(x) dxKernel.kernel{2}(x).^2,...
+                         @(x) dxKernel.kernel{3}(x).^2 }, D,...
+                       Kernel.truncation, dx );
+        VdyY = fconv2( onesField,...
+                       { @(x) dyKernel.kernel{1}(x).^2,...
+                         @(x) dyKernel.kernel{2}(x).^2,...
+                         @(x) dyKernel.kernel{3}(x).^2 }, D,...
+                       Kernel.truncation, dx );
+        VdzY = fconv2( onesField,...
+                       { @(x) dzKernel.kernel{1}(x).^2,...
+                         @(x) dzKernel.kernel{2}(x).^2,...
+                         @(x) dzKernel.kernel{3}(x).^2 }, D,...
+                       Kernel.truncation, dx );
+        
+        CdxYdyY = fconv2( onesField,...
+                          { @(x) dxKernel.kernel{1}(x) .* dyKernel.kernel{1}(x),...
+                            @(x) dxKernel.kernel{2}(x) .* dyKernel.kernel{2}(x),...
+                            @(x) dxKernel.kernel{3}(x) .* dyKernel.kernel{3}(x) },...
+                            D, Kernel.truncation, dx );
 
-        CYdxY = sum( ( convYx - mean( convYx, D+1 ) ) .* ...
-                     ( convY  - mean( convY,  D+1 ) ), D+1 ) / (nsubj-1);
-        CYdyY = sum( ( convYy - mean( convYy, D+1 ) ) .* ...
-                     ( convY  - mean( convY,  D+1 ) ), D+1 ) / (nsubj-1);
-        CYdzY = sum( ( convYz - mean( convYz, D+1 ) ) .* ...
-                     ( convY  - mean( convY,  D+1 ) ), D+1 ) / (nsubj-1);
+        CdxYdzY = fconv2( onesField,...
+                          { @(x) dxKernel.kernel{1}(x) .* dzKernel.kernel{1}(x),...
+                            @(x) dxKernel.kernel{2}(x) .* dzKernel.kernel{2}(x),...
+                            @(x) dxKernel.kernel{3}(x) .* dzKernel.kernel{3}(x) },...
+                            D, Kernel.truncation, dx );
+        CdyYdzY = fconv2( onesField,...
+                          { @(x) dzKernel.kernel{1}(x) .* dyKernel.kernel{1}(x),...
+                            @(x) dzKernel.kernel{2}(x) .* dyKernel.kernel{2}(x),...
+                            @(x) dzKernel.kernel{3}(x) .* dyKernel.kernel{3}(x) },...
+                            D, Kernel.truncation, dx );
+                        
+        CYdxY = fconv2( onesField,...
+                        { @(x) dxKernel.kernel{1}(x) .* Kernel.kernel{1}(x),...
+                          @(x) dxKernel.kernel{2}(x) .* Kernel.kernel{2}(x),...
+                          @(x) dxKernel.kernel{3}(x) .* Kernel.kernel{3}(x) },...
+                          D, Kernel.truncation, dx );
+        CYdyY = fconv2( onesField,...
+                        { @(x) dyKernel.kernel{1}(x) .* Kernel.kernel{1}(x),...
+                          @(x) dyKernel.kernel{2}(x) .* Kernel.kernel{2}(x),...
+                          @(x) dyKernel.kernel{3}(x) .* Kernel.kernel{3}(x) },...
+                          D, Kernel.truncation, dx );
+        CYdzY = fconv2( onesField,...
+                        { @(x) dzKernel.kernel{1}(x) .* Kernel.kernel{1}(x),...
+                          @(x) dzKernel.kernel{2}(x) .* Kernel.kernel{2}(x),...
+                          @(x) dzKernel.kernel{3}(x) .* Kernel.kernel{3}(x) },...
+                          D, Kernel.truncation, dx );
                  
-        % entries of riemanian metric/ Lambda matrix from neuroimaging
+        % Entries of riemanian metric/ Lambda matrix from neuroimaging
         g( :, :, :, 1, 1 ) = ( -CYdxY.^2 + VdxY .* VY ) ./ VY.^2;
         g( :, :, :, 2, 2 ) = ( -CYdyY.^2 + VdyY .* VY ) ./ VY.^2;
         g( :, :, :, 3, 3 ) = ( -CYdzY.^2 + VdzY .* VY ) ./ VY.^2;
@@ -215,7 +428,7 @@ switch D
         
 end
 
-% change nan to zero because there is a division by zero if masking
+% Change nan to zero because there is a division by zero if masking
 g = nan2zero( g );
 
 % Setting up the default xvals_vecs
@@ -225,6 +438,7 @@ for d = 1:D
     xvals{d} = ( ( 1 - enlarge*dx ):dx:( sM(d) + enlarge*dx ) )...
         + Kernel.adjust(d);
 end
+
 
 %%%%%% BEGIN estimate the LKCs in different dimensions
 %%% Compute 0th LKC
@@ -348,21 +562,30 @@ switch D
         %%% Calculate LKC 2
         % Find faces having constant z value and integrate using simple
         % midpoint rule.
-        bdry = bndry_voxels( mask, "xy" );
+        [ bdry, weights ] = bndry_voxels( mask, "xy" );
+        weights = weights( weights ~= 0 );
         L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
-                              - g_xy( bdry ).^2, 0 ) ) ) * dx * dy / 2;
+                              - g_xy( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dy / 2;
                           
-        bdry = bndry_voxels( mask, "xz" );
+        [ bdry, weights ] = bndry_voxels( mask, "xz" );
+        weights = weights( weights ~= 0 );
         L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
-                              - g_xz( bdry ).^2, 0 ) ) * dx * dz / 2 );
+                              - g_xz( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dz / 2;
 
-        bdry = bndry_voxels( mask, "yz" );
+        [ bdry, weights ] = bndry_voxels( mask, "yz" );
+        weights = weights( weights ~= 0 );
         L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
-                              - g_yz( bdry ).^2, 0 ) ) * dy * dz / 2 );
+                              - g_yz( bdry ).^2, 0 ) ) .* weights(:) ) * dy * dz / 2;
         
         %%% Calculate LKC 1
         % Work in progress
 end
 %%%%%% END estimate the LKCs in different dimensions
+
+%% Prepare output structure
+%--------------------------------------------------------------------------
+% Summarize output
+LKC  = struct( 'L', L, 'L0', L0, 'geomQuants',...
+               geom );
 
 return
