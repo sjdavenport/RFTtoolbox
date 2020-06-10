@@ -58,26 +58,15 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 
-% easy fix for the bug. Shown in test_volume_highres_mask.
+% Easy fix for the bug. Shown in test_volume_highres_mask.
 % Maybe there is something more smart possible. To see the bug uncomment
-% line 61:77. Also uncomment line 98/99
-indexD = cell( [ 1 D ] );
-for d = 1:D
-    indexD{d} = 2:(Dim_hr(d)+1);
-end
+% line 65:69. Also uncomment line 98/99
 
-tmp = mask_hr;
-if D > 1
-    mask_hr = false( Dim_hr + 2 );
-else
-    mask_hr = false( Dim_hr + [ 2, 0] );
-end
+% Fill mask into mask enlarged by padding 0's
+[ mask_hr, locs ] = pad_vals( mask_hr );
 
-% fill mask into slightly bigger mask
-mask_hr(indexD{:}) = tmp;
-% get new resolution
+% Get new resolution
 Dim_hr = size(mask_hr);
-clear tmp
 
 % Divide voxels in the high res mask in two in each dimension 
 mask_with_divided_voxels = mask_highres_divide( mask_hr, 2 );
@@ -100,7 +89,7 @@ for d = 1:D
 end
 weights = sum_within_each_voxel_large( index{:} ) / 2^D;
 
-% remove the extra padded 0 values
-weights = weights(indexD{:});
+% Remove the extra padded 0 values
+weights = weights(locs{:});
 end
 
