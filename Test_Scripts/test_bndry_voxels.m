@@ -156,13 +156,13 @@ mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
 
 % get boundary voxels lying in z value planes or better having a not to the
 % mask connected face pointing into the z direction
-[ bdry, weights ] = bndry_voxels( logical( mask_hr ), "xy" )
+[ bdry_xy, weights_xy ] = bndry_voxels( logical( mask_hr ), "xy" )
 
 % same as before for y
-bdry = bndry_voxels( logical( mask ), "xz" )
+[ bdry_xz, weights_xz ] = bndry_voxels( logical( mask ), "xz" )
 
 % same as before for x
-bdry = bndry_voxels( logical( mask ), "yz" )
+[ bdry_yz, weights_yz ] = bndry_voxels( logical( mask ), "yz" )
 
 % same as before for full
 bdry = bndry_voxels( logical( mask_hr ), "full" )

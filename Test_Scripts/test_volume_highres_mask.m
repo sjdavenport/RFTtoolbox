@@ -234,11 +234,14 @@ bdry_vols
 %% % Box object with corner missing
 % Create a mask and show it
 mask  = true([ 10 5 10 ]);
-mask(1:3, 1:2, 1:3) = 0;
+%mask(1:3, 1:2, 1:3) = 0;
 clear h
 
 %% Get resolution increased masks
 bdry_vols = zeros([ 1 3 ]);
+bdry_vols_xy = zeros([ 1 3 ]);
+bdry_vols_yz = zeros([ 1 3 ]);
+bdry_vols_xz = zeros([ 1 3 ]);
 k = 0;
 for resadd = [ 1 3 5 ]
     k = k+1;
@@ -248,8 +251,11 @@ for resadd = [ 1 3 5 ]
     [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
     [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
 
-    bdry_vols(k) = ( sum( weights_xy(:) ) + ...
-                  sum( weights_xz(:) ) + ...
-                  sum( weights_yz(:) ) ) * dx^2;
+    bdry_vols_xy(k) = sum( weights_xy(:) ) * dx^2;
+    bdry_vols_xz(k) = sum( weights_xz(:) ) * dx^2;
+    bdry_vols_yz(k) = sum( weights_yz(:) ) * dx^2;
 end
-bdry_vols
+bdry_vols_xy
+bdry_vols_xz
+bdry_vols_yz
+bdry_vols_xy(k) + bdry_vols_yz + bdry_vols_xz;
