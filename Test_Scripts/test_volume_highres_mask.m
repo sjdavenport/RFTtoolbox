@@ -178,3 +178,78 @@ mask(2,2,3) = 0;
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
  [ get_volume( mask, 0, D ), get_volume( old1, 1, D ),...
    get_volume( old3, 3, D ), get_volume( old5, 5, D ) ]]
+
+%% %% Boundary volume
+D  = 3;
+%% % Spherical object
+% Create a mask and show it
+siz = 3;
+dx  = 0.5;
+[x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
+xvals = [x(:), y(:), z(:)]';
+h     = reshape( GkerMV( xvals, 5 ), size(x) );
+mask  = logical( h > 0.003 );
+imagesc( mask(:,:,7) )
+clear h
+
+%% Get resolution increased masks
+bdry_vols = zeros([ 1 3 ]);
+k = 0;
+for resadd = [ 1 3 5 ]
+    k = k+1;
+    dx = 1 / ( resadd + 1 );
+    mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+
+    bdry_vols(k) = ( sum( weights_xy(:) ) + ...
+                  sum( weights_xz(:) ) + ...
+                  sum( weights_yz(:) ) ) * dx^2;
+end
+bdry_vols
+
+%% % Box object
+% Create a mask and show it
+mask  = true([ 10 5 10 ]);
+clear h
+
+%% Get resolution increased masks
+bdry_vols = zeros([ 1 3 ]);
+k = 0;
+for resadd = [ 1 3 5 ]
+    k = k+1;
+    dx = 1 / ( resadd + 1 );
+    mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+
+    bdry_vols(k) = ( sum( weights_xy(:) ) + ...
+                  sum( weights_xz(:) ) + ...
+                  sum( weights_yz(:) ) ) * dx^2;
+end
+bdry_vols
+
+%% % Box object with corner missing
+% Create a mask and show it
+mask  = true([ 10 5 10 ]);
+mask(1:3, 1:2, 1:3) = 0;
+clear h
+
+%% Get resolution increased masks
+bdry_vols = zeros([ 1 3 ]);
+k = 0;
+for resadd = [ 1 3 5 ]
+    k = k+1;
+    dx = 1 / ( resadd + 1 );
+    mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+
+    bdry_vols(k) = ( sum( weights_xy(:) ) + ...
+                  sum( weights_xz(:) ) + ...
+                  sum( weights_yz(:) ) ) * dx^2;
+end
+bdry_vols
