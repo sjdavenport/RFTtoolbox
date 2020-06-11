@@ -37,7 +37,8 @@ end
 
 if any(FWHM)
     if nDim == 2
-        sImg = fconv(double(Img), FWHM(1));
+        K = SepKernel( nDim, FWHM );
+        sImg = fconv( double(Img), K.kernel, nDim, K.truncation );
 %         sImg = spm_conv(double(Img), FWHM(1), FWHM(2));
     elseif nDim == 3
         sImg = 0*Img; %Create an empty image of the right dimensions.
