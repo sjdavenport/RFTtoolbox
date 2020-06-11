@@ -34,12 +34,12 @@ Y = randn( [ Dim(1) Nsubj ] );
 enlarge = 0;
 h = 1e-5;
 hatLambda_conv = Lambda_conv_est( Y, FWHM, resAdd, enlarge );
-hatLambda_num  = Lambda_numeric_est( Y, FWHM, resAdd, enlarge, h );
-Lambda_array   = Lambda_est( Y, FWHM, D, resAdd, h );
+%hatLambda_num  = Lambda_numeric_est( Y, FWHM, resAdd, enlarge, h );
+%Lambda_array   = Lambda_est( Y, FWHM, D, resAdd, h );
 
-sameArray( hatLambda_conv, hatLambda_num )
-sameArray( hatLambda_conv, Lambda_array )
-sameArray( Lambda_array, hatLambda_num )
+%sameArray( hatLambda_conv, hatLambda_num )
+%sameArray( hatLambda_conv, Lambda_array )
+%sameArray( Lambda_array, hatLambda_num )
 
 %% Test section D=2
 %--------------------------------------------------------------------------

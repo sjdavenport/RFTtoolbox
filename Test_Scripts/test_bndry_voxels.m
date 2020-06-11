@@ -143,26 +143,6 @@ bdry = bndry_voxels( logical( mask ), "xz" )
 % same as before for x
 bdry = bndry_voxels( logical( mask ), "yz" )
 
-%% tests
-% Spherical object
-% Create a mask and show it
-siz = 3;
-dx  = 0.5;
-[x,y,z] = meshgrid( -siz:dx:siz, -siz:dx:siz, -siz:dx:siz );
-xvals = [x(:), y(:), z(:)]';
-h     = reshape( GkerMV( xvals, 5 ), size(x) );
-mask  = logical( h > 0.003 );
-imagesc( mask(:,:,7) )
-clear h
-
-% same as before for y
-[ bdry, weights ] = bndry_voxels( logical( mask ), ["xy", "yz", "xz"] );
-
-edges = bdry.xz & bdry.xy
-
-weights.xy( ~( bdry.yz & bdry.xy ) ) = 0
-weights.yz( ~( bdry.yz & bdry.xy ) ) = 0
-
 %%
 % create a mask and show it
 mask = true( [ 3 3 3 ] );
