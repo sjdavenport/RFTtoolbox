@@ -7,7 +7,9 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % ARGUMENTS
 % Mandatory
 %   mask     a logical T_1 x ... x T_D array.
-%   version  a string indicating which part of the boundary is obtained.
+% Optional
+%   version  a string or vector of strings indicating which part of the
+%            boundary should be obtained.
 %            For arbitrary D 'full', which is the default value returns all
 %            boundary voxels.
 %            For D = 2 further options are
@@ -24,8 +26,17 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 %                       fixed x-value
 %--------------------------------------------------------------------------
 % OUTPUT
-%   bdry     a logical T_1 x ... x T_D array having 1 whenever the point
-%            is part of the boundary (or the chosen subpart).
+%   bdry    if 'version' is a string, bdry is a logical T_1 x ... x T_D
+%           array having 1 whenever the point is part of the boundary (or 
+%           the chosen subpart).
+%           If 'version' is a vector of strings bdry is a structure having 
+%           as fields the chosen versions, which contain the bdry array.
+%   weights  if 'version' is a string, weights is an T_1 x ... x T_D array
+%            with weights for integration along the boundary (or the chosen
+%            subpart ). A trapozoidal rule on the recangules is assumed.
+%            If 'version' is a vector of strings weights instead  is a
+%            structure having as fields the chosen versions, which contain
+%            appropriate weights array.
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% Test section D = 1
@@ -156,128 +167,147 @@ end
 %--------------------------------------------------------------------------
 if ~exist( 'version', 'var' )
    % default option of version
-   version = 'full';
+   version = "full";
+end
+
+if ~isstring( version )
+    error( "'version' input must be a string." )
 end
 
 %% Main function
 %--------------------------------------------------------------------------
+% Preallocate the structures for the output
+bdry    = struct();
+weights = struct();
 
 % compute the full boundary
-bdry_full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
+bdry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
                         larger_image;
+
+% Weights for full boundary (They do not make sense!)
+weights.full = NaN * bdry.full;
                     
 % compute parts of the boundary if neccessary
-if D==2 || D==3
+if D == 2 || D == 3
     switch D
         case 2
-            weights = NaN * bdry_full;
-            bdry = bdry_full;
-            if version == "y"
-                bdry = logical( imdilate( ~bdry,...
-                                    [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
-                                        bdry;
-            elseif version == "x"
-                bdry = logical( imdilate( ~bdry,...
+            % check whether vertical boundary parts should be computed
+            if any( strcmp( version, "y" ) )
+                bdry.y = logical( imdilate( ~bdry.full,...
                                     [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
-                                        bdry;
-            elseif version ~= "full"
-                error( "Version must be either 'full', 'x' or 'y'" );
+                                        bdry.full;
+                bdry.y = bdry.y( locs{:} );
+                weights.y = bdry.y;
             end
             
-        case 3
-            % Preallocate the weights array
-            weights = zeros( s_mask + 2 );
-            % Preallocate array for the dilate array
-            h = zeros( ones(1, D) * 3 );
+            % check whether horizontal boundary parts should be computed
+            if any( strcmp( version, "x" ) )
+                bdry.x = logical( imdilate( ~bdry.full,...
+                                    [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
+                                        bdry.full;
+                bdry.x = bdry.x( locs{:} );
+                weights.x = bdry.x;
+            end
             
-            % First dilation removes the edges, which do not belong to a
-            % face in the specified plane. Second dilation recovers the
-            % edges in the plane which belonged to a face and have been
-            % removed
-            if version == "xy"
+            if any( strcmp( version, "full" ) )
+                bdry.full = bdry.full( locs{:} );
+            end
+            if ~( any( strcmp( version, "x" ) )...
+                   || any( strcmp( version, "y" ) )...
+                   || any( strcmp( version, "full" ) ) )
+                error( "Version must include 'full', 'x' or 'y'." );
+            end
+            
+        case 3            
+            if any( strcmp( version, "xy" ) )
+                % Dilate kernel
+                h = zeros( ones(1, D) * 3 );
                 h( :, :, 2 ) = 1;
-                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
                 
-                for z = 2:(s_mask(3) + 1)
-                    weights( :, :, z ) = getweights( bdry( :, :, z ) );
+                % First dilation removes the edges, which do not belong to
+                % a face in the specified plane. Second dilation recovers
+                % the edges in the plane which belonged to a face and have
+                % been removed
+                bdry.xy = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
+                bdry.xy = bdry.xy( locs{:} );
+                
+                % Preallocate the weights array
+                weights.xy = zeros( s_mask );
+                % Find weights for integration
+                for z = 1:s_mask(3)
+                    weights.xy( :, :, z ) = getweights( bdry.xy( :, :, z ) );
                 end
+                weights.xy = weights.xy;
+            end
                 
-%                 % modify filter to count orthogonal neighbours, since they
-%                 % define to how many faces the bdry voxel belongs to
-%                 h( :, :, 2) = 0;
-%                 h( 2, :, 2) = 1;
-%                 h( :, 2, 2) = 1;
-%                 h( 2, 2, 2) = 0;
-%                 % count neighbours in the surface
-%                 weights =  convn( bdry, h, 'same' );
-%                 
-%                 % set the weights correctly
-%                 weights( ~bdry ) = 0;
-%                 weights( weights == 2 ) = 1/4;
-%                 weights( weights == 3 ) = 2/4;
-%                 weights( weights == 4 ) = 1;
-                
-            elseif version == "xz"
+            if any( strcmp( version, "xz" ) )
+                % Dilate kernel
+                h = zeros( ones(1, D) * 3 );
                 h( :, 2, : ) = 1;
-                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
-
-                for y = 2:(s_mask(2) + 1)
-                    weights( :, y, : ) = getweights( squeeze( ...
-                                                     bdry( :, y, : ) ) );
-                end
-%                 % modify filter to count orthogonal neighbours, since they
-%                 % define to how many faces the bdry voxel belongs to
-%                 h( :, 2, :) = 0;
-%                 h( 2, 2, :) = 1;
-%                 h( :, 2, 2) = 1;
-%                 h( 2, 2, 2) = 0;
-%                 % count neighbours in the surface
-%                 weights =  convn( bdry, h, 'same' );
-%                 
-%                 % set the weights correctly
-%                 weights( ~bdry ) = 0;
-%                 weights( weights == 2 ) = 1/4;
-%                 weights( weights == 3 ) = 2/4;
-%                 weights( weights == 4 ) = 1;
                 
-            elseif version == "yz"
+                % First dilation removes the edges, which do not belong to
+                % a face in the specified plane. Second dilation recovers
+                % the edges in the plane which belonged to a face and have
+                % been removed
+                bdry.xz = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
+                bdry.xz = bdry.xz( locs{:} );
+                
+                % Preallocate the weights array
+                weights.xz = zeros( s_mask );
+                % Find weights for integration
+                for y = 1:s_mask(2)
+                    weights.xz( :, y, : ) = getweights( squeeze(...
+                                                    bdry.xz( :, y, : ) ) );
+                end
+                weights.xz = weights.xz;
+            end
+                
+            if any( strcmp( version, "yz" ) )
+                % Dilate kernel
+                h = zeros( ones(1, D) * 3 );
                 h( 2, :, : ) = 1;
-                bdry = imdilate( ~logical( imdilate( ~bdry_full, h ) ), h );
-
-                for x = 2:(s_mask(1) + 1)
-                    weights( x, :, : ) = getweights( squeeze( ...
-                                                     bdry( x, :, : ) ) );
-                end
-%                 % modify filter to count orthogonal neighbours, since they
-%                 % define to how many faces the bdry voxel belongs to
-%                 h( 2, :, :) = 0;
-%                 h( 2, 2, :) = 1;
-%                 h( 2, :, 2) = 1;
-%                 h( 2, 2, 2) = 0;
-%                 % count neighbours in the surface
-%                 weights =  convn( bdry, h, 'same' );
-%                 
-%                 % set the weights correctly
-%                 weights( ~bdry ) = 0;
-%                 weights( weights == 2 ) = 1/4;
-%                 weights( weights == 3 ) = 2/4;
-%                 weights( weights == 4 ) = 1;
                 
-            elseif version == "full"
-                bdry = bdry_full;
-                weights = NaN * bdry;
-            else
+                % First dilation removes the edges, which do not belong to
+                % a face in the specified plane. Second dilation recovers
+                % the edges in the plane which belonged to a face and have
+                % been removed
+                bdry.yz = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
+                bdry.yz = bdry.yz( locs{:} );
+                
+                % Preallocate the weights array
+                weights.yz = zeros( s_mask );
+                % Find weights for integration
+                for x = 2:s_mask(1)
+                    weights.yz( x, :, : ) = getweights( squeeze(...
+                                                    bdry.yz( x, :, : ) ) );
+                end
+                weights.yz = weights.yz;
+            end
+                
+            if any( strcmp( version, "full" ) )
+                bdry.full = bdry.full( locs{:} );
+                weights.full = weights.full( locs{:} );
+            end
+            
+            % Check whether the user entered at least on appropriate
+            % version input
+            if ~( any( strcmp( version, "full" ) )...
+                    || any( strcmp( version, "xy" ) )...
+                    || any( strcmp( version, "xz" ) )...
+                    || any( strcmp( version, "yz" ) ) )
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
             
     end
 else
-    error( strcat( "For D not equal to 2 or 3 only the full",...
-                   "boundary estimate is implemented" ) );
+    bdry.full = bdry.full( locs{:} );
+    weights.full = weights.full( locs{:} );  
 end
 
-% Remove the outer voxels
-bdry    = bdry( locs{:} );
-weights = weights( locs{:} );
+% Make output arrays if version is a string
+if length( version ) == 1
+    bdry    = bdry.(version);
+    weights = weights.(version);
+end
 
 return
