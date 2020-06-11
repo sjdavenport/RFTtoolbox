@@ -4,18 +4,17 @@ classdef SepKernel
    %   need to be applied in each dimension, if a seperable kernel is used. 
    %   The fields  containing 1 by D arrays. The d-th entry represents what
    %   the sperable kernel is doing in the d-th component.
+   properties (Access = private)
+      D           {mustBePositive} % the dimension of the seperable kernel
+   end
    properties
-      D           % the dimension of the seperable kernel
-      kernel      % a 1 by D cell array containing the function handles for
-                  % the kernel in each direction
-      truncation  % a 1 by D array containing the value for truncation for
-                  % the kernels
-      dkernel     % a 1 by D cell array containing function handles for the
-                  % derivatives of the kernel
-      dtruncation % a 1 by D array containing the value for truncation for
-                  % the dkernels
-      adjust      % a 1 by D array stating whether the kernel
-                  % should be shifted by adjust
+      kernel      cell % a 1 by D cell array containing the function handles for the kernel in each direction
+      truncation  % a 1 by D array containing the value for truncation for the kernels
+      dkernel     cell % a 1 by D cell array containing function handles for the derivatives of the kernel
+      dtruncation % a 1 by D array containing the value for truncation for the dkernels
+      d2kernel    cell  % a 1 by D cell array containing function handles for the second derivatives of the kernel
+      d2truncation % a 1 by D array containing the value for truncation for the d2kernels
+      adjust       % a 1 by D array stating whether the kernel should be shifted by adjust
    end
    methods
       function obj = SepKernel( D, FWHM )
@@ -55,17 +54,27 @@ classdef SepKernel
           %----------------------------------------------------------------
           if nargin == 1
             obj.D = D;
+            
             obj.kernel = cell( [ 1 D ] );
             for d = 1:D
                 obj.kernel{d} = @(x) NaN;
             end
             obj.truncation = NaN * ones( [ 1 D ] );
+            
             obj.dkernel = cell( [ 1 D ] );
             for d = 1:D
                 obj.dkernel{d} = @(x) NaN;
             end
             obj.dtruncation = NaN * ones( [ 1 D ] );
+
+            obj.d2kernel = cell( [ 1 D ] );
+            for d = 1:D
+                obj.d2kernel{d} = @(x) NaN;
+            end
+            obj.d2truncation = NaN * ones( [ 1 D ] );
+            
             obj.adjust = zeros( [ 1 D] );
+            
           else
               if length( FWHM ) == 1 || length( FWHM ) == D
                   % Create a standard SepKernel object of dimension D
@@ -124,19 +133,21 @@ classdef SepKernel
             % Fill the field dkernel with derivatives of the Gaussians
             for d = 1:obj.D
                 obj.dkernel{d} = @(x) Gkerderiv( x, FWHM(d) );
+                obj.d2kernel{d} = @(x) Gkerderiv2( x, FWHM(d) );
             end
                         
             % Fill the field truncation and dtruncation
-            obj.truncation  = ceil( 4 * FWHM2sigma( FWHM ) );
-            obj.dtruncation = obj.truncation;
+            obj.truncation   = ceil( 4 * FWHM2sigma( FWHM ) );
+            obj.dtruncation  = obj.truncation;
+            obj.d2truncation = obj.truncation;
           else
               error( "FWHM needs to be either of length 1 or D." )
-          end          
+          end
       end
       
       function grad = Gradient( obj )
           % GRADIENT( obj ) constructs a cell array containing the partial
-          % derivatives of the kernel in a cell array
+          % derivatives of the kernel as Sepkernel objects.
           %----------------------------------------------------------------
           % ARGUMENTS
           % Mandatory
@@ -174,11 +185,107 @@ classdef SepKernel
               % Correct kernel functions by taking the derivative in the
               % dth component
               grad{d}.kernel{d} = obj.dkernel{d};
-              
+              if iscell( obj.d2kernel )
+                grad{d}.dkernel{d} = obj.d2kernel{d};
+              end
               % Correct truncation for the derivative kernel
               grad{d}.truncation(d) = obj.dtruncation(d);
           end
       end
+      
+      function hess = Hessian( obj )
+          % Hessian( obj ) constructs a cell array containing the second
+          % partial derivatives of the kernel as Sepkernel objects.
+          %----------------------------------------------------------------
+          % ARGUMENTS
+          % Mandatory
+          %  obj  an SepKernel object
+          %
+          %----------------------------------------------------------------
+          % OUTPUT
+          % hess  a obj.D x obj.D cell array containing an SepKernel object
+          %       for each element of the Hessian matrix of the inputed
+          %       SepKernel.
+          %
+          %----------------------------------------------------------------
+          % EXAMPLES
+          % % generate a separable Gaussian kernel
+          % gK = SepKernel( 3, [ 2, 3, 6 ] )
+          %
+          % % get a cell containing the appropriate function handles in the
+          % % dth entry for the dth partial derivative
+          % hessian_gK = Hessian( gK )
+          %
+          %----------------------------------------------------------------
+          % Author: Fabian Telschow
+          %----------------------------------------------------------------
+          %%% Check mandatory input
+          
+          %%% Main function
+          % Initialize the gradobj
+          hess = cell( [ obj.D obj.D ] );
+          
+          % Fill hess with the appropriate values
+          for d = 1:obj.D
+              for dd = 1:obj.D
+                  % Initialize SepKernel object for the d-th partial
+                  % derivative by setting relevant parts to the obj itself
+                  hess{d,dd} = SepKernel( obj.D );
+                  hess{d,dd}.kernel = obj.kernel;
+                  hess{d,dd}.truncation = obj.truncation;
+                  
+                  if d == dd
+                      % Diagonals contain second derivatives
+                      hess{d,dd}.kernel{d} = obj.d2kernel{d};
+                      % Correct truncation for the derivative kernel
+                      hess{d,dd}.truncation(d) = obj.d2truncation(d);
+                  else
+                      % Correct kernel functions by taking the derivative
+                      % in the d-th component and the dd-th
+                      hess{d,dd}.kernel{d} = obj.dkernel{d};
+                      hess{d,dd}.kernel{dd} = obj.dkernel{dd};
+
+                      % Correct truncation for the derivative kernel
+                      hess{d,dd}.truncation(d) = obj.dtruncation(d);
+                      hess{d,dd}.truncation(dd) = obj.dtruncation(dd);
+                  end
+              end
+          end
+      end
+      
+      function vals = eval( obj, xvals, derivtype )
+          % eval( obj ) evaluates a SepKernel object or its derivatives on
+          % a given grid.
+          %----------------------------------------------------------------
+          % ARGUMENTS
+          % Mandatory
+          %  obj   an SepKernel object
+          %  xvals an 1 by D cell array containing on which grid values to
+          %        evaluate the d-th kernel
+          % Optional
+          %  derivtype 0/1/2, 0 evaluates the seperable kernel, 1 its 
+          %  derivative and 2 its second derivative. Default is 0.
+          %----------------------------------------------------------------
+          % OUTPUT
+          % vals  a obj.D by obj.D cell array containing an SepKernel object
+          %       for each element of the Hessian matrix of the inputed
+          %       SepKernel.
+          %
+          %----------------------------------------------------------------
+          % EXAMPLES
+          % % generate a separable Gaussian kernel
+          % gK = SepKernel( 3, [ 2, 3, 6 ] )
+          %
+          % % get a cell containing the appropriate function handles in the
+          % % dth entry for the dth partial derivative
+          % grad_gK = Gradient( gK )
+          %
+          %----------------------------------------------------------------
+          % Author: Fabian Telschow
+          %----------------------------------------------------------------
+          %%% Check mandatory input
+          
+       end 
       
    end
 end
