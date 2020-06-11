@@ -128,7 +128,8 @@ end
 %--------------------------------------------------------------------------
 if ~exist( 'enlarge', 'var' )
    % Default option of 'enlarge'
-   enlarge = 0;
+%    enlarge = 0;
+    enlarge = ceil(resadd/2);
 end
 
 if ~isnumeric( enlarge )

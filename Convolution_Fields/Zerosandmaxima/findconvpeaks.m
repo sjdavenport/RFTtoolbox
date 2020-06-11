@@ -206,7 +206,7 @@ npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 s_mask = size(mask);             % Obtain the size of the mask
 box_sizes = 1.5*ones(1,npeaks);
 for I = 1:npeaks
-    converted_index = convind( peak_est_locs(:,I) - xvals_starts_at + 1, s_mask );
+    converted_index = convind( peak_est_locs(:,I) - xvals_starts_at' + 1, s_mask );
     if boundary(converted_index)
         box_sizes(I) = 0.5;
     end

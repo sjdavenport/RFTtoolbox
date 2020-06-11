@@ -116,8 +116,8 @@ extra = 0.0001; %Weirdly needed in order for the algorithm to always converge.
 initial_estimates = initial_estimates + extra;
 for peakI = 1:npeaks
     b = zeros(2*D,1);
-    b(1:D) = initial_estimates(:,peakI) + box_size{peakI};
-    b((D+1):(2*D)) = -(initial_estimates(:,peakI) - box_size{peakI});
+    b(1:D) = initial_estimates(:,peakI) + box_size{peakI}';
+    b((D+1):(2*D)) = -(initial_estimates(:,peakI) - box_size{peakI}');
     peaklocs(:,peakI) = fmincon(@(tval) -fn(tval), initial_estimates(:,peakI), A, b, [], [], [], [], [], options);
     peakvals(peakI) = fn(peaklocs(:, peakI));
 end
