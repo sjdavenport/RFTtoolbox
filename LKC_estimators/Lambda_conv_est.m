@@ -88,9 +88,9 @@ end
 
 % get the convolution fields and their derivatives
 if isa( Kernel, 'SepKernel' ) || isnumeric( Kernel )
-    [ convY, xvals ] = convfield_class2( lat_data, Kernel, resadd, D, 0,...
+    [ convY, xvals ] = convfield( lat_data, Kernel, resadd, D, 0,...
                                          enlarge );
-    DconvY = convfield_class2( lat_data, Kernel, resadd, D, 1, enlarge );
+    DconvY = convfield( lat_data, Kernel, resadd, D, 1, enlarge );
 else
     error( "The 'Kernel' must be either a numeric or a kernel structure!" )
 end
