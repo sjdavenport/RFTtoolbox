@@ -94,12 +94,12 @@ LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+[ theoryL.L; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 
 % Masking the data gives different LKCs
 theoryL_masked = LKC_wncfield_theory( mask, FWHM, 3, 1 );
 LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
-[ theoryL; theoryL_masked; LKC_masked.hatL ]'
+[ theoryL.L; theoryL_masked.L; LKC_masked.hatL ]'
 
 %% %% D = 3 
 % Parameters for the field
@@ -127,4 +127,4 @@ LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+[ theoryL.L; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'

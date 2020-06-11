@@ -17,8 +17,8 @@ plot( mask ),
 title( 'mask' )
 clear Sig
 
-% Note that in 1D there is only the 'full' option
-bdry = bndry_voxels( mask, 'full' );
+% Note that in 1D there is only the "full" option
+bdry = bndry_voxels( mask, "full" );
 figure(1), clf,
 plot( mask + bdry )
 title( 'mask + mask of boundary'  )
@@ -26,11 +26,11 @@ title( 'mask + mask of boundary'  )
 %% %% Test section D = 2
 %% 2D examples - full - example demonstrating behaviour for all ones mask
 mask = ones(10,10);
-bndry_voxels( logical(mask), 'full' )
+bndry_voxels( logical(mask), "full" )
 
 %% 2D examples - sides
-bndry_voxels( logical(mask), 'x' )
-bndry_voxels( logical(mask), 'y' )
+bndry_voxels( logical(mask), "x" )
+bndry_voxels( logical(mask), "y" )
 
 %% Simple box example
 % Create a simple mask and show it
@@ -43,17 +43,17 @@ colorbar
 title( 'mask' )
 
 %% % plot the different options of boundary
-%% fixed y option
+%% fixed x option
 bdry = bndry_voxels( mask, "x" );
 figure(2), clf,
 imagesc( mask + bdry ), colorbar
-title("boundary for fixed y directions")
+title("boundary for fixed x directions")
 
-%% fixed x option
+%% fixed y option
 bdry = bndry_voxels( mask, "y" );
 figure(3), clf,
 imagesc( mask + bdry ), colorbar
-title("boundary for fixed x directions")
+title("boundary for fixed y directions")
 
 %% fixed "full" option
 bdry = bndry_voxels( mask, "full" );
@@ -73,13 +73,13 @@ title( 'mask' )
 
 %% % plot the different options of boundary
 %% fixed y option
-bdry = bndry_voxels( mask, "x" );
+bdry = bndry_voxels( mask, "y" );
 figure(2), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed y directions")
 
 %% fixed x option
-bdry = bndry_voxels( mask, "y" );
+bdry = bndry_voxels( mask, "x" );
 figure(3), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed x directions")
@@ -101,13 +101,13 @@ clear Sig
 
 %% % plot the different options of boundary
 %% fixed y option
-bdry = bndry_voxels( mask, "x" );
+bdry = bndry_voxels( mask, "y" );
 figure(2), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed y directions")
 
 %% fixed x option
-bdry = bndry_voxels( mask, "y" );
+bdry = bndry_voxels( mask, "x" );
 figure(3), clf,
 imagesc( mask + bdry ), colorbar
 title("boundary for fixed x directions")
@@ -135,7 +135,7 @@ title("slice of mask")
 
 % get boundary voxels lying in z value planes or better having a not to the
 % mask connected face pointing into the z direction
-bdry = bndry_voxels( logical( mask ), "xy" )
+[ bdry, weights ] = bndry_voxels( logical( mask ), "xy" )
 
 % same as before for y
 bdry = bndry_voxels( logical( mask ), "xz" )

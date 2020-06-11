@@ -136,13 +136,13 @@ dmask5 = bndry_voxels( mask3, "x" ) +  bndry_voxels( mask3, "y" );
 
 %%
 D = 3
-mask = true(3,3,3);
+mask = true( 3, 3, 3 );
 mask(1,1,1) = 0;
 
 % weights for resolution added
-[~, weights1, old1] = mask_highres( mask, 1, ceil(1/2) );
-[~, weights3, old3] = mask_highres( mask, 3, ceil(3/2) );
-[~, weights5, old5] = mask_highres( mask, 5, ceil(5/2) );
+[~, weights1, old1] = mask_highres( mask, 1, ceil( 1/2 ) );
+[~, weights3, old3] = mask_highres( mask, 3, ceil( 3/2 ) );
+[~, weights5, old5] = mask_highres( mask, 5, ceil( 5/2 ) );
 
 [[ get_volume( mask, 0, D ), get_volume( weights1, 1, D ),...
    get_volume( weights3, 3, D ), get_volume( weights5, 5, D )];
@@ -199,9 +199,9 @@ for resadd = [ 1 3 5 ]
     k = k+1;
     dx = 1 / ( resadd + 1 );
     mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
-    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
-    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
-    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, "xy" );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, "xz" );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, "yz" );
 
     bdry_vols(k) = ( sum( weights_xy(:) ) + ...
                   sum( weights_xz(:) ) + ...
@@ -221,9 +221,9 @@ for resadd = [ 1 3 5 ]
     k = k+1;
     dx = 1 / ( resadd + 1 );
     mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
-    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
-    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
-    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, "xy" );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, "xz" );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, "yz" );
 
     bdry_vols(k) = ( sum( weights_xy(:) ) + ...
                   sum( weights_xz(:) ) + ...
@@ -234,7 +234,7 @@ bdry_vols
 %% % Box object with corner missing
 % Create a mask and show it
 mask  = true([ 10 5 10 ]);
-%mask(1:3, 1:2, 1:3) = 0;
+mask(1:3, 1:2, 1:3) = 0;
 clear h
 
 %% Get resolution increased masks
@@ -247,9 +247,9 @@ for resadd = [ 1 3 5 ]
     k = k+1;
     dx = 1 / ( resadd + 1 );
     mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
-    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, 'xy' );
-    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, 'xz' );
-    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, 'yz' );
+    [ bdry_xy, weights_xy ] = bndry_voxels( mask_hr, "xy" );
+    [ bdry_xz, weights_xz ] = bndry_voxels( mask_hr, "xz" );
+    [ bdry_yz, weights_yz ] = bndry_voxels( mask_hr, "yz" );
 
     bdry_vols_xy(k) = sum( weights_xy(:) ) * dx^2;
     bdry_vols_xz(k) = sum( weights_xz(:) ) * dx^2;
