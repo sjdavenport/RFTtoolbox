@@ -32,7 +32,7 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 % EXAMPLES
 % %1D
 % lat_data = normrnd(0,1,1,100); FWHM = 3;
-% smoothed_fconv = fconv2(lat_data, FWHM);
+% smoothed_fconv = fconv(lat_data, FWHM);
 % smoothed_spm = spm_conv(lat_data,FWHM);
 % plot(smoothed_spm); hold on; plot(smoothed_fconv)
 % legend('spm\_conv', 'fconv') 
@@ -208,7 +208,7 @@ if ( D < length( s_data ) && D > 1 ) ...
     
     % Loop over subjects
     for J = 1:s_data( end )
-        smoothed_data( index{:}, J ) = fconv2( squeeze( data( index{:}, J ) ),...
+        smoothed_data( index{:}, J ) = fconv( squeeze( data( index{:}, J ) ),...
                                             Kernel, D, truncation, dx,...
                                             adjust_kernel );
     end
