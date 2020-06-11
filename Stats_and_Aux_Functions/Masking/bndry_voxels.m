@@ -194,7 +194,7 @@ if D == 2 || D == 3
             % check whether vertical boundary parts should be computed
             if any( strcmp( version, "y" ) )
                 bdry.y = logical( imdilate( ~bdry.full,...
-                                    [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
+                                    [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
                                         bdry.full;
                 bdry.y = bdry.y( locs{:} );
                 weights.y = bdry.y;
@@ -203,7 +203,7 @@ if D == 2 || D == 3
             % check whether horizontal boundary parts should be computed
             if any( strcmp( version, "x" ) )
                 bdry.x = logical( imdilate( ~bdry.full,...
-                                    [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
+                                    [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
                                         bdry.full;
                 bdry.x = bdry.x( locs{:} );
                 weights.x = bdry.x;
@@ -255,11 +255,12 @@ if D == 2 || D == 3
                 % Preallocate the weights array
                 weights.xz = zeros( s_mask );
                 % Find weights for integration
-                for y = 1:s_mask(2)
+                for y = 2:s_mask(2)
                     weights.xz( :, y, : ) = getweights( squeeze(...
                                                     bdry.xz( :, y, : ) ) );
                 end
                 weights.xz = weights.xz;
+                
             end
                 
             if any( strcmp( version, "yz" ) )
@@ -277,7 +278,7 @@ if D == 2 || D == 3
                 % Preallocate the weights array
                 weights.yz = zeros( s_mask );
                 % Find weights for integration
-                for x = 2:s_mask(1)
+                for x = 1:s_mask(1)
                     weights.yz( x, :, : ) = getweights( squeeze(...
                                                     bdry.yz( x, :, : ) ) );
                 end
