@@ -176,7 +176,7 @@ end
 %%% dx input
 if ~exist( 'dx', 'var' )
     % Set dx default.
-    dx = 1;
+    dx = ones( [ 1 D ] );
     
 elseif numel( dx(:) ) == 1
     % Make dx a vector if numeric.
