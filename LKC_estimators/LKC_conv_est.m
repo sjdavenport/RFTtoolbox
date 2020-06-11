@@ -354,22 +354,20 @@ switch D
         L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
             
         %%% Calculate LKC 1
-        % Find x shift boundary voxels, i.e. horizontal boundary parts, and
-        % integrate using trapozoid rule.
+        % Find x and y shift boundary voxels, i.e. horizontal boundary
+        % and vertical parts.
+        bdry = bndry_voxels( mask, [ "x", "y" ] );
+        
+        % Integrate using trapozoid rule.
         % Note that we later need to remove half of the end points value,
         % of each line segment which are contained in the x and the y shift
         % boundary. They will be count double otherwise.
-        xbdry = bndry_voxels( mask, "x" );      
-        L(1)  = sum( sqrt( g_xx( xbdry ) ) ) * dx;
-        
-        % Find y shift boundary voxels, i.e. vertical boundary parts, and
-        % integrate using trapozoid rule.
-        ybdry = bndry_voxels( mask, "y" );      
-        L(1)  = L(1) + sum( sqrt( g_yy( ybdry ) ) ) * dy;
+        L(1)  = sum( sqrt( g_xx( bdry.x ) ) ) * dx;
+        L(1)  = L(1) + sum( sqrt( g_yy( bdry.y ) ) ) * dy;
         
         % Remove double counted voxels at end of line segments and divide
         % length of boundary by 2, since that is what LKC1 is.
-        xybdry = ybdry + xbdry == 2;
+        xybdry = bdry.y + bdry.x == 2;
         L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
                       - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
                         
@@ -417,20 +415,21 @@ switch D
         %%% Calculate LKC 2
         % Find faces having constant z value and integrate using simple
         % midpoint rule.
-        [ bdry, weights ] = bndry_voxels( mask, "xy" );
-        weights = weights( weights ~= 0 );
-        L(2) = sum( sqrt( max( g_xx( bdry ) .* g_yy( bdry )...
-                              - g_xy( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dy / 2;
+        [ bdry, weights ] = bndry_voxels( mask, [ "xy", "xz", "yz" ] );
+        weights.xy = weights.xy( weights.xy ~= 0 );
+        L(2) = sum( sqrt( max( g_xx( bdry.xy ) .* g_yy( bdry.xy )...
+                              - g_xy( bdry.xy ).^2, 0 ) )...
+                              .* weights.xy(:) ) * dx * dy / 2;
                           
-        [ bdry, weights ] = bndry_voxels( mask, "xz" );
-        weights = weights( weights ~= 0 );
-        L(2) = L(2) + sum( sqrt( max( g_xx( bdry ) .* g_zz( bdry )...
-                              - g_xz( bdry ).^2, 0 ) ) .* weights(:) ) * dx * dz / 2;
+        weights.xz = weights.xz( weights.xz ~= 0 );
+        L(2) = L(2) + sum( sqrt( max( g_xx( bdry.xz ) .* g_zz( bdry.xz )...
+                              - g_xz( bdry.xz ).^2, 0 ) )...
+                              .* weights.xz(:) ) * dx * dz / 2;
 
-        [ bdry, weights ] = bndry_voxels( mask, "yz" );
-        weights = weights( weights ~= 0 );
-        L(2) = L(2) + sum( sqrt( max( g_yy( bdry ) .* g_zz( bdry )...
-                              - g_yz( bdry ).^2, 0 ) ) .* weights(:) ) * dy * dz / 2;
+        weights.yz = weights.yz( weights.yz ~= 0 );
+        L(2) = L(2) + sum( sqrt( max( g_yy( bdry.yz ) .* g_zz( bdry.yz )...
+                              - g_yz( bdry.yz ).^2, 0 ) )...
+                              .* weights.yz(:) ) * dy * dz / 2;
         
         %%% Calculate LKC 1
         % Work in progress
