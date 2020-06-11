@@ -1,4 +1,4 @@
-function [ bdry, weights ] = bndry_voxels( mask, version )
+function [ bndry, weights ] = bndry_voxels( mask, type )
 % This function computes a high resolution version of a given mask.
 % It has the option to enlarge the mask region by resAdd to use shifted
 % boundaries in LKC estimation. This is required in the interpretation of
@@ -8,7 +8,7 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % Mandatory
 %   mask     a logical T_1 x ... x T_D array.
 % Optional
-%   version  a string or vector of strings indicating which part of the
+%   type  a string or vector of strings indicating which part of the
 %            boundary should be obtained.
 %            For arbitrary D 'full', which is the default value returns all
 %            boundary voxels.
@@ -26,16 +26,16 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 %                       fixed x-value
 %--------------------------------------------------------------------------
 % OUTPUT
-%   bdry    if 'version' is a string, bdry is a logical T_1 x ... x T_D
+%   bndry    if 'type' is a string, bndry is a logical T_1 x ... x T_D
 %           array having 1 whenever the point is part of the boundary (or 
 %           the chosen subpart).
-%           If 'version' is a vector of strings bdry is a structure having 
-%           as fields the chosen versions, which contain the bdry array.
-%   weights  if 'version' is a string, weights is an T_1 x ... x T_D array
+%           If 'type' is a vector of strings bndry is a structure having 
+%           as fields the chosen types, which contain the bndry array.
+%   weights  if 'type' is a string, weights is an T_1 x ... x T_D array
 %            with weights for integration along the boundary (or the chosen
 %            subpart ). A trapozoidal rule on the recangules is assumed.
-%            If 'version' is a vector of strings weights instead  is a
-%            structure having as fields the chosen versions, which contain
+%            If 'type' is a vector of strings weights instead  is a
+%            structure having as fields the chosen types, which contain
 %            appropriate weights array.
 %--------------------------------------------------------------------------
 % EXAMPLES
@@ -49,20 +49,20 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % clear Sig
 % 
 % % note in 1D there is only the 'full' option
-% bdry = bdry_voxels( mask, "full" );
+% bndry = bndry_voxels( mask, "full" );
 % figure(1), clf,
-% plot( mask + bdry )
+% plot( mask + bndry )
 % title( 'mask + mask of boundary'  )
 % 
 % %% Test section D = 2
 % % Example demonstrating behaviour for all ones mask
 % % 2D examples - full
 % mask = ones(10,10);
-% bdry_voxels( logical(mask), 'full' )
+% bndry_voxels( logical(mask), 'full' )
 % 
 % % 2D examples - sides
-% bdry_voxels( logical(mask), 'x' )
-% bdry_voxels( logical(mask), 'y' )
+% bndry_voxels( logical(mask), 'x' )
+% bndry_voxels( logical(mask), 'y' )
 % 
 % % simple box example
 % close all
@@ -77,21 +77,21 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % 
 % %%% plot the different options of boundary
 % % fixed y option
-% bdry = bdry_voxels( mask, "x" );
+% bndry = bndry_voxels( mask, "x" );
 % figure(2), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("boundary for fixed y directions")
 % 
 % % fixed x option
-% bdry = bdry_voxels( mask, "y" );
+% bndry = bndry_voxels( mask, "y" );
 % figure(3), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("boundary for fixed x directions")
 % 
 % % fixed "full" option
-% bdry = bdry_voxels( mask, "full" );
+% bndry = bndry_voxels( mask, "full" );
 % figure(4), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("all boundary points")
 % 
 % %% complicated mask example
@@ -105,21 +105,21 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % 
 % %% plot the different options of boundary
 % % fixed y option
-% bdry = bdry_voxels( mask, "x" );
+% bndry = bndry_voxels( mask, "x" );
 % figure(2), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("boundary for fixed y directions")
 % 
 % % fixed x option
-% bdry = bdry_voxels( mask, "y" );
+% bndry = bndry_voxels( mask, "y" );
 % figure(3), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("boundary for fixed x directions")
 % 
 % % fixed "full" option
-% bdry = bdry_voxels( mask, "full" );
+% bndry = bndry_voxels( mask, "full" );
 % figure(4), clf,
-% imagesc( mask + bdry ), colorbar
+% imagesc( mask + bndry ), colorbar
 % title("all boundary points")
 % 
 % %% Test section D = 3
@@ -132,13 +132,13 @@ function [ bdry, weights ] = bndry_voxels( mask, version )
 % 
 % % get boundary voxels lying in z value planes or better having a not to the
 % % mask connected face pointing into the z direction
-% bdry = bdry_voxels( logical( mask ), "xy" )
+% bndry = bndry_voxels( logical( mask ), "xy" )
 % 
 % % same as before for y
-% bdry = bdry_voxels( logical( mask ), "xz" )
+% bndry = bndry_voxels( logical( mask ), "xz" )
 % 
 % % same as before for x
-% bdry = bdry_voxels( logical( mask ), "yz" )
+% bndry = bndry_voxels( logical( mask ), "yz" )
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
@@ -165,61 +165,66 @@ end
 
 %%  add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'version', 'var' )
-   % default option of version
-   version = "full";
+if ~exist( 'type', 'var' )
+   switch D
+       case 2
+           type = ["x", "y"];
+       case 3
+           type = ["x", "y", "z", "xy", "xz", "yz"];
+   end
 end
 
-if ~isstring( version )
-    error( "'version' input must be a string." )
+if ~isstring( type )
+    error( "'type' input must be a string." )
 end
 
 %% Main function
 %--------------------------------------------------------------------------
 % Preallocate the structures for the output
-bdry    = struct();
+bndry    = struct();
 weights = struct();
 
 % compute the full boundary
-bdry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
+bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
                         larger_image;
 
 % Weights for full boundary (They do not make sense!)
-weights.full = NaN * bdry.full;
+weights.full = NaN * bndry.full;
                     
 % compute parts of the boundary if neccessary
 if D == 2 || D == 3
     switch D
         case 2
             % check whether vertical boundary parts should be computed
-            if any( strcmp( version, "y" ) )
-                bdry.y = logical( imdilate( ~bdry.full,...
+            if any( strcmp( type, "y" ) )
+                bndry.y = logical( imdilate( ~bndry.full,...
                                     [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
-                                        bdry.full;
-                bdry.y = bdry.y( locs{:} );
-                weights.y = bdry.y;
+                                        bndry.full;
+                bndry.y = bndry.y( locs{:} );
+                weights.y = bndry.y;
             end
             
             % check whether horizontal boundary parts should be computed
-            if any( strcmp( version, "x" ) )
-                bdry.x = logical( imdilate( ~bdry.full,...
+            if any( strcmp( type, "x" ) )
+                bndry.x = logical( imdilate( ~bndry.full,...
                                     [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
-                                        bdry.full;
-                bdry.x = bdry.x( locs{:} );
-                weights.x = bdry.x;
+                                        bndry.full;
+                bndry.x = bndry.x( locs{:} );
+                weights.x = bndry.x;
             end
             
-            if any( strcmp( version, "full" ) )
-                bdry.full = bdry.full( locs{:} );
-            end
-            if ~( any( strcmp( version, "x" ) )...
-                   || any( strcmp( version, "y" ) )...
-                   || any( strcmp( version, "full" ) ) )
+            % Cut the full bndry down to the correct size
+            bndry.full = bndry.full( locs{:} );
+            
+            if ~( any( strcmp( type, "x" ) )...
+                   || any( strcmp( type, "y" ) )...
+                   || any( strcmp( type, "full" ) ) )
                 error( "Version must include 'full', 'x' or 'y'." );
             end
             
         case 3            
-            if any( strcmp( version, "xy" ) )
+            if any( strcmp( type, "xy" ) ) || any( strcmp( type, "x" ) )...
+                    || any( strcmp( type, "y" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, :, 2 ) = 1;
@@ -228,19 +233,20 @@ if D == 2 || D == 3
                 % a face in the specified plane. Second dilation recovers
                 % the edges in the plane which belonged to a face and have
                 % been removed
-                bdry.xy = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
-                bdry.xy = bdry.xy( locs{:} );
+                bndry.xy = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+                bndry.xy = bndry.xy( locs{:} );
                 
                 % Preallocate the weights array
                 weights.xy = zeros( s_mask );
                 % Find weights for integration
                 for z = 1:s_mask(3)
-                    weights.xy( :, :, z ) = getweights( bdry.xy( :, :, z ) );
+                    weights.xy( :, :, z ) = getweights( bndry.xy( :, :, z ) );
                 end
                 weights.xy = weights.xy;
             end
                 
-            if any( strcmp( version, "xz" ) )
+            if any( strcmp( type, "xz" ) ) || any( strcmp( type, "x" ) )...
+                    || any( strcmp( type, "z" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, 2, : ) = 1;
@@ -249,21 +255,22 @@ if D == 2 || D == 3
                 % a face in the specified plane. Second dilation recovers
                 % the edges in the plane which belonged to a face and have
                 % been removed
-                bdry.xz = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
-                bdry.xz = bdry.xz( locs{:} );
+                bndry.xz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+                bndry.xz = bndry.xz( locs{:} );
                 
                 % Preallocate the weights array
                 weights.xz = zeros( s_mask );
                 % Find weights for integration
                 for y = 2:s_mask(2)
                     weights.xz( :, y, : ) = getweights( squeeze(...
-                                                    bdry.xz( :, y, : ) ) );
+                                                    bndry.xz( :, y, : ) ) );
                 end
                 weights.xz = weights.xz;
                 
             end
                 
-            if any( strcmp( version, "yz" ) )
+            if any( strcmp( type, "yz" ) ) || any( strcmp( type, "y" ) )...
+                    || any( strcmp( type, "z" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( 2, :, : ) = 1;
@@ -272,43 +279,57 @@ if D == 2 || D == 3
                 % a face in the specified plane. Second dilation recovers
                 % the edges in the plane which belonged to a face and have
                 % been removed
-                bdry.yz = imdilate( ~logical( imdilate( ~bdry.full, h ) ), h );
-                bdry.yz = bdry.yz( locs{:} );
+                bndry.yz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+                bndry.yz = bndry.yz( locs{:} );
                 
                 % Preallocate the weights array
                 weights.yz = zeros( s_mask );
                 % Find weights for integration
                 for x = 1:s_mask(1)
                     weights.yz( x, :, : ) = getweights( squeeze(...
-                                                    bdry.yz( x, :, : ) ) );
+                                                    bndry.yz( x, :, : ) ) );
                 end
                 weights.yz = weights.yz;
             end
-                
-            if any( strcmp( version, "full" ) )
-                bdry.full = bdry.full( locs{:} );
-                weights.full = weights.full( locs{:} );
+            
+            % Get the x edges
+            if any( strcmp( type, "x" ) )
+                 bndry.x = bndry.xy & bndry.xz;
             end
             
+            % Get the y edges
+            if any( strcmp( type, "y" ) )
+                 bndry.y = bndry.xy & bndry.yz;
+            end
+            
+            % Get the z edges
+            if any( strcmp( type, "z" ) )
+                 bndry.z = bndry.yz & bndry.xz;
+            end
+            
+            % Cut full weights and boundary down to correct size
+            bndry.full = bndry.full( locs{:} );
+            weights.full = weights.full( locs{:} );
+            
             % Check whether the user entered at least on appropriate
-            % version input
-            if ~( any( strcmp( version, "full" ) )...
-                    || any( strcmp( version, "xy" ) )...
-                    || any( strcmp( version, "xz" ) )...
-                    || any( strcmp( version, "yz" ) ) )
+            % type input
+            if ~( any( strcmp( type, "full" ) )...
+                    || any( strcmp( type, "xy" ) )...
+                    || any( strcmp( type, "xz" ) )...
+                    || any( strcmp( type, "yz" ) ) )
                 error( "Version must be either 'full', 'x' or 'y'" );
             end
             
     end
 else
-    bdry.full = bdry.full( locs{:} );
+    bndry.full = bndry.full( locs{:} );
     weights.full = weights.full( locs{:} );  
 end
 
-% Make output arrays if version is a string
-if length( version ) == 1
-    bdry    = bdry.(version);
-    weights = weights.(version);
+% Make output arrays if type is a string
+if length( type ) == 1
+    bndry    = bndry.(type);
+    weights = weights.(type);
 end
 
 return
