@@ -73,13 +73,16 @@
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if nargin < 3
-    box_size = 1;
-end
 
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
 npeaks = size(initial_estimates,2);
 
 D = size(initial_estimates,1);
+
+
+%% Error checking
+%--------------------------------------------------------------------------
 try
     fn(ones(D,1));
 catch
@@ -90,9 +93,16 @@ if any(isnan(fn(initial_estimates)))
    error('All initial estimates must be well defined and lie within the mask')
 end
 
+%%  add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('box_size', 'var')
+    box_size = 1;
+end
+
 if ~iscell(box_size)
     box_size = repmat({box_size}, 1, npeaks);
 end
+
 % Need to include this bit to enable the function to find lms in non-square
 % areas!
 % if isequal(size(box_size), [1,1])
@@ -106,21 +116,40 @@ end
 %     error('box_size must be a column vector of length D')
 % end
 
+
+%%  main function
+%--------------------------------------------------------------------------
+% Set the matrix for the linear expansion.
 A = [eye(D);-eye(D)];
+
+% Initialize peak location and value matrices
 peaklocs = zeros(D, npeaks);
 peakvals = zeros(1, npeaks);
 
-% options = optimoptions(@fmincon,'Display','off', 'Algorithm', 'sqp'); %Ensures that no output is displayed.
-options = optimoptions(@fmincon,'Display','off'); %Ensures that no output is displayed.
-extra = 0.0001; %Weirdly needed in order for the algorithm to always converge.
+% Set the options for the optimization function fmincon
+options = optimoptions(@fmincon,'Display','off'); % Ensures that no output 
+                                                  % is displayed.
+
+% A bizarre constant that seems to be needed in order for the algorithm to 
+% always converge.
+extra = 0.0001; 
 initial_estimates = initial_estimates + extra;
+
+% Calculate the maximum locations on a box around each initial estimate
 for peakI = 1:npeaks
     b = zeros(2*D,1);
-    b(1:D) = initial_estimates(:,peakI) + box_size{peakI}';
-    b((D+1):(2*D)) = -(initial_estimates(:,peakI) - box_size{peakI}');
+    b(1:D) = initial_estimates(:,peakI) + box_size{peakI}' - extra; % Upper box limit
+    b((D+1):(2*D)) = -(initial_estimates(:,peakI) - box_size{peakI}' - extra); % Lower box limit
+    
+    % Use the optimization routine fmincon to find the peaks
     peaklocs(:,peakI) = fmincon(@(tval) -fn(tval), initial_estimates(:,peakI), A, b, [], [], [], [], [], options);
+    
+    % Evaluate the fn at the peak locations
     peakvals(peakI) = fn(peaklocs(:, peakI));
 end
 
-end
+ end
+ 
+ % DEPRECTATED
+ % options = optimoptions(@fmincon,'Display','off', 'Algorithm', 'sqp'); %Ensures that no output is displayed.
 

@@ -95,9 +95,10 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
-%% Initialization
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
 % If a mask is supplied, mask the data
-if nargin >= 6
+if exist('mask', 'var')
     Y = Y.*mask; %This masks the unsmoothed data
 end
 
@@ -118,6 +119,7 @@ end
 D = length(Ydim); 
 
 %% Error checking
+%--------------------------------------------------------------------------
 % Error check to ensure D <= 3
 if D > 3
     error('D ~= 1,2,3 has not been coded here')
@@ -131,9 +133,12 @@ if size(tval, 1) ~= D
            'it must be a row vector!'])
 end
 
+%%  add/check optional values
+%--------------------------------------------------------------------------
+
 %% Setting the truncation and the Kernel
 % Set the truncation of the kernel
-if nargin < 4
+if ~exist('truncation', 'var')
     truncation = -1; % setting truncation = -1 yields the default truncation below
 end
 
@@ -170,7 +175,7 @@ ss = zeros(1, size(tval, 2));
 %% Set the default xvals_vecs
 % Default takes a D-dimensional cube with resolution 0 i.e. just the
 % lattice point where each voxel is square with volume 1
-if nargin < 5
+if ~exist('xvals_vecs', 'var')
     xvals_vecs = {1:Ydim(1)}; %The other dimensions are taken case of below.
 end
 if ~iscell(xvals_vecs)
@@ -186,11 +191,10 @@ if length(xvals_vecs) < D
     end
 end
 
+%%  main function
+%--------------------------------------------------------------------------
 % If there is no truncation, obtain the indices of all the voxels on the
 % lattice
-% if truncation == 0
-%     xvalues_at_voxels = xvals2voxels( xvals_vecs );
-% end
 if truncation == 0
     if D == 1
         xvalues_at_voxels = xvals_vecs{1}';
@@ -202,9 +206,11 @@ if truncation == 0
         xvalues_at_voxels = [x(:),y(:),z(:)];
     end
 % else
-%     trunwindow = repmat(round(4*sigma), 1 ,D)'; %For non-isotropic kernel you'll need to change this!
+%     trunwindow = repmat(round(4*sigma), 1 ,D)'; %For non-isotropic kernel
+%     we'll need to change this.
 end
 
+% Shift the data (needed if xvals_vecs is different than the default)
 if truncation > 0
     % this is a fix for now, need to make it so that arbitrary xvals_vecs
     % can be used as input!! I.e. if you have irregularly spaced grid
@@ -215,7 +221,7 @@ if truncation > 0
     end
 end
 
-%% Main Loop (Computes convolution fields)
+% Main loop
 for I = 1:size(tval, 2)
     if truncation > 0
         % Obtain limits for a box around the point tval(:,I)
@@ -260,7 +266,8 @@ end
 
 % Note could use something similar to MkRadImg to figure out which voxels are
 % close to the target voxel so that you only evaluate at those voxels. i.e
-% at the moment it's a square, could make it a sphere though!
+% at the moment it's a square, could make it a sphere though! Ask Fabian
+% what he thinks about this!
 
 end
 

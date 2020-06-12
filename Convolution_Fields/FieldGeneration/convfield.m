@@ -25,7 +25,7 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield( lat_data,...
 %            smoothing with an isotropic Gaussian kernel with FWHM = Kernel.
 %            Truncation and adjust_kernel are set to be default values.
 % Optional
-%  resadd     the amount of voxels added equidistantly inbetween the
+%  resadd     the amount of voxels added equidistantly in between the
 %             existing voxels. Default is 1.
 %  D          the dimension of the data, if this is left blank it is
 %             assumed that nsubj = 1 and that the convolution field has 
@@ -38,6 +38,23 @@ function [ smooth_data, xvals_vecs, Kernel ] = convfield( lat_data,...
 %             convolution field is computed on a domain enlarged in each
 %             direction by 'enlarge' voxels. Note if resadd ~=0 the added
 %             voxels are in high resolution. Default 0. 
+%--------------------------------------------------------------------------
+% OUTPUT
+%  smooth_data   the convolution field
+%  xvals_vecs    a D-dimensional cell array whose entries are vectors giving 
+%               the xvalues at each each dimension along the lattice. It 
+%               assumes a regular, rectangular lattice (though within a given
+%               dimension the voxels can be spaced irregularly).
+%               I.e suppose that your initial lattice grid is a
+%               4by5 2D grid with 4 voxels in the x direction and 5 in
+%               the y direction. And that the x-values take the values:
+%               [1,2,3,4] and the y-values take the values: [0,2,4,6,8].
+%               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
+%               The default is to assume that the spacing between the
+%               voxels is 1. If only one xval_vec direction is set the
+%               others are taken to range up from 1 with increment given by
+%               the set direction.
+%  Kernel      @Fabian any reason that you included this as an output?
 %--------------------------------------------------------------------------
 % %%% 1D
 % %% Smoothing with increased resolution

@@ -19,7 +19,7 @@ mask = mask(50,:)';
 plot( mask )
 clear Sig
 
-mask_hr = mask_highres( mask, resAdd, enlarge, 1 ); % What is shown exactly in these plots??
+mask_hr = mask_highres( mask', resAdd, enlarge )
 
 %% 2D issue (there is a bug here!)
 Dim = [3,3]; mask = true(Dim); mask(2,1) = 0; resadd = 2;

@@ -1,15 +1,16 @@
-function [tcout, xvals_vecs] = convfield_t( lat_data, FWHM, resadd)
-% CONVFIELD_T( lat_data, FWHM, spacing) computes a convolution t field
+function [tcfield, xvals_vecs] = convfield_t( lat_data, FWHM, resadd)
+% CONVFIELD_T( lat_data, FWHM, resadd ) computes a convolution t field
 % with specified FWHM at points given by spacing
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % lat_data      a Dim by nsubj array of data
 % FWHM          the FWHM of the kernel with which to do smoothing
-% resAdd        the amount of voxels added equidistantly inbetween the
+% resadd        the amount of voxels added equidistantly inbetween the
 %               existing voxels. Default is 1.
 %--------------------------------------------------------------------------
 % OUTPUT
-% tcout         the convolution tfield
+% tcfield         the convolution tfield
+% 
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% 1D convolution t field
@@ -42,13 +43,13 @@ D = length(s_lat_data) - 1;
 %%  main function
 %--------------------------------------------------------------------------
 % Obtain the convolution fields for each subject
-[setofconvfields, xvals_vecs] = convfield_struct( lat_data, FWHM, resadd, D );
+[setofconvfields, xvals_vecs] = convfield( lat_data, FWHM, resadd, D );
 
 % Calculate the t-statistic
 if D > 1
-    tcout = mvtstat(setofconvfields, spacep(Dim,resadd));
+    tcfield = mvtstat(setofconvfields, spacep(Dim,resadd));
 else
-    tcout = mvtstat(setofconvfields);
+    tcfield = mvtstat(setofconvfields);
 end
 
 end

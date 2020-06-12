@@ -44,6 +44,11 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 %            structure having as fields the chosen types, which contain
 %            appropriate weights array.
 %--------------------------------------------------------------------------
+% DEVELOPER TODOS: 
+% This function doesn't work for column vectors atm, need to fix it
+% E.g: 
+% mask = true(D,1), bndry_voxels( mask, "full" )
+%--------------------------------------------------------------------------
 % EXAMPLES
 % %% %% D = 1 
 % %% Create a mask and show it

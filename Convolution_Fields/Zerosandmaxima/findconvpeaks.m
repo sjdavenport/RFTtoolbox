@@ -99,6 +99,9 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
 Ldim = size(lat_data);
 D = length(Ldim);
 if Ldim(2) == 1
@@ -115,7 +118,10 @@ end
 if size(peak_est_locs, 1) ~= D && ~isequal(size(peak_est_locs), [1,1])
     error('peak_est_locs is the wrong dimension!')
 end
-if nargin < 3 
+
+%%  add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('peak_est_locs', 'var')
     peak_est_locs = 1; %I.e. just consider the maximum.
 end
 if ~exist('mask', 'var') || isequal(mask, NaN)
@@ -125,8 +131,8 @@ if ~exist('mask', 'var') || isequal(mask, NaN)
         mask = ones(Ldim);
     end
 end
-if nargin < 6
-    truncation = -1;
+if ~exist('truncation', 'var')
+    truncation = -1; % This will use the default truncation in applyconvfield
 end
 
 if isnan(sum(lat_data(:)))
@@ -140,7 +146,7 @@ if isnumeric(Kernel)
 end
 
 %Setting up xvals_vecs
-if nargin < 5 || isequal(xvals_vecs, NaN)
+if ~exist('xvals_vecs', 'var') || isequal(xvals_vecs, NaN)
     xvals_vecs = {1:Ldim(1)}; %The other dimensions are taken case of below.
 end
 if ~iscell(xvals_vecs)
@@ -162,32 +168,36 @@ if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
+
+%%  main function
+%--------------------------------------------------------------------------
+% Obtain a function handle for the convolution field
 field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs, mask );
+
 if ~isequal(mask, ones(Ldim)) && ~isequal(mask, ones([1, Ldim]))
     masked_field = @(x) mask_field( x, mask, xvals_vecs ).*field(x);
 else
     masked_field = field;
 end
 
-% warning('need masking here! and for the maximization!! though mahel')
-
+% If they are not supplied find the initial estimates of the locations of
+% local maxima.
 % At the moment this is just done on the initial lattice. Really need to
 % change so that it's on the field evaluated on the lattice.
-
 if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
-    top = peak_est_locs;
+    numberofmaxima2find = peak_est_locs;
     if strcmp(Ktype, 'G')
         if D < 4
-            smoothed_data = fconv( lat_data, FWHM , D );
+            smoothed_data = fconv( lat_data, FWHM, D ); %Calculate the smooth field
         else
             error('Not yet ready for 4D or larger images')
         end
-        max_indices = lmindices(smoothed_data, top, mask);
+        max_indices = lmindices(smoothed_data, numberofmaxima2find, mask);
     else
-        max_indices = lmindices(lat_data, top, mask); %In 3D may need to use spm_smooth for this bit!
+        max_indices = lmindices(lat_data, numberofmaxima2find, mask); %In 3D may need to use spm_smooth for this bit!
     end
-    top = size(max_indices, 2);  
-    peak_est_locs = zeros(D, top);
+    numberofmaxima2find = size(max_indices, 2);  
+    peak_est_locs = zeros(D, numberofmaxima2find);
     for d = 1:D
         peak_est_locs(d, :) = xvals_vecs{d}(max_indices(d,:));
     end

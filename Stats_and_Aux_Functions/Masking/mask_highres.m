@@ -75,7 +75,6 @@ function [ mask_hr, weights, old_weights ] = mask_highres( mask, resadd,...
 % % non enlarged domain
 % mask_hr = mask_highres( mask, resadd, 0, show_plot );
 % 
-% 
 % %%% 3D
 % % resolution added
 % resadd  = 3;
@@ -111,8 +110,14 @@ s_mask = size( mask );
 
 % Get the dimension
 D = length( s_mask );
+horz2vert = 0;
 if D == 2 && s_mask(2) == 1
     D = 1;
+elseif D == 2 && s_mask(1) == 1
+    D = 1; %Fix to allow row vector masks
+    mask = mask';
+    s_mask = fliplr(s_mask);
+    horz2vert = 1;
 end
 
 % Check whether resadd is numeric
@@ -248,6 +253,13 @@ if mod(resadd, 2) == 0
     weights = NaN;
 else
     weights = getweights(mask_hr);
+end
+
+% In 1D transpose to ensure you return row vectors if you entered a
+% mask that was a row_vector.
+if horz2vert 
+    mask_hr = mask_hr';
+    weights = weights';
 end
 
 % Old weight calculations

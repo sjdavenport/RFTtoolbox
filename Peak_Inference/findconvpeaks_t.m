@@ -36,25 +36,6 @@ function [peaklocs, peakvals] = findconvpeaks_t(lat_data, Kernel, peak_est_locs,
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D
-% L = 100;
-% nsubj = 50;
-% lat_data = normrnd(0,1,L,nsubj);
-% FWHM = 3;
-% findconvpeaks_t(lat_data, FWHM)
-% tcf = @(tval) tcfield( tval, lat_data, FWHM );
-% plot(1:L, tcf(1:L))
-%
-% % 2D
-% Dim = [3,3];
-% nsubj = 20;
-% mask = ones(Dim); mask(2,1) = 0;
-% lat_data = normrnd(0,1,[Dim,nsubj]);
-% findconvpeaks_t(lat_data, FWHM, 1, mask)
-% xvals = 0.5:0.1:3.5;
-% masked_field = @(x) mask_field( x, mask ).*tcfield( x, lat_data, FWHM );
-% xvaluesatvoxels = xvals2voxels(xvals,2);
-% surf(reshape(masked_field(xvaluesatvoxels),[length(xvals),length(xvals)]))
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
