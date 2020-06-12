@@ -114,6 +114,7 @@ mask = pad_vals( ones( [ T T T] ), pad );
 
 % Get theoretical LKC
 theoryL = LKC_wncfield_theory( mask, FWHM, 3, 0 );
+contL = LKC_isogauss_theory( FWHM, [ T T T] );
 
 % Generate test data
 lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
@@ -127,4 +128,4 @@ LKC5 = LKC_conv_est( lat_data, mask, FWHM, 5, mask_lat );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ theoryL.L; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+[ theoryL.L; contL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
