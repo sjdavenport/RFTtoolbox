@@ -1,23 +1,44 @@
 function [ ] = visualize_bndry3D( mask, resadd, types, pts_size, angle )
 % visualize_bndry( mask, resadd, types, pts_size, angle ) visualizes the
-% resolution increased boundary as well as its subparts, which are computed
-% using bndry_voxel.m.
+% resolution increased boundary from mask_highres.m as well as its subparts,
+% which are computed using bndry_voxel.m.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%   mask   this is a mandatory variable.
+%   mask    a logical T_1 x ... x T_D array.
 %
 % Optional
-%   resadd   this is an optional parameter. Default 0.
-%   types
-%   angle
+%   resadd  the amount of equidistant voxels introduced inbetween the
+%           voxels  
+%   types   a string or vector of strings indicating which part of the
+%           boundary should be obtained.
+%           For D = 2 further options are
+%               - 'y', which returns all boundary segments with fixed
+%                      x-value
+%               - 'x', which returns all boundary segments with fixed
+%                      y-value
+%           For D = 3 further options are
+%               - 'xy', which returns all voxels of boundary faces with
+%                       fixed z-value
+%               - 'xz', which returns all voxels of boundary faces with
+%                       fixed y-value
+%               - 'yz', which returns all voxels of boundary faces with
+%                       fixed x-value
+%               - 'x',  which returns all edges in x-direction
+%               - 'y',  which returns all edges in y-direction
+%               - 'z',  which returns all edges in z-direction
+%   pts_size a numeric to increase or decrease the size of the points.
+%            Default 50.
+%   angle    a 1 x 2 vector specifying the 3D view. First component rotates
+%            around the vertical z-axis, second component around an axis in
+%            the x-y plane. Default [ 42 20 ].
 %
 %--------------------------------------------------------------------------
 % OUTPUT
 %   Outputs an image showing the resolution increased boundary
 %--------------------------------------------------------------------------
-% DEVELOPER TODOs:
+% DEVELOPER TODOs: - add 2D option
 %--------------------------------------------------------------------------
 % % EXAMPLES
 % %% % Show box example all boundaries
