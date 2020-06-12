@@ -130,6 +130,10 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % title("mask")
 % clear Sig
 % 
+% % Get LKC for the theoretical field
+% theoryL = LKC_wncfield_theory( mask, FWHM, 3, mask_lat );
+% 
+% % Generate test data
 % lat_data = randn( [ size(mask) nsubj ] );
 % 
 % % Closest approximation of the continuous field uses thresholding
@@ -141,11 +145,12 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % 
 % % Values are stable accross different resadd increases. Note that resadd
 % % should be odd.
-% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+% [ theoryL.L; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 % 
 % % Masking the data gives different LKCs
+% theoryL_masked = LKC_wncfield_theory( mask, FWHM, 3, 1 );
 % LKC_masked = LKC_conv_est( lat_data, mask, FWHM, 1, 1 );
-% [ theoryL; LKC_masked.hatL ]'
+% [ theoryL.L; theoryL_masked.L; LKC_masked.hatL ]'
 % 
 % %% %% D = 3 
 % % Parameters for the field
@@ -155,11 +160,12 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % pad    = ceil( 4*FWHM2sigma( FWHM ) );
 % 
 % %% Rectangular domain example
-% % generate rectangular mask with a padded zero collar 
+% % Generate rectangular mask with a padded zero collar 
 % mask = pad_vals( ones( [ T T T] ), pad );
 % 
-% % Get true LKC
-% theoryL = LKC_isogauss_theory( FWHM, [ T T T ] );
+% % Get theoretical LKC
+% theoryL = LKC_wncfield_theory( mask, FWHM, 3, 0 );
+% contL = LKC_isogauss_theory( FWHM, [ T T T] );
 % 
 % % Generate test data
 % lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
@@ -173,7 +179,7 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % 
 % % Values are stable accross different resadd increases. Note that resadd
 % % should be odd.
-% [ theoryL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
+% [ theoryL.L; contL; LKC1.hatL; LKC3.hatL; LKC5.hatL ]'
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
