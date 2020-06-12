@@ -379,8 +379,7 @@ if D == 2 || D == 3
                     || any( strcmp( type, "y" ) )...
                     || any( strcmp( type, "z" ) ) )
                 error( "'Type' must be chosen according to description." );
-            end
-            
+            end     
     end
 else
     bndry.full = bndry.full( locs{:} );
