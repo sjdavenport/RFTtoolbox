@@ -75,7 +75,7 @@ end
 % Default plot all boundary values
 if ~exist( 'angle', 'var' )
    % Default option of opt1
-   angle = [ 52 36 ];
+   angle = [ 42 20 ];
 end
 
 % Default plot all boundary values
@@ -131,5 +131,6 @@ else
 end
 % Change the view angle
 view( angle )
+axis equal
 
 return
