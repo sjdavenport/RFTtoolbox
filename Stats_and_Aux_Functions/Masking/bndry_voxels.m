@@ -143,6 +143,7 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 % AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
+
 %% Check input and get important constants from the mandatory input
 %--------------------------------------------------------------------------
 % Check whether the mask is logical
@@ -181,36 +182,44 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 % Preallocate the structures for the output
-bndry    = struct();
+bndry   = struct();
 weights = struct();
 
 % compute the full boundary
 bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
                         larger_image;
-
-% Weights for full boundary (They do not make sense!)
-weights.full = NaN * bndry.full;
                     
 % compute parts of the boundary if neccessary
 if D == 2 || D == 3
     switch D
         case 2
-            % check whether vertical boundary parts should be computed
+            % Compute the y-boundaries
+            ybndry = logical( imdilate( ~bndry.full,...
+                                [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
+                                bndry.full;
+            ybndry = ybndry( locs{:} );
+            
+            % Compute the x-boundaries            
+            xbndry = logical( imdilate( ~bndry.full,...
+                                [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
+                                    bndry.full;
+            xbndry = xbndry( locs{:} );
+            
+            % Get full weights
+            weights.full = inf2zero( 1./ ( xbndry + ybndry ) );
+            
+            % check whether vertical boundary parts should be outputed
             if any( strcmp( type, "y" ) )
-                bndry.y = logical( imdilate( ~bndry.full,...
-                                    [ [0 0 0]; [1 1 1]; [0 0 0] ] ) ) & ...
-                                        bndry.full;
-                bndry.y = bndry.y( locs{:} );
-                weights.y = bndry.y;
+                bndry.y   = ybndry;
+                weights.y = weights.full;
+                weights.y( ~bndry.y ) = 0;
             end
             
-            % check whether horizontal boundary parts should be computed
+            % check whether horizontal boundary parts should be outputed
             if any( strcmp( type, "x" ) )
-                bndry.x = logical( imdilate( ~bndry.full,...
-                                    [ [0 1 0]; [0 1 0]; [0 1 0] ] ) ) & ...
-                                        bndry.full;
-                bndry.x = bndry.x( locs{:} );
-                weights.x = bndry.x;
+                bndry.x   = xbndry;
+                weights.x = weights.full;
+                weights.x( ~bndry.x ) = 0;
             end
             
             % Cut the full bndry down to the correct size
@@ -224,7 +233,7 @@ if D == 2 || D == 3
             
         case 3            
             if any( strcmp( type, "xy" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "y" ) )
+                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "x" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, :, 2 ) = 1;
@@ -246,7 +255,7 @@ if D == 2 || D == 3
             end
                 
             if any( strcmp( type, "xz" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "z" ) )
+                    || any( strcmp( type, "z" ) ) || any( strcmp( type, "x" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, 2, : ) = 1;
@@ -265,12 +274,11 @@ if D == 2 || D == 3
                     weights.xz( :, y, : ) = getweights( squeeze(...
                                                     bndry.xz( :, y, : ) ) );
                 end
-                weights.xz = weights.xz;
-                
+                weights.xz = weights.xz;             
             end
                 
             if any( strcmp( type, "yz" ) ) || any( strcmp( type, "y" ) )...
-                    || any( strcmp( type, "z" ) )
+                    || any( strcmp( type, "z" ) ) || any( strcmp( type, "x" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( 2, :, : ) = 1;
@@ -292,32 +300,85 @@ if D == 2 || D == 3
                 weights.yz = weights.yz;
             end
             
-            % Get the x edges
-            if any( strcmp( type, "x" ) )
-                 bndry.x = bndry.xy & bndry.xz;
-            end
-            
-            % Get the y edges
-            if any( strcmp( type, "y" ) )
-                 bndry.y = bndry.xy & bndry.yz;
-            end
-            
-            % Get the z edges
-            if any( strcmp( type, "z" ) )
-                 bndry.z = bndry.yz & bndry.xz;
-            end
-            
             % Cut full weights and boundary down to correct size
             bndry.full = bndry.full( locs{:} );
-            weights.full = weights.full( locs{:} );
+            
+            % Get overall weights
+            weights.full = getweights( mask );
+            
+            if any( strcmp( type, "x" ) )
+                % Get the x edges
+                bndry.x = bndry.xy & bndry.xz;
+ 
+                % Get the neighbours. Note that the openeing angle on an
+                % edge is either 3/4 or 1/4
+                weights.x = zeros( s_mask + 2);
+                for x = 1:(s_mask(1)+2)
+                    weights.x( x, :, : ) = getweights( squeeze(...
+                                                    larger_image( x, :, : ) ) );
+                end
+                weights.x = weights.x( locs{:} );
+                weights.x( ~bndry.x ) = 0;
+                weights.x( weights.x == 0.5 ) = 1/4;
+                weights.x( weights.x == 1   ) = 3/4;
+                                 
+                % Find the corners of each edge and halft its weight
+                weights.x( bndry.xy & bndry.xz & bndry.yz ) = ...
+                weights.x( bndry.xy & bndry.xz & bndry.yz ) / 2; 
+            end
+            
+            if any( strcmp( type, "y" ) )
+                % Get the y edges
+                bndry.y = bndry.xy & bndry.yz;
+                
+                % Get the neighbours. Note that the openeing angle on an
+                % edge is either 3/4 or 1/4
+                weights.y = zeros( s_mask + 2);
+                for y = 1:(s_mask(1)+2)
+                    weights.y( :, y, : ) = getweights( squeeze(...
+                                                    larger_image( :, y, : ) ) );
+                end
+                weights.y = weights.y( locs{:} );
+                weights.y( ~bndry.y ) = 0;
+                weights.y( weights.y == 0.5 ) = 1/4;
+                weights.y( weights.y == 1   ) = 3/4;
+                 
+                % Find the corners of each edge and halft its weight
+                weights.y( bndry.xy & bndry.xz & bndry.yz ) = ...
+                weights.y( bndry.xy & bndry.xz & bndry.yz ) / 2;  
+            end
+            
+            if any( strcmp( type, "z" ) )
+                % Get the z edges
+                bndry.z = bndry.yz & bndry.xz;
+                 
+                % Get the neighbours. Note that the openeing angle on an
+                % edge is either 3/4 or 1/4
+                weights.z = zeros( s_mask + 2);
+                for z = 1:(s_mask(1)+2)
+                    weights.z( :, :, z ) = getweights( squeeze(...
+                                                larger_image( :, :, z ) ) );
+                end
+                weights.z = weights.z( locs{:} );
+                weights.z( ~bndry.z ) = 0;
+                weights.z( weights.z == 0.5 ) = 1/4;
+                weights.z( weights.z == 1   ) = 3/4;
+                 
+                % Find the corners of each edge and halft its weight
+                weights.z( bndry.xy & bndry.xz & bndry.yz ) = ...
+                weights.z( bndry.xy & bndry.xz & bndry.yz ) / 2;
+            end
             
             % Check whether the user entered at least on appropriate
             % type input
             if ~( any( strcmp( type, "full" ) )...
                     || any( strcmp( type, "xy" ) )...
                     || any( strcmp( type, "xz" ) )...
-                    || any( strcmp( type, "yz" ) ) )
-                error( "Version must be either 'full', 'x' or 'y'" );
+                    || any( strcmp( type, "yz" ) )...
+                    || any( strcmp( type, "x" ) )...
+                    || any( strcmp( type, "y" ) )...
+                    || any( strcmp( type, "z" ) ) )
+                error( "'Type' must be chosen according to description." );
             end
             
     end
@@ -330,6 +391,9 @@ end
 if length( type ) == 1
     bndry    = bndry.(type);
     weights = weights.(type);
+elseif ~any( strcmp( type, "full" ) )
+    bndry = rmfield( bndry, 'full' );
+    weights = rmfield( weights, 'full' );
 end
 
 return
