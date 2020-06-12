@@ -1,8 +1,11 @@
 function [ bndry, weights ] = bndry_voxels( mask, type )
-% This function computes a high resolution version of a given mask.
-% It has the option to enlarge the mask region by resAdd to use shifted
-% boundaries in LKC estimation. This is required in the interpretation of
-% values at voxels as the center values of rectangular domains. 
+% This function computes boundary voxels and weights for a given mask. Note
+% that the weights only make sense for masks which are resolution increased
+% by an odd number using mask_highres.m.
+% The weights are used in LKC estimation and assume trapozoidal
+% integration.
+% The boundary is splitted into several subparts representing the faces and
+% edges for specific fixed coordinates.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -24,9 +27,12 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 %                       fixed y-value
 %               - 'yz', which returns all voxels of boundary faces with
 %                       fixed x-value
+%               - 'x',  which returns all edges in x-direction
+%               - 'y',  which returns all edges in y-direction
+%               - 'z',  which returns all edges in z-direction
 %--------------------------------------------------------------------------
 % OUTPUT
-%   bndry    if 'type' is a string, bndry is a logical T_1 x ... x T_D
+%   bndry   if 'type' is a string, bndry is a logical T_1 x ... x T_D
 %           array having 1 whenever the point is part of the boundary (or 
 %           the chosen subpart).
 %           If 'type' is a vector of strings bndry is a structure having 
@@ -39,8 +45,8 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 %            appropriate weights array.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %% Test section D = 1
-% % create a mask and show it
+% %% %% D = 1 
+% %% Create a mask and show it
 % Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % mask = logical( Sig > 0.02 );
 % mask = mask(50,:)';
@@ -48,25 +54,23 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 % title( 'mask' )
 % clear Sig
 % 
-% % note in 1D there is only the 'full' option
-% bndry = bndry_voxels( mask, "full" );
+% % Note that in 1D there is only the "full" option
+% bdry = bndry_voxels( mask, "full" );
 % figure(1), clf,
-% plot( mask + bndry )
+% plot( mask + bdry )
 % title( 'mask + mask of boundary'  )
 % 
-% %% Test section D = 2
-% % Example demonstrating behaviour for all ones mask
-% % 2D examples - full
+% %% %% Test section D = 2
+% %% 2D examples - full - example demonstrating behaviour for all ones mask
 % mask = ones(10,10);
-% bndry_voxels( logical(mask), 'full' )
+% [bndry, weights] = bndry_voxels( logical(mask), "full" )
 % 
-% % 2D examples - sides
-% bndry_voxels( logical(mask), 'x' )
-% bndry_voxels( logical(mask), 'y' )
+% %% 2D examples - sides
+% [bndry, weights] = bndry_voxels( logical(mask), "x" )
+% [bndry, weights] = bndry_voxels( logical(mask), "y" )
 % 
-% % simple box example
-% close all
-% % create a simple mask and show it
+% %% Simple box example
+% % Create a simple mask and show it
 % mask = zeros( [ 15 15 ] );
 % mask( 4:12, 5:10 ) = 1;
 % mask = logical( mask );
@@ -75,27 +79,56 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 % colorbar
 % title( 'mask' )
 % 
-% %%% plot the different options of boundary
-% % fixed y option
-% bndry = bndry_voxels( mask, "x" );
+% %% % plot the different options of boundary
+% %% Fixed x option
+% bdry = bndry_voxels( mask, "x" );
 % figure(2), clf,
-% imagesc( mask + bndry ), colorbar
-% title("boundary for fixed y directions")
-% 
-% % fixed x option
-% bndry = bndry_voxels( mask, "y" );
-% figure(3), clf,
-% imagesc( mask + bndry ), colorbar
+% imagesc( mask + bdry ), colorbar
 % title("boundary for fixed x directions")
 % 
-% % fixed "full" option
-% bndry = bndry_voxels( mask, "full" );
+% %% Fixed y option
+% bdry = bndry_voxels( mask, "y" );
+% figure(3), clf,
+% imagesc( mask + bdry ), colorbar
+% title("boundary for fixed y directions")
+% 
+% %% Fixed "full" option
+% bdry = bndry_voxels( mask, "full" );
 % figure(4), clf,
-% imagesc( mask + bndry ), colorbar
+% imagesc( mask + bdry ), colorbar
 % title("all boundary points")
 % 
-% %% complicated mask example
-% % generate mask
+% %% Example demonstrating the bdry fix
+% % Create a simple mask and show it
+% mask = true( [ 10 10 ] );
+% mask( 1:3, 1:4 ) = 0;
+% mask = logical( mask );
+% figure(1), clf,
+% imagesc( mask(:,:) ),
+% colorbar
+% title( 'mask' )
+% 
+% %% % plot the different options of boundary
+% %% Fixed y option
+% bdry = bndry_voxels( mask, "y" );
+% figure(2), clf,
+% imagesc( mask + bdry ), colorbar
+% title("boundary for fixed y directions")
+% 
+% %% Fixed x option
+% bdry = bndry_voxels( mask, "x" );
+% figure(3), clf,
+% imagesc( mask + bdry ), colorbar
+% title("boundary for fixed x directions")
+% 
+% %% Fixed "full" option
+% bdry = bndry_voxels( mask, "full" );
+% figure(4), clf,
+% imagesc( mask + bdry ), colorbar
+% title("all boundary points")
+% 
+% %% Complicated mask example
+% % Generate mask
 % Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % mask = logical( Sig > 0.02 & Sig < 1.1 );
 % figure(1), clf,
@@ -103,42 +136,64 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 % title("mask")
 % clear Sig
 % 
-% %% plot the different options of boundary
-% % fixed y option
-% bndry = bndry_voxels( mask, "x" );
+% %% % plot the different options of boundary
+% %% Fixed y option
+% bdry = bndry_voxels( mask, "y" );
 % figure(2), clf,
-% imagesc( mask + bndry ), colorbar
+% imagesc( mask + bdry ), colorbar
 % title("boundary for fixed y directions")
 % 
-% % fixed x option
-% bndry = bndry_voxels( mask, "y" );
+% %% Fixed x option
+% bdry = bndry_voxels( mask, "x" );
 % figure(3), clf,
-% imagesc( mask + bndry ), colorbar
+% imagesc( mask + bdry ), colorbar
 % title("boundary for fixed x directions")
 % 
-% % fixed "full" option
-% bndry = bndry_voxels( mask, "full" );
+% %% Fixed "full" option
+% bdry = bndry_voxels( mask, "full" );
 % figure(4), clf,
-% imagesc( mask + bndry ), colorbar
+% imagesc( mask + bdry ), colorbar
 % title("all boundary points")
 % 
-% %% Test section D = 3
-% % create a mask and show it
+% %% Fixed x+y value
+% xbdry = bndry_voxels( mask, "x" );
+% ybdry = bndry_voxels( mask, "y" );
+% figure(3), clf,
+% imagesc( (ybdry & xbdry) + xbdry ), colorbar
+% title("boundary for fixed x directions")
+% 
+% %% %% Test section D = 3
+% %% % Simple usage example on a box
+% % Create a mask and show it
 % mask = zeros( [ 5 5 5 ] );
 % mask( 2:4, 2:4, 2:4 ) = 1;
 % figure(1), clf,
 % imagesc( mask(:,:,2) ), colorbar
 % title("slice of mask")
 % 
-% % get boundary voxels lying in z value planes or better having a not to the
-% % mask connected face pointing into the z direction
-% bndry = bndry_voxels( logical( mask ), "xy" )
+% % Get all boundary voxels seperate by type
+% [ bdry, weights ] = bndry_voxels( logical( mask ) )
 % 
-% % same as before for y
-% bndry = bndry_voxels( logical( mask ), "xz" )
+% %% % Example demonstrating its use for high resolution masks
+% % Create a mask and show it
+% mask = true( [ 3 3 3 ] );
+% mask( 1, 1, 1 ) = 0;
+% visualize_bndry3D( mask, 1, ["x"], 40, [ -102 16 ] )
+% title("Resolution increased mask + x-edges")
 % 
-% % same as before for x
-% bndry = bndry_voxels( logical( mask ), "yz" )
+% resadd = 1;
+% mask_hr = mask_highres( mask, resadd, ceil(resadd/2) );
+% 
+% % Get all boundary voxels seperate by type
+% [ bdry_xy, weights_xy ] = bndry_voxels( logical( mask_hr ) )
+% 
+% % Visualize all edges
+% visualize_bndry3D( mask, 1, [ "x", "y", "z" ], 40, [ -102 16 ] )
+% title("All edge points from bndry_voxels")
+% 
+% % Visualize all edges
+% visualize_bndry3D( mask, 1, [ "xy", "yz", "xz" ], 40, [ -102 16 ] )
+% title("All faces points from bndry_voxels")
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
@@ -164,7 +219,7 @@ end
 % will be judged to be on the boundary
 [ larger_image, locs ] = pad_vals( mask );
 
-%%  add/check optional values
+%%  Add/check optional values
 %--------------------------------------------------------------------------
 if ~exist( 'type', 'var' )
    switch D
@@ -185,11 +240,11 @@ end
 bndry   = struct();
 weights = struct();
 
-% compute the full boundary
+% Compute the full boundary
 bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
                         larger_image;
                     
-% compute parts of the boundary if neccessary
+% Compute parts of the boundary if neccessary
 if D == 2 || D == 3
     switch D
         case 2
@@ -208,14 +263,14 @@ if D == 2 || D == 3
             % Get full weights
             weights.full = inf2zero( 1./ ( xbndry + ybndry ) );
             
-            % check whether vertical boundary parts should be outputed
+            % Check whether vertical boundary parts should be outputed
             if any( strcmp( type, "y" ) )
                 bndry.y   = ybndry;
                 weights.y = weights.full;
                 weights.y( ~bndry.y ) = 0;
             end
             
-            % check whether horizontal boundary parts should be outputed
+            % Check whether horizontal boundary parts should be outputed
             if any( strcmp( type, "x" ) )
                 bndry.x   = xbndry;
                 weights.x = weights.full;
