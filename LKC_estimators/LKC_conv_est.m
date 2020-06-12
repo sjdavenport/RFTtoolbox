@@ -5,8 +5,8 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % derived from a general kernel. Corresponding samples of such fields can
 % be simulated using convfield.m which has the same input variables.
 % If 'version' is choosen to be 'analytical' the analytic derivatives in
-% form of convolutions with the derivative of the kernel are used. If
-% version is 'numerical', numerical approximation of the derivative are
+% form of convolutions with the derivatives of the kernel are used. If
+% version is 'numerical', numerical approximation of the derivatives are
 % used, which are precise approximations of the true derivative, since
 % convolution fields can be computed for any location.
 %
@@ -14,8 +14,8 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 % that lat_data has independent mean zero unit variance voxels can be
 % obtained from the function LKC_wncfield_theory.m
 %
-% Currently, only 1D and 2D provide estimates for all LKCs.
-% 3D only allows for estimation of L2 and L3.
+% While 1D and 2D allow for general non-isotropic fields, the estimate in
+% 3D assumes 'local isotropy' for L1. This might be fixed in the future.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -39,8 +39,8 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 %             are performed.              
 %  enlarge    an integer denoting the amount of voxels the resolution
 %             increased mask is enlarged by dilation. Note that for
-%             unbiased estimation resadd needs to be an odd number and
-%             enlarge needs to be set to the default value.
+%             unbiased estimation of LKCs resadd needs to be an odd number
+%             and enlarge needs to be set to the default value.
 %             Default ceil( resadd / 2 )
 %  version    string indicating which estimator for the Lambda
 %             matrix/Riemannian metric is used. Options are "analytical"
@@ -56,7 +56,7 @@ function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
 %                induced metric of the random field.
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - add full 3D estimation
+%   - fix local isotropy assumption in L1 by computing the second integral
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% %% D = 1 
