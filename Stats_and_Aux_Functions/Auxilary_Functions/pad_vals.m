@@ -1,7 +1,6 @@
 function [ pad_data, locs ] = pad_vals( data, padn, val )
-% PAD_VALUES(  data, padn, val ) pads is a function which allows to pad
+% PAD_VALS( data, padn, val ) pads is a function which allows to pad
 % specified values to the boundary of an data array.
-%
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -31,11 +30,13 @@ function [ pad_data, locs ] = pad_vals( data, padn, val )
 % - write examples
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% %% 1D example
+% pad_vals( ones(1,3), 2 )
+% %% 2D example
+% pad_vals( ones(2), 1 )
 %--------------------------------------------------------------------------
-% AUTHOR: Fabian Telschow  
+% AUTHORS: Fabian Telschow and Samuel Davenport
 %--------------------------------------------------------------------------
-
 
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
@@ -58,7 +59,7 @@ if ~exist( 'padn', 'var' )
    padn = 1;
 end
 
-% Default value of padn
+% Default value of val
 if ~exist( 'val', 'var' )
    % Default option of opt1
    val= 0;
@@ -67,7 +68,7 @@ end
 % transform padn into a 2 x D array
 if isnumeric( padn )
     if numel( padn ) == 1
-        padn = padn * ones( [ 2 D ] );
+        padn = padn * ones( [ 2 D ] ); %Defaults to symmetric padding
     elseif all( size( padn ) == [ 1 D ] )
         padn = [ padn; padn ];
     elseif all( size( padn ) == [ D 1 ] )
@@ -83,23 +84,27 @@ end
 
 %% Main function  
 %--------------------------------------------------------------------------
+% Initialize a vector that will give the inner locations
+locs = cell( 1, D );
 
 % Make a larger image so that masked voxels at the boundary of the image
-% will be judged to be on the boundary
+% will be judged to be on the boundary. Note that sum(padn) is a 1 by D
+% vector where each entry is the total amount of padding that needs to be
+% added. (I.e. if originally padn was an integer (before it's expansion to 
+% an array above then this loop will add get 2*padn in each dimension).
 if D == 1
     if  sdata(1) == 1
-        pad_data = val * ones( sdata + [ 0 sum( padn )] );
+        pad_data = val * ones( sdata + [ 0 sum( padn )] ); 
+        locs{1} = padn(1,1) + ( 1:sdata(2) );
     else
         pad_data = val * ones( sdata + [ sum( padn ) 0] );
+        locs{1} = padn(1,1) + ( 1:sdata(1) );
     end
 else
-    pad_data = val * ones( sdata + sum( padn ) );    
-end
-
-% Get the locations to place the inner (original) data
-locs = cell( 1, D );
-for d = 1:D
-   locs{d} = padn(1,d) + ( 1:sdata(d) );
+    for d = 1:D
+        locs{d} = padn(1,d) + ( 1:sdata(d) );
+    end
+    pad_data = val * ones( sdata + sum( padn ) );
 end
 
 % Set the inner locations to be the data
