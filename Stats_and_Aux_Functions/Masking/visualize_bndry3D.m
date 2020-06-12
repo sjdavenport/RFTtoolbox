@@ -1,6 +1,7 @@
 function [ ] = visualize_bndry3D( mask, resadd, types, pts_size, angle )
-% visualize_bndry( mask, resadd, types ) visualizes the resolution
-% increased boundary
+% visualize_bndry( mask, resadd, types, pts_size, angle ) visualizes the
+% resolution increased boundary as well as its subparts, which are computed
+% using bndry_voxel.m.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -18,11 +19,13 @@ function [ ] = visualize_bndry3D( mask, resadd, types, pts_size, angle )
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
-% EXAMPLES
+% % EXAMPLES
 % %% % Show box example all boundaries
 % visualize_bndry3D( true([4 4 4]), 1, ["yz", "xz", "xy"], 50 )
+% title("All boundary voxels colored by constant coordinate")
 % %% % Show box example only one boundary
-% visualize_bndry3D( true([4 4 4]), 1, "yz", 50 )
+% visualize_bndry3D( true([4 4 4]), 1, ["yz", "x"], 50 )
+% title("y-z-plane faces of the boundary and x-edges")
 % %% %% Spherical object
 % % Create a mask and show it
 % siz = 3;
@@ -33,9 +36,12 @@ function [ ] = visualize_bndry3D( mask, resadd, types, pts_size, angle )
 % mask  = logical( h > 0.003 );
 % clear h
 % %% % resadd = 1
-% visualize_bndry3D( mask, 1, [ "xy", "yz", "xz" ], 20 )
+% visualize_bndry3D( mask, 1, [ "xy", "yz", "xz" ], 40 )
+% title("All boundary voxels colored by constant coordinate")
+% 
 % %% % resadd = 3
-% visualize_bndry3D( mask, 3, [ "xy", "yz" ], 40 )
+% visualize_bndry3D( mask, 3, [ "x", "y", "z" ], 40 )
+% title("All edges colored by coordinate")
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow  
 %--------------------------------------------------------------------------
@@ -47,7 +53,6 @@ function [ ] = visualize_bndry3D( mask, resadd, types, pts_size, angle )
 if ~length( size( mask ) ) == 3
     error( "mask must be 3D array." );
 end
-
 
 %% Add/check optional values
 %--------------------------------------------------------------------------
@@ -84,7 +89,7 @@ end
 
 % Define a color structure
 colors = [ "b", "y", "k" ];
-spts = pts_size * [ 1.5, 1, 0.5 ];
+spts = pts_size * [ 3, 1, 0.5 ];
            
 % Get the highres mask
 mask_hr = mask_highres( mask, resadd );
