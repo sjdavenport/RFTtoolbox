@@ -356,21 +356,16 @@ switch D
         %%% Calculate LKC 1
         % Find x and y shift boundary voxels, i.e. horizontal boundary
         % and vertical parts.
-        bdry = bndry_voxels( mask, [ "x", "y" ] );
+        [ bdry, weights] = bndry_voxels( mask, [ "x", "y" ] );
         
         % Integrate using trapozoid rule.
         % Note that we later need to remove half of the end points value,
         % of each line segment which are contained in the x and the y shift
         % boundary. They will be count double otherwise.
-        L(1)  = sum( sqrt( g_xx( bdry.x ) ) ) * dx;
-        L(1)  = L(1) + sum( sqrt( g_yy( bdry.y ) ) ) * dy;
-        
-        % Remove double counted voxels at end of line segments and divide
-        % length of boundary by 2, since that is what LKC1 is.
-        xybdry = bdry.y + bdry.x == 2;
-        L(1) = ( L(1) - sum( sqrt( g_xx( xybdry ) ) ) * dx / 2 ...
-                      - sum( sqrt( g_yy( xybdry ) ) ) * dy / 2 ) / 2;
-                        
+        L(1)  = 0.5 *...
+                ( sum( sqrt( g_xx( bdry.x ) ) .* weights.x( bdry.x ) ) * dx...
+                + sum( sqrt( g_yy( bdry.y ) .* weights.y( bdry.y ) ) ) * dy );
+                               
         %%% Fill the output structure
         geom.vol_form = vol_form;
         
@@ -412,11 +407,13 @@ switch D
         % the same volume dxdydz. Simple midpoint integration is used.
         L(3) = vol_form(:)' * weights(:) * dx * dy * dz;                  
 
-        %%% Calculate LKC 2
-        % Find faces having constant z value and integrate using simple
-        % midpoint rule.
-        [ bdry, weights ] = bndry_voxels( mask, [ "xy", "xz", "yz" ] );
-        weights.xy = weights.xy( weights.xy ~= 0 );
+        %%%%%% Calculate LKC2 and LKC1
+        % Find faces and edges and their integration weights.
+        [ bdry, weights ] = bndry_voxels( mask );
+        
+        %%% Calculate LKC 2;
+        % Integrate volume form of faces to get LKC2
+        weights.xy = weights.xy( weights.xy ~= 0 );        
         L(2) = sum( sqrt( max( g_xx( bdry.xy ) .* g_yy( bdry.xy )...
                               - g_xy( bdry.xy ).^2, 0 ) )...
                               .* weights.xy(:) ) * dx * dy / 2;
@@ -432,7 +429,18 @@ switch D
                               .* weights.yz(:) ) * dy * dz / 2;
         
         %%% Calculate LKC 1
-        % Work in progress
+        % Integrate volume form of edges to get LKC2
+        weights.x = weights.x( weights.x ~= 0 );        
+        L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
+                              .* weights.x(:) ) * dx;
+                          
+        weights.z = weights.z( weights.z ~= 0 );
+        L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
+                              .* weights.z(:) ) * dz;
+
+        weights.y = weights.y( weights.y ~= 0 );
+        L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
+                              .* weights.y(:) ) * dy;
 end
 %%%%%% END estimate the LKCs in different dimensions
 
