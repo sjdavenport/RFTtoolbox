@@ -414,7 +414,11 @@ switch D
         L(3) = vol_form(:)' * weights(:) * dx * dy * dz;                  
 
         %%%%%% Calculate LKC2 and LKC1
-        % Find faces and edges and their integration weights.
+        % Find faces and edges and their integration weights. Note that the
+        % weights for edges assume that the unit sphere no matter how
+        % oriented always has 1/4 or 3/4 of its vectors pointing inside the
+        % voxel manifold. I think that should be the case, yet needs to be
+        % carefully considered.
         [ bdry, weights ] = bndry_voxels( mask );
         
         %%% Calculate LKC 2;
