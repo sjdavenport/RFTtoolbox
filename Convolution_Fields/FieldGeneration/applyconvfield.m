@@ -1,5 +1,6 @@
-function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_vecs, mask)
-% APPLYCONVFIELD(tval, Y, Kernel, xvals_vecs, truncation)
+function [field_vals, ss] = ...
+       applyconvfield(tval, lat_data, Kernel, mask, truncation, xvals_vecs)
+% APPLYCONVFIELD(tval, lat_data, Kernel, mask, truncation, xvals_vecs)
 % calculates the convolution field at points specified by tval
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -38,59 +39,6 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 %               evaluated at the locations specified by xvals
 %--------------------------------------------------------------------------
 % EXAMPLES  
-% 1D:
-% Y = [1,2,3,4];
-% tval = 2; FWHM = 3;
-% applyconvfield(tval, Y, FWHM)
-%
-% %1D Comparison with SPM smoothing:
-% truncation = 4;
-% nvox = 100;
-% xvals_vecs = 1:nvox;
-% nsubj = 50;
-% lat_field = normrnd(0,1,nvox,nsubj);
-% field_at_voxels = applyconvfield(1:nvox, mean(lat_field,2)', FWHM, truncation, xvals_vecs);
-% [~, ss] = applyconvfield(nvox/2, lat_field(:,1)', FWHM, truncation, xvals_vecs);
-% plot(field_at_voxels/sqrt(ss))
-% hold on
-% [smoothfield, ss_spm] = spm_conv_mod(mean(lat_field,2), FWHM);
-% plot(smoothfield'/sqrt(ss_spm));
-%
-%
-% %Note need to get things to work with xvalues_at_voxels =
-% MEG_data.freq_vect; i.e fractional values
-% atm Ytemp = Y(xvalues_at_voxels); assumes integers values
-% 
-% 2D:
-% Y = [1,2;3,4];
-% tval = [1.5,2,4; 3.4,2, 5]; FWHM = 3;
-% applyconvfield_gen(tval, Y, @(x) GkerMV( x, FWHM))
-% applyconvfield(tval, Y, FWHM)
-%
-% % Different sigmas
-% FWHM = 3;
-% round(4*FWHM2sigma(FWHM));
-%
-% % Need to truncate for speed, else  things are really slow!!
-% FWHM = 3;
-% lat_data = normrnd(0,1,1000,1000);
-% tic; applyconvfield([500,500]', lat_data, FWHM); toc
-% tic; applyconvfield([500,500]', lat_data, FWHM, 10); toc
-% tic; convfield(lat_data, FWHM, 1, 2); toc
-%
-% 3D:
-% FWHM = 3;
-% noise = reshape(noisegen([91,109,91], 1, 6, 1), [91,109,91]);
-% tic; applyconvfield([50,40,60]', noise, FWHM)
-% toc
-% tic; applyconvfield([50,40,60]', noise, FWHM)
-% toc
-%
-% Truncation or no truncation (that is the question)
-% noise = noisegen([91,109,91], 1, 6); FWHM = 3;
-% applyconvfield([50,40,60]', noise, FWHM) % No truncation
-% sigma = FWHM2sigma(FWHM); truncation = round(4*sigma);
-% applyconvfield([50,40,60]', noise, FWHM, truncation)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -98,25 +46,26 @@ function [field_vals, ss] = applyconvfield(tval, Y, Kernel, truncation, xvals_ve
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 % If a mask is supplied, mask the data
-if exist('mask', 'var')
-    Y = Y.*mask; %This masks the unsmoothed data
+if exist('mask', 'var') && ~isnan(sum(mask(:)))
+    lat_data = lat_data.*mask; %This masks the unsmoothed data
 end
 
 % Get the dimensions of the the data
-Ydim = size(Y);
+Ldim = size(lat_data);
 
-%Allow column vector to be used as inputs
-if length(Ydim) == 2 && Ydim(2) == 1
-    Ydim = Ydim'; 
+%Allow column vectors to be used as inputs
+if length(Ldim) == 2 && Ldim(2) == 1
+    Ldim = fliplr(Ldim); 
+    lat_data = lat_data';
 end
 
 % Deal with the dimension in 1D
-if Ydim(1) == 1
-    Ydim = Ydim(2:end); 
+if Ldim(1) == 1
+    Ldim = Ldim(2:end); 
 end
 
 % Get the number of dimensions
-D = length(Ydim); 
+D = length(Ldim); 
 
 %% Error checking
 %--------------------------------------------------------------------------
@@ -130,7 +79,7 @@ if size(tval, 1) ~= D
     error(['The size of the point to evaluate must match the number of ',...
            'dimensions. I.e. the columns of the matrix must be the same',...
            'as the number of dimensions, if there is only one data point',...
-           'it must be a row vector!'])
+           'it must be a row vector! Note that in 1D lat_data '])
 end
 
 %%  add/check optional values
@@ -176,7 +125,7 @@ ss = zeros(1, size(tval, 2));
 % Default takes a D-dimensional cube with resolution 0 i.e. just the
 % lattice point where each voxel is square with volume 1
 if ~exist('xvals_vecs', 'var')
-    xvals_vecs = {1:Ydim(1)}; %The other dimensions are taken case of below.
+    xvals_vecs = {1:Ldim(1)}; %The other dimensions are taken case of below.
 end
 if ~iscell(xvals_vecs)
     xvals_vecs = {xvals_vecs};
@@ -187,7 +136,7 @@ end
 if length(xvals_vecs) < D
     increm = xvals_vecs{1}(2) - xvals_vecs{1}(1);
     for d = (length(xvals_vecs)+1):D
-        xvals_vecs{d} = xvals_vecs{1}(1):increm:(xvals_vecs{1}(1)+increm*(Ydim(d)-1));
+        xvals_vecs{d} = xvals_vecs{1}(1):increm:(xvals_vecs{1}(1)+increm*(Ldim(d)-1));
     end
 end
 
@@ -233,24 +182,24 @@ for I = 1:size(tval, 2)
         % of the lattice data at these locations (Ytemp)
         if D == 1
             xvalues_at_voxels = (max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end)))';
-            Ytemp = Y(xvalues_at_voxels);
+            Ytemp = lat_data(xvalues_at_voxels);
         elseif D == 2
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
             [x, y] = ndgrid(eval1,eval2);  
             xvalues_at_voxels = [x(:),y(:)];
-            Ytemp = Y(eval1, eval2);
+            Ytemp = lat_data(eval1, eval2);
         elseif D == 3
             eval1 = max(lower(1),  xvals_vecs{1}(1)):min(upper(1),  xvals_vecs{1}(end));
             eval2 = max(lower(2),  xvals_vecs{2}(1)):min(upper(2),  xvals_vecs{2}(end));
             eval3 = max(lower(3),  xvals_vecs{3}(1)):min(upper(3),  xvals_vecs{3}(end));
             [x, y, z] = ndgrid(eval1,eval2,eval3);
             xvalues_at_voxels = [x(:),y(:),z(:)];
-            Ytemp = Y(eval1, eval2, eval3);
+            Ytemp = lat_data(eval1, eval2, eval3);
         end
     else
         % If there is no truncation use all of the data
-        Ytemp = Y;
+        Ytemp = lat_data;
     end
    
     % Obtain the kernel at all voxels in the specified truncation area

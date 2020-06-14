@@ -86,7 +86,7 @@ D = size(initial_estimates,1);
 try
     fn(ones(D,1));
 catch
-    error('The dimensions of the initial esimates do not match the dimension of the function')
+    error('The dimensions of the initial estimates do not match the dimension of the function')
 end
 
 if any(isnan(fn(initial_estimates)))
@@ -132,7 +132,7 @@ options = optimoptions(@fmincon,'Display','off'); % Ensures that no output
 
 % A bizarre constant that seems to be needed in order for the algorithm to 
 % always converge.
-extra = 0.0001; 
+extra = 0.00001; 
 initial_estimates = initial_estimates + extra;
 
 % Calculate the maximum locations on a box around each initial estimate

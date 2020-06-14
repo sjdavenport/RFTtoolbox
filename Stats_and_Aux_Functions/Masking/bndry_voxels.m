@@ -203,7 +203,6 @@ function [ bndry, weights ] = bndry_voxels( mask, type )
 % AUTHORS: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
-
 %% Check input and get important constants from the mandatory input
 %--------------------------------------------------------------------------
 % Check whether the mask is logical
@@ -216,7 +215,7 @@ s_mask = size( mask );
 
 % Get the dimension
 D = length( s_mask );
-if D == 2 && s_mask(2) == 1
+if D == 2 && (any(s_mask == 1))
     D = 1;
 end
 
@@ -236,7 +235,10 @@ if ~exist( 'type', 'var' )
 end
 
 if ischar(type)
-    type = string(type); % @Fabian: Without this it seems that a structure is returned is that intended? E.g. if the input is 'full' rather than "full"
+    type = string(type); 
+    % @Fabian: Without this it seems that a structure is returned is that 
+    % intended? E.g. if the input is 'full' rather than "full". To see this
+    % behaviour comment this if clause out.
 elseif ~isstring( type )
     error( "'type' input must be a string." )
 end
@@ -248,8 +250,8 @@ bndry   = struct();
 weights = struct();
 
 % Compute the full boundary
-bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ...
-                        larger_image;
+bndry.full = (dilate_mask(~larger_image, 1)) & larger_image;
+% bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ... larger_image;
                     
 % Compute parts of the boundary if neccessary
 if D == 2 || D == 3
@@ -445,7 +447,7 @@ if D == 2 || D == 3
     end
 else
     bndry.full = bndry.full( locs{:} );
-    weights.full = weights.full( locs{:} );  
+    weights.full = (1/2)*bndry.full;
 end
 
 % Make output arrays if type is a string

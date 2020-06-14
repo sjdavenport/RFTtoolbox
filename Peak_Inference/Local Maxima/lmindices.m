@@ -1,16 +1,18 @@
-function [ lmarrayindices, lmInd ] = lmindices( Y, top, mask, CC )
-% lmindices_new( Y, top, CC, mask ) finds the top local maxima of an image,
+function [ lmarrayindices, lmind ] = lmindices( Y, top, mask, CC )
+% lmindices( Y, top, CC, mask ) finds the top local maxima of an image,
 % given a conectivity criterion CC, that lie within a specified mask.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Y      a 3 dimensional array of real values
 % top    the top number of local maxima of which to report
 % CC     the connectivity criterion
-% mask   a 0/1 mask.
+% mask   a 0/1 mask
 %--------------------------------------------------------------------------
 % OUTPUT
 % lmarrayindices    an npeaks by D array of the peak locations
-% lmInd 
+% lmind             an npeaks by 1 array where each value is the converted
+%                   peak location, converted according to the size of Y 
+%                   using convind
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %3D example
@@ -28,7 +30,8 @@ function [ lmarrayindices, lmInd ] = lmindices( Y, top, mask, CC )
 % lmindices([1,1,1;1,2,1;1,1,1;1,1,2], 2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
-if nargin < 2
+%--------------------------------------------------------------------------
+if ~exist('top', 'var')
     top = 1;
 elseif strcmp(top, 'all')
     top = numel(Y);
@@ -38,14 +41,14 @@ Ydim = size(Y);
 D = length(Ydim); %Note in the D = 1 case we still take D = 2 and use a 
 %connectivity criterion of 8 as this is equivalent to a connectivity criterion of 2!
 
-if nargin < 3
+if ~exist('mask', 'var')
     mask = ones(Ydim);
 end
 if ~isequal(size(mask), size(Y))
     error('The mask must be the same size as Y')
 end
 
-if nargin < 4
+if ~exist('CC', 'var')
     if D == 2
         CC = 8;
     elseif D == 3
@@ -65,13 +68,13 @@ indices = find(imregionalmax(Y, CC).*mask);
 
 [~, sorted_lm_indices] = sort(Y(indices), 'descend');
 top = min(top, length(sorted_lm_indices));
-lmInd = indices(sorted_lm_indices(1:top)); %choose the top indices and return with top first second second etcetera
+lmind = indices(sorted_lm_indices(1:top)); %choose the top indices and return with top first second second etcetera
 
 if D == 2
-    [lmarrayindicesx,lmarrayindicesy]  = ind2sub(Ydim, lmInd);
+    [lmarrayindicesx,lmarrayindicesy]  = ind2sub(Ydim, lmind);
     lmarrayindices = [lmarrayindicesx, lmarrayindicesy]';
 elseif D == 3
-    [lmarrayindicesx,lmarrayindicesy, lmarrayindicesz]  = ind2sub(Ydim, lmInd);
+    [lmarrayindicesx,lmarrayindicesy, lmarrayindicesz]  = ind2sub(Ydim, lmind);
     lmarrayindices = [lmarrayindicesx, lmarrayindicesy, lmarrayindicesz]';
 end
 

@@ -35,8 +35,11 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 % ss                the sum of squares of the kernel (useful for ensuring
 %                   variance 1 isotropic fields
 %--------------------------------------------------------------------------
+% DEVELOPER TODOS
+% Need to allow calculation of ss (the sum of squares of the kernel for use
+% in noisegen.m
+%--------------------------------------------------------------------------
 % EXAMPLES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %% %% 1D Examples
 % %% Simple 1D example
 % lat_data = normrnd(0,1,1,100); FWHM = 3;

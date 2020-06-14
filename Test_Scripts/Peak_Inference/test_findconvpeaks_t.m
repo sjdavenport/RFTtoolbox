@@ -1,105 +1,97 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
-%%%    This script tests the findconvpeaks_t function
+%%%    This script tests the findconvpeaks function for t fields
 %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% prepare workspace
-clear all
+clear all 
 close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 1D
-nvox = 100;
-nsubj = 50;
-lat_data = normrnd(0,1,nvox,nsubj);
-FWHM = 3;
-findconvpeaks_t(lat_data, FWHM)
-tcf = @(tval) tcfield( tval, lat_data, FWHM );
-plot(1:nvox, tcf(1:nvox))
-
-% 2D
-Dim = [3,3];
-nsubj = 20;
-mask = ones(Dim); mask(2,1) = 0;
-lat_data = normrnd(0,1,[Dim,nsubj]);
-findconvpeaks_t(lat_data, FWHM, 1, mask)
-xvals = 0.5:0.1:3.5;
-masked_field = @(x) mask_field( x, mask ).*tcfield( x, lat_data, FWHM );
-xvaluesatvoxels = xvals2voxels(xvals,2);
-surf(reshape(masked_field(xvaluesatvoxels),[length(xvals),length(xvals)]))
 
 %% %% 1D Examples
 %% Simple 1D application
-nvox = 100; nsubj = 50; FWHM = 3;
-lat_data = normrnd(0,1,nvox,nsubj);
-findconvpeaks_t(lat_data, FWHM)
-xvals_fine = 1:0.1:nvox;
+nvox = 10; nsubj = 20; lat_data = randn([nvox, nsubj]);
+FWHM = 3; resadd = 3;
+[ peakloc, peakval ] = findconvpeaks(lat_data, FWHM, 1, 'T')
 
+[ tcfield, xvals_vecs ] = convfield_t( lat_data, FWHM, resadd );
+plot(xvals_vecs{1}, tcfield)
+xlim([xvals_vecs{1}(1), xvals_vecs{1}(end)])
 
 tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM );
-plot(xvals_fine, tcf(xvals_fine))
-
-%% 1D with different xvals_vecs
-Y = [1,1,2,2,1,1];
-xvals_vecs = 11:(length(Y)+10);
-findconvpeaks(Y, 3, 1, ones(1,length(Y)), xvals_vecs)
+tcf(peakloc -0.01)
+tcf(peakloc +0.01)
 
 %% 1D multiple peaks
-Y = [1,2,1,1,1,1,2,1];
-findconvpeaks(Y, 3, 2) % Top 2 peaks
-findconvpeaks(Y, 3, [NaN, 1,6]) % Top 2 peaks starting initializing at 1, 6, 
-%                                   needs the NaN in 1D to differentiate from 
-%                                   the top number of peaks 
-findconvpeaks(Y, 3, [NaN, 4.5]) %returns 4.5 which is not the max so watch
-%                                   out it can get stuck atm!
+nvox = 50; nsubj = 20; lat_data = randn([nvox, nsubj]); FWHM = 3; 
+[ peakloc, peakval ] = findconvpeaks(lat_data, FWHM, 2, 'T')
+
+resadd = 3; [ tcfield, xvals_vecs ] = convfield_t( lat_data, FWHM, resadd );
+plot(xvals_vecs{1}, tcfield)
+xlim([xvals_vecs{1}(1), xvals_vecs{1}(end)])
+
+%% 1D with a mean
+mu = [1,2,1,2,1]; FWHM = 2; nvox = length(mu); nsubj = 20; 
+lat_data = mu' + randn([nvox, nsubj]);
+[ maxloc, maxval ] = findconvpeaks(lat_data, FWHM, 1, 'T')
+resadd = 20; [ tcfield, xvals_vecs ] = convfield_t( lat_data, FWHM, resadd );
+plot(xvals_vecs{1}, tcfield)
+xlim([xvals_vecs{1}(1), xvals_vecs{1}(end)])
 
 %% 1D with a mask
-Y = [1,2,1,2,1]; FWHM = 2; D = 1;
-mask = logical([1,0,1,0,1]);
-[maxloc, maxval] = findconvpeaks(Y, FWHM, 1, mask)
-resadd = 5;
+FWHM = 5; nvox = length(mu); nsubj = 20;
+lat_data = randn([nvox, nsubj]);
+mu = [1,2,1,2,1]; lat_data = mu' + lat_data;
+% lat_data = -mu' + lat_data + [1,2,1,100,1]';
+mask = logical([1,0,1,0,1])';
+[maxloc, maxval] = findconvpeaks(lat_data, FWHM, 1, 'T', mask)
+resadd = 20;
 mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-plot(cfield)
-
-% Note that for a 1D convolution field the maximum can never lie on the
-% boundary.
+[ tcfield, xvals_vecs ] = convfield_t( lat_data.*mask, FWHM, resadd );
+plot(xvals_vecs{1}, tcfield.*mask_hr)
 
 %% %% 2D Examples
 %% Simple 2D application
-Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1]; FWHM = 2; resadd = 10; D = 2;
-[maxloc, maxval] = findconvpeaks(Y, FWHM, 1)
-fine_eval = convfield(Y, FWHM, resadd, D);
+middle_value = 2; mu = zeros([4,4]) + 1; mu(2:3,2:3) = middle_value; FWHM = 2;
+Dim = size(mu); nsubj = 20; lat_data = mu + randn([Dim, nsubj]);
+[maxloc, maxval] = findconvpeaks(lat_data, FWHM, 1, 'T')
+resadd = 10; fine_eval = convfield_t( lat_data, FWHM, resadd );
 max(fine_eval(:))
 surf(fine_eval)
 
 %% Finding peaks on the boundary
-FWHM = 3; D = 2;
-Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
+FWHM = 3; corner_val = 10; mu = [corner_val,1,1;1,1,1;corner_val,1,1]; 
+Dim = size(mu); nsubj = 20; lat_data = mu + randn([Dim, nsubj]);
 mask = logical([1,1,1;0,1,1;1,1,1]);
-[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2]', mask)
+[peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, 1, 'T', mask)
 
 % View masked field:
-resadd = 9;
+resadd = 5;
 mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-surf(cfield)
-max(cfield(:))
+tcfield = mask_hr.*convfield_t( lat_data.*mask, FWHM, resadd );
+surf(tcfield)
+max(tcfield(:))
 
 %% 2D multiple peaks
-Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5];
-cfield = convfield_struct(Y, 2, 9, 2);
-surf(convfield_struct(Y, 2, 9, 2))
-[peaklocs, peakvals] = findconvpeaks(Y, 2, [1,1;4,4]');
+mu = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]; FWHM = 2;
+Dim = size(mu); nsubj = 20; lat_data = mu + randn([Dim, nsubj]);
+[peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, 2, 'T')
 
-%% Finding peaks in the presence of a mask
-Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1]; FWHM = 2; D = 2;
+resadd = 10; tcfield = convfield_t(lat_data, FWHM, resadd);
+surf(tcfield)
+max(tcfield(:))
+
+%% Finding peaks in the presence of a central mask (need to improve the initialization ability!)
+mu = ones(4); FWHM = 2;
+Dim = size(mu); nsubj = 20; lat_data = mu + randn([Dim, nsubj]);
 mask =  logical([1,1,1,1;1,0,0,1;1,0,0,1;1,1,1,1]); resadd = 9;
-field = @(tval) applyconvfield(tval, Y, FWHM, -1, 1:4, mask);
-mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
+[ maxloc, maxval ] = findconvpeaks(lat_data, FWHM, 2, 'T', mask)
 
-[maxloc, maxval] = findconvpeaks(Y, FWHM, 1, mask)
-cfield = convfield(Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-fine_eval = mask_hr.*convfield(Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
+%%
+resadd = 1;
+tcfield = convfield_t( lat_data.*mask, FWHM, resadd );
+mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
+fine_eval = mask_hr.*tcfield;
 surf(fine_eval)
 max(fine_eval(:))
 
@@ -116,11 +108,11 @@ max(fine_field(:))
 
 %% Finding peaks on the boundary
 FWHM = 3; D = 3;
-Y = ones([3,3,3]); Y(1,:,:) = 10;%I.e. so the peak will be outside the mask!
+Y = ones([3,3,3]); Y(1,:,:) = 10; %I.e. so the peak will be outside the mask!
 mask = true([3,3,3]); mask(1,2,2) = 0;
-[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2,2]', mask)
+[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2,2]', 'Z', mask)
 
-%% View a slice through the masked field
+% View a slice through the masked field
 resadd = 6;
 mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
 cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));

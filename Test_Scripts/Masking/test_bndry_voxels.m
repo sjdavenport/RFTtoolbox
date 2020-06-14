@@ -9,6 +9,16 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% %% D = 1 
+%% Simple 1D example
+nvox = 10; mask = true([1,nvox]);
+mask(3:4) = 0; mask(8:9) = 0;
+
+% Horizontal mask
+bndry_voxels(mask, 'full')
+
+% Vertical mask
+bndry_voxels(mask', 'full')
+
 %% Create a mask and show it
 Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 mask = logical( Sig > 0.02 );
@@ -126,6 +136,10 @@ imagesc( (ybdry & xbdry) + xbdry ), colorbar
 title("boundary for fixed x directions")
 
 %% %% Test section D = 3
+%% Full 3D example
+mask = true( [ 3,3,3 ] );
+bndry_voxels( mask, 'full')
+
 %% % Simple usage example on a box
 % Create a mask and show it
 mask = zeros( [ 5 5 5 ] );
@@ -135,6 +149,7 @@ imagesc( mask(:,:,2) ), colorbar
 title("slice of mask")
 
 % Get all boundary voxels seperate by type
+bndry_voxels( logical( mask ), 'full' )
 [ bdry, weights ] = bndry_voxels( logical( mask ) )
 
 %% % Example demonstrating its use for high resolution masks

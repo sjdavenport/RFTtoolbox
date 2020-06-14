@@ -1,4 +1,5 @@
-function [T, mu, sigma, d, Xcfields_at_tval] = applyconvfield_t( tval, lat_data, Kernel, truncation, xvals_vecs, mask )
+function [T, mu, sigma, d, Xcfields_at_tval] = ...
+   applyconvfield_t( tval, lat_data, Kernel, mask, truncation, xvals_vecs )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 
 % t-convolution field at the set of points specified by tval
 %--------------------------------------------------------------------------
@@ -46,28 +47,6 @@ function [T, mu, sigma, d, Xcfields_at_tval] = applyconvfield_t( tval, lat_data,
 %                  each of the tvalues
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D t convolution field
-% FWHM = 4; L = 100; nsubj = 40;
-% lat_data = normrnd(0,1, L, nsubj);
-% tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM );
-% plot(1:L, tcf(1:L))
-% hold on
-% plot(1:L, smoothtstat( data, FWHM));
-%
-% % 2D t convolution field. Note this is just illusratation, it is
-% % inefficient to generate a whole 2D t field this way, much better to use
-% % convfield. applyconvfield_t is to be used when you just want to calculate
-% % several points in the field rather than on a regular grid
-% nsubj = 20;
-% Dim = [10,10];
-% xvals_vecs = {1:Dim(1), 1:Dim(2)};
-% xvaluesatvoxels = xvals2voxels(xvals_vecs);
-% lat_field = normrnd(0,1,[Dim, nsubj]);
-% field_at_voxels = reshape(applyconvfield_t( xvaluesatvoxels, lat_field, FWHM, -1 ), Dim);
-% smoothfield = smoothtstat( lat_field, FWHM );
-% surf(field_at_voxels)
-% pause
-% surf(smoothfield)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -79,14 +58,14 @@ if isnumeric(Kernel)
 %     truncation = round(10*FWHM2sigma(FWHM));
     Kernel = @(x) GkerMV(x,Kernel);
 end
-if nargin < 4
-    truncation = 0;
+if ~exist('truncation', 'var')
+    truncation = -1;
 end
 
 Ldim = size(lat_data);
 D = length(Ldim) - 1;
 
-if nargin < 5
+if ~exist('xvals_vecs', 'var')
     xvals_vecs = {1:Ldim(1)}; %The other dimensions are taken case of below.
 end
 
@@ -101,11 +80,19 @@ if length(xvals_vecs) < D
     end
 end
 
-if nargin < 6 %Default mask
+if ~exist('mask', 'var') %Default mask
     if D == 1
-        mask = ones([1,Ldim(1:D)]);
+        mask = ones([1,Ldim(1)]);
+%         mask = ones([1,Ldim(1:D)]);
     else
         mask = ones(Ldim(1:D));
+    end
+else 
+    if D == 1
+       % Need to ensure that mask is a row vector for use in applyconvfield
+       if size(mask, 2) == 1
+           mask = mask'; 
+       end
     end
 end
 
@@ -119,15 +106,15 @@ Xcfields_at_tval = zeros(nevals, nsubj);
 
 if D == 1
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, lat_data(:,I)', Kernel, truncation, xvals_vecs, mask );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, lat_data(:,I)', Kernel, mask, truncation, xvals_vecs );
     end
 elseif D == 2
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,I)), Kernel, truncation, xvals_vecs, mask );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,I)), Kernel, mask, truncation, xvals_vecs );
     end
 elseif D == 3
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,:,I)), Kernel, truncation, xvals_vecs, mask );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,:,I)), Kernel, mask, truncation, xvals_vecs );
     end
 else
     error('Not coded for D > 3')

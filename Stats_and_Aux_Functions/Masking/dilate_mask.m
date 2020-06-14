@@ -49,5 +49,7 @@ else
     dilated_mask = mask; %I.e. return the original mask if htere is no dilation
 end
 
+dilated_mask = logical(dilated_mask);
+
 end
 

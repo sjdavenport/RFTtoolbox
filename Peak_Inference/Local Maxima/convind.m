@@ -33,7 +33,8 @@ function out = convind( ind, size_of_array, conv2what)
 % convind([13,15], [250,250])
 % convind(3513, [250,250])
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport.
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 2
     stdsize = [91,109,91];
     size_of_array = stdsize;
@@ -48,6 +49,11 @@ len_ind = length(ind);
 D = length(size_of_array);
 if len_ind > 1 && ~(len_ind == D)
    error('The length of ind must be 1 (vector representation) or be the same length as the size of the array (array representation).') 
+end
+
+if D == 2 && (size_of_array(1) == 1 || size_of_array(1) == 1)
+    out = ind; %I.e. as in 1D there's no need to change anything!
+    return
 end
 
 if len_ind == 1

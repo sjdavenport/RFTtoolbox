@@ -1,4 +1,5 @@
-function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
+function [peaklocs, peakvals] = findconvpeaks_z(lat_data, Kernel, ...
+                               peak_est_locs, mask, xvals_vecs, truncation)
 % FINDCONVPEAKS(lat_data, Kernel, peak_est_locs, mask, xvals_vecs, truncation)
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
@@ -25,9 +26,9 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 %               then the top number of maxima are considered and initial 
 %               locations are estimated from the underlying data. If this 
 %               is not specified then it is set to 1, i.e. only considering
-%               the maximum. If D = 1 and you wish to specify multiple
-%               peaks rather than a number of peaks then you need to begin
-%               your input as [NaN, peakestloc1, peakestloc2, ...].
+%               the maximum.  For D = 1, if you want to calculate multiple 
+%               peaks you need to enter a cell array (to differentiate 
+%               between this and the top number of peaks).
 % Kprime2       the 2nd derivative of the kernel. If this is not set then
 %               if the initial Kernel is Gaussian it is taken to be the 2nd
 %               derivative of the corresponding Gaussian kernel. Otherwise
@@ -99,6 +100,9 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, peak_est_locs, m
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
 Ldim = size(lat_data);
 D = length(Ldim);
 if Ldim(2) == 1
@@ -115,7 +119,10 @@ end
 if size(peak_est_locs, 1) ~= D && ~isequal(size(peak_est_locs), [1,1])
     error('peak_est_locs is the wrong dimension!')
 end
-if nargin < 3 
+
+%%  add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('peak_est_locs', 'var')
     peak_est_locs = 1; %I.e. just consider the maximum.
 end
 if ~exist('mask', 'var') || isequal(mask, NaN)
@@ -125,8 +132,8 @@ if ~exist('mask', 'var') || isequal(mask, NaN)
         mask = ones(Ldim);
     end
 end
-if nargin < 6
-    truncation = -1;
+if ~exist('truncation', 'var')
+    truncation = -1; % This will use the default truncation in applyconvfield
 end
 
 if isnan(sum(lat_data(:)))
@@ -140,7 +147,7 @@ if isnumeric(Kernel)
 end
 
 %Setting up xvals_vecs
-if nargin < 5 || isequal(xvals_vecs, NaN)
+if ~exist('xvals_vecs', 'var') || isequal(xvals_vecs, NaN)
     xvals_vecs = {1:Ldim(1)}; %The other dimensions are taken case of below.
 end
 if ~iscell(xvals_vecs)
@@ -156,44 +163,53 @@ end
 xvals_vecs_dims = zeros(1,D); xvals_starts_at = zeros(1,D);
 for d = 1:D
     xvals_vecs_dims(d) = length(xvals_vecs{d});
+    
+    % Obtain the xvalue_start 
     xvals_starts_at(d) = xvals_vecs{d}(1);
 end
 if ~isequal(xvals_vecs_dims, Ldim)
     error('The dimensions of xvals_vecs must match the dimensions of lat_data')
 end
 
+
+%%  main function
+%--------------------------------------------------------------------------
+% Obtain a function handle for the convolution field
 field = @(tval) applyconvfield(tval, lat_data, FWHM, truncation, xvals_vecs, mask );
+
 if ~isequal(mask, ones(Ldim)) && ~isequal(mask, ones([1, Ldim]))
     masked_field = @(x) mask_field( x, mask, xvals_vecs ).*field(x);
 else
     masked_field = field;
 end
 
-% warning('need masking here! and for the maximization!! though mahel')
-
-% At the moment this is just done on the initial lattice. Really need to
-% change so that it's on the field evaluated on the lattice.
-
-if isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
-    top = peak_est_locs;
+% If they are not supplied find the initial estimates of the locations of
+% local maxima. At the moment this is just done on the initial lattice. 
+% Really need to change so that it's on the field evaluated on the lattice.
+if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
+                   [1,1])) && (floor(peak_est_locs(1)) == peak_est_locs(1))
+    % Set the number of maxima to define
+    numberofmaxima2find = peak_est_locs;
     if strcmp(Ktype, 'G')
         if D < 4
-            smoothed_data = fconv( lat_data, FWHM , D );
+            smoothed_data = fconv( lat_data, FWHM, D ); %Calculate the smooth field
         else
             error('Not yet ready for 4D or larger images')
         end
-        max_indices = lmindices(smoothed_data, top, mask);
+        max_indices = lmindices(smoothed_data, numberofmaxima2find, mask);
     else
-        max_indices = lmindices(lat_data, top, mask); %In 3D may need to use spm_smooth for this bit!
+        max_indices = lmindices(lat_data, numberofmaxima2find, mask); %In 3D may need to use spm_smooth for this bit!
     end
-    top = size(max_indices, 2);  
-    peak_est_locs = zeros(D, top);
+    numberofmaxima2find = size(max_indices, 2);  
+    peak_est_locs = zeros(D, numberofmaxima2find);
     for d = 1:D
         peak_est_locs(d, :) = xvals_vecs{d}(max_indices(d,:));
     end
-end
-if D == 1 && isnan(peak_est_locs(1)) %This allows for multiple 1D peaks!
-    peak_est_locs = peak_est_locs(2:end);
+elseif iscell(peak_est_locs)
+    % For D = 1, if you want to calculate multiple peaks you need to enter
+    % a cell array (to differentiate between this and the top number of
+    % peaks).
+    peak_est_locs = cell2mat(peak_est_locs);
 end
 
 % Obtain the boundary of the mask
@@ -204,11 +220,19 @@ boundary = bndry_voxels( logical(mask), 'full' );
 % on the boundary.
 npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 s_mask = size(mask);             % Obtain the size of the mask
-box_sizes = 1.5*ones(1,npeaks);
+
+% Set the default box sizes within which to search for maxima
+box_sizes = repmat({1.5}, 1, npeaks);
+
+% For peaks initialized on the boundary change their box sizes to 0.5
 for I = 1:npeaks
-    converted_index = convind( peak_est_locs(:,I) - xvals_starts_at' + 1, s_mask );
-    if boundary(converted_index)
-        box_sizes(I) = 0.5;
+    if D > 1
+        converted_index = convind( peak_est_locs(:,I) - xvals_starts_at' + 1, s_mask );
+    else
+        converted_index = peak_est_locs(:,I) - xvals_starts_at' + 1;
+    end
+    if boundary(round(converted_index)) % Need to come back to this an make it more general
+        box_sizes{I} = 0.5;
     end
 end
 
@@ -219,6 +243,8 @@ end
 
 
 % DEPRECATED
+% isequal(size(peak_est_locs), [1,1]) && floor(peak_est_locs(1)) == peak_est_locs(1)
+% 
 % npeaks = size(peak_est_locs, 2);
 % peakvals = zeros(1,npeaks);
 % peaklocs = zeros(D, npeaks);
