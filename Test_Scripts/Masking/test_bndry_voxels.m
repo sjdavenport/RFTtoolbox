@@ -13,8 +13,8 @@ close all
 nvox = 10; mask = true([1,nvox]);
 mask(3:4) = 0; mask(8:9) = 0;
 
-% Horizontal mask
-bndry_voxels(mask, 'full')
+% Horizontal mask and weights for trapozoidal rule
+[ bndry, weights ] = bndry_voxels(mask, 'full')
 
 % Vertical mask
 bndry_voxels(mask', 'full')
@@ -28,7 +28,7 @@ title( 'mask' )
 clear Sig
 
 % Note that in 1D there is only the "full" option
-bdry = bndry_voxels( mask', "full" );
+bdry = bndry_voxels( mask, "full" );
 figure(1), clf,
 plot( mask + bdry )
 title( 'mask + mask of boundary'  )
