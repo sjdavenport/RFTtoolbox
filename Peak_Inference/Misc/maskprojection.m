@@ -24,6 +24,7 @@ function projected_point = maskprojection( point, mask )
 % maskprojection([9.7,10.51]', ones(10,10))
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 
 if inmask(point, mask)
     projected_point = point;

@@ -47,6 +47,32 @@ function [T, mu, sigma, d, Xcfields_at_tval] = ...
 %                  each of the tvalues
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %% %% 1D examples
+% %% 1D t convolution field
+% FWHM = 4; nvox = 100; nsubj = 40;
+% lat_data = normrnd(0,1, nvox, nsubj); resadd = 2;
+% tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM );
+% [cfield, xvals_vecs] = convfield_t( lat_data, FWHM, resadd );
+% 
+% plot(xvals_vecs{1}, tcf(xvals_vecs{1}))
+% hold on
+% plot(xvals_vecs{1}, cfield, '--');
+% 
+% %% 1D masked example
+% FWHM = 4; nvox = 50; nsubj = 20;
+% mask = true([1,nvox]); mask(20:40) = 0;
+% lat_data = normrnd(0,1, nvox, nsubj); resadd = 2;
+% tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM, mask );
+% 
+% mfield = @(x) mask_field(x, mask);
+% masked_field = @(x) mfield(x).*tcf(x);
+% 
+% [cfield, xvals_vecs] = convfield_t( lat_data, FWHM, resadd );
+% 
+% plot(xvals_vecs{1}, masked_field(xvals_vecs{1}))
+% hold on
+% plot(xvals_vecs{1}, cfield, '--');
+% legend('masked field', 'unmasked field')
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
