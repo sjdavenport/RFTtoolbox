@@ -16,7 +16,7 @@ findconvpeaks(Y, 3, 1)
 %% 1D with different xvals_vecs
 Y = [1,1,2,2,1,1];
 xvals_vecs = 11:(length(Y)+10);
-findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), NaN, -1, xvals_vecs)
+findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), -1, xvals_vecs)
 
 %% 1D multiple peaks
 Y = [1,2,1,1,1,1,2,1];
@@ -35,8 +35,12 @@ mask = logical([1,0,1,0,1]);
 [maxloc, maxval] = findconvpeaks(Y, FWHM, 1, 'Z', mask)
 resadd = 5;
 mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-plot(cfield)
+[ cfield, xvals_vecs ]  = convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
+cfield_masked = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
+plot(xvals_vecs{1}, cfield_masked)
+
+% Using an initialization
+[maxloc, maxval] = findconvpeaks(Y, FWHM, {1.5}, 'Z', mask)
 
 % Note that for a 1D convolution field the maximum can never lie on the
 % boundary.
@@ -86,10 +90,21 @@ Y = ones([4,4,4]); Y(2:3,2:3,2:3) = 2; FWHM = 3;
 [maxloc, maxval] = findconvpeaks(Y, FWHM, 1)
 
 %% Large 3D application
-lat_data = randn([91,109,91]); FWHM = 3; D = 3; resadd = 2;
-[maxloc, maxval] = findconvpeaks(lat_data, FWHM, 1)
-fine_field = convfield(lat_data, FWHM, resadd, D, 0, ceil(resadd/2));
-max(fine_field(:))
+Dim = [91,109,91]; lat_data = randn(Dim); FWHM = 3; D = 3; 
+resadd = 2; enlarge = ceil(resadd/2);
+[maxloc, maxval] = findconvpeaks(lat_data, FWHM, 1) %Initializes on the integer lattice
+[fine_field, xvals_vecs] = convfield(lat_data, FWHM, resadd, D, 0, ceil(resadd/2));
+Dimhr = ( Dim - 1 ) * resadd + Dim + 2*enlarge';
+[maxfineval, maxfineloc ] = max(fine_field(:))
+converted_maxfineloc = convind(maxfineloc, Dimhr);
+
+% Initializes at the max of the fine lattice
+finelatmaxloc = zeros(D,1);
+for d = 1:D
+    finelatmaxloc(d) = xvals_vecs{d}(converted_maxfineloc(d));
+end
+finelatmaxloc
+[maxloc, maxval] = findconvpeaks(lat_data, FWHM, finelatmaxloc)
 
 %% Finding peaks on the boundary
 FWHM = 3; D = 3;

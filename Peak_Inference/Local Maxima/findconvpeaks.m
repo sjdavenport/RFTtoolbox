@@ -1,6 +1,7 @@
 function [peaklocs, peakvals] = findconvpeaks(lat_data, Kernel, ...
         peak_est_locs, field_type, mask, boundary, truncation, xvals_vecs )
-% FINDCONVPEAKS( lat_data, Kprime, xvals_vecs, peak_est_locs, Kprime2, truncation, mask )
+% FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
+%                                                  truncation, xvals_vecs )
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -220,26 +221,11 @@ elseif iscell(peak_est_locs)
     peak_est_locs = cell2mat(peak_est_locs);
 end
 
-% Obtain the box sizes within which to search for the maximum
-% Assign boxsize of 0.5 for voxels on the boundary and 1.5 for voxels not
-% on the boundary.
+% Obtain the number of peaks
 npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
-s_mask = size(mask);             % Obtain the size of the mask
 
 % Set the default box sizes within which to search for maxima
-box_sizes = repmat({1.5}, 1, npeaks);
-
-% For peaks initialized on the boundary change their box sizes to 0.5
-for I = 1:npeaks
-    if D > 1
-        converted_index = convind( peak_est_locs(:,I) - xvals_starts_at' + 1, s_mask );
-    else
-        converted_index = peak_est_locs(:,I) - xvals_starts_at' + 1;
-    end
-    if boundary(round(converted_index)) % Need to come back to this an make it more general
-        box_sizes{I} = 0.5;
-    end
-end
+box_sizes = repmat({1}, 1, npeaks);
 
 % Find local maxima
 [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );

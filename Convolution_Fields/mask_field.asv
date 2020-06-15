@@ -8,23 +8,10 @@ function mfield_out = mask_field( x, mask, xvals_vecs, asnan )
 % ARGUMENTS
 % Mandatory
 %  x           a D by nvals vector 
-%  mask        a D dimension lattice of 0/1 indicating where the mask is
+%  mask        a D dimension lattice of 0/1 indicating where the mask
 % Optional
-%  xvals_vecs    a D-dimensional cell array whose entries are vectors giving 
-%               the xvalues at each each dimension along the lattice. It 
-%               assumes a regular, rectangular lattice (though within a given
-%               dimension the voxels can be spaced irregularly).
-%               I.e suppose that your initial lattice grid is a
-%               4by5 2D grid with 4 voxels in the x direction and 5 in
-%               the y direction. And that the x-values take the values:
-%               [1,2,3,4] and the y-values take the values: [0,2,4,6,8].
-%               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
-%               The default is to assume that the spacing between the
-%               voxels is 1. If only one xval_vec direction is set the
-%               others are taken to range up from 1 with increment given by
-%               the set direction.
-%  asnan        0/1 whether to returns 0s or NaNs outside of the mask.
-%               Default is 1 i.e. to return NaNs.
+%  xvals_vecs
+%  asnan
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
@@ -33,7 +20,7 @@ function mfield_out = mask_field( x, mask, xvals_vecs, asnan )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if ~exist('asnan', 'var')
+if nargin < 4
     asnan = 1;
 end
 
