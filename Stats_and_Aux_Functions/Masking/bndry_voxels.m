@@ -239,6 +239,10 @@ if ischar(type)
     % @Fabian: Without this it seems that a structure is returned is that 
     % intended? E.g. if the input is 'full' rather than "full". To see this
     % behaviour comment this if clause out.
+    % @Sam: Design idea was to be compatible with what we had before, i.e.
+    % if a single type is selected always return an array. However, as soon
+    % as it is a vector of types it should return a structure. As far as I
+    % can see it does exactly that and that's why I needed the line.
 elseif ~isstring( type )
     error( "'type' input must be a string." )
 end
@@ -250,7 +254,7 @@ bndry   = struct();
 weights = struct();
 
 % Compute the full boundary
-bndry.full = (dilate_mask(~larger_image, 1)) & larger_image;
+bndry.full = ( dilate_mask( ~larger_image, 1 ) ) & larger_image;
 % bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ... larger_image;
                     
 % Compute parts of the boundary if neccessary
@@ -398,7 +402,7 @@ if D == 2 || D == 3
                 % Get the neighbours. Note that the openeing angle on an
                 % edge is either 3/4 or 1/4
                 weights.y = zeros( s_mask + 2);
-                for y = 1:(s_mask(1)+2)
+                for y = 1:( s_mask(1) + 2 )
                     weights.y( :, y, : ) = getweights( squeeze(...
                                                     larger_image( :, y, : ) ) );
                 end
@@ -447,7 +451,12 @@ if D == 2 || D == 3
     end
 else
     bndry.full = bndry.full( locs{:} );
-    weights.full = (1/2)*bndry.full;
+    if D > 3
+        weights.full = getweights( mask );
+    else
+        weights.full = double( mask );
+        weights.full( bndry.full ) = 1/2;
+    end
 end
 
 % Make output arrays if type is a string
