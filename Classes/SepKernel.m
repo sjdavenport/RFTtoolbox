@@ -5,7 +5,7 @@ classdef SepKernel
    %   The fields  containing 1 by D arrays. The d-th entry represents what
    %   the sperable kernel is doing in the d-th component.
    properties (Access = private)
-      D           {mustBePositive} % the dimension of the seperable kernel
+      D           {mustBePositive, mustBeInteger} % the dimension of the seperable kernel
    end
    properties
       kernel      cell % a 1 by D cell array containing the function handles for the kernel in each direction
