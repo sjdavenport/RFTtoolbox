@@ -4,7 +4,8 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd,...
 % version of a mask. It has an option to enlarge the mask region by 'resadd'.
 % If 'resadd' is used every voxel is considered to have 1/(resadd+1)^D, where
 % D is the dimension of the mask volume.
-% Optionally, 'weights' can be output, which assign the weights This is used in LKC estimation, since in this toolbox voxels are usually
+% Optionally, 'weights' can be output, which assign the weights This is
+% used in LKC estimation, since in this toolbox voxels are usually
 % interpreted as the center values of rectangular domains.
 %
 %--------------------------------------------------------------------------
@@ -114,9 +115,10 @@ horz2vert = 0;
 if D == 2 && s_mask(2) == 1
     D = 1;
 elseif D == 2 && s_mask(1) == 1
-    D = 1; %Fix to allow row vector masks
-    mask = mask';
-    s_mask = fliplr(s_mask);
+    % Fix to allow row vector masks
+    D = 1;
+    mask      = mask';
+    s_mask    = fliplr( s_mask );
     horz2vert = 1;
 end
 
@@ -133,7 +135,6 @@ end
 %--------------------------------------------------------------------------
 if ~exist( 'enlarge', 'var' )
    % Default option of 'enlarge'
-%    enlarge = 0;
     enlarge = ceil(resadd/2);
 end
 
@@ -146,7 +147,7 @@ else
 end
 
 if ~exist( 'plots', 'var' )
-   % Default option of 'enlarge'
+   % Default option of 'plots'
    plots = 0;
 end
 
@@ -201,12 +202,12 @@ end
 mask_hr = logical( imdilate( mask_hr, ones( ones([ 1 D ]) ...
                                               * (2*ceil(resadd/2)+1) ) ) );
 
-if enlarge ~= ceil(resadd/2)
+if enlarge ~= ceil( resadd / 2 )
     % number of voxels which the inverse mask or the normal mask needs to
     % be shifted in order to obtain the correct mask. If positiv mask is
     % dilated by that amount. If negative ~mask is dilated and then the
     % negative is taken, since we need to erode voxels.
-    denlarge = enlarge - ceil(resadd/2);
+    denlarge = enlarge - ceil( resadd / 2 );
     
     if denlarge < 0
         mask_hr = ~logical( imdilate( ~mask_hr, ones( ones([ 1 D ]) ...
@@ -247,7 +248,7 @@ if plots
     end
 end
 
-if mod(resadd, 2) == 0 
+if mod( resadd, 2 ) == 0 
     weights = NaN;
 else
     weights = getweights(mask_hr);
@@ -259,32 +260,5 @@ if horz2vert
     mask_hr = mask_hr';
     weights = weights';
 end
-
-% Old weight calculations
-old_weights = convn( mask_hr, ones( [ones( [ 1 D ] )*3 1] ), 'same' );
-old_weights( ~mask_hr ) = 0;
-switch D
-    case 1
-        old_weights( old_weights == 3 ) = 1;
-        old_weights( old_weights == 2 ) = 1 / 2;
-    case 2
-        old_weights( old_weights == 4 ) = 1 / 4;
-        old_weights( old_weights == 5 ) = 1 / 4;
-        old_weights( old_weights == 6 ) = 1 / 2;
-        old_weights( old_weights == 7 ) = 1 / 2;
-        old_weights( old_weights == 8 ) = 3 / 4;
-        old_weights( old_weights == 9 ) = 1;
-    case 3
-        % note that this is only approximate. Getting the correct weights
-        % requires more thought, As an example weights=26 can lead to a
-        % weight of 1/2 or 3/4 depending on how the voxels are spread.
-        % Maybe we fix that later.
-        tmp = old_weights;
-        old_weights( mask_hr )   = 1/2;
-        old_weights( tmp == 27 ) = 1;
-        old_weights( tmp == 8 )  = 1/8;
-end
         
 return
-
-% Deprecated
