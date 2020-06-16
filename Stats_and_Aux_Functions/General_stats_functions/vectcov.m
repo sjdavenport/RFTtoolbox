@@ -3,57 +3,43 @@ function cov_array = vectcov( array1, array2, dimension, normalize )
 % of two arrays along a given dimension.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% array1
-% array2
-% dimension
-% normalize
+% Mandatory
+%  array1      a D dimensional array of data
+%  array2      a D dimensional array of data with the same size as array1
+% Optional 
+%  dimension   the dimension along which to compute the covariance.
+%              Default, is to take dimension to be D
+%  normalize   0/1 whether or not to normalize the covariance by N/(N-1)
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+%  cov_array   a D-1 dimensional array with the same size as array1 and
+%              array2 except for the specified dimension where each entry 
+%              isthe covariance of points computed along the specified
+%              dimension
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D 
-% nsubj = 1000;
-% vect1 = normrnd(0,1,1,nsubj); vect2 = normrnd(0,1,1,nsubj);
-% vectcov( vect1, vect2, 2)
-%
-% mu =[0,0]'; Sigma = [1,0.5;0.5,1];
-% data = mvnrnd(mu,Sigma,nsubj)';
-% vectcov(data(1,:), data(2,:) )
-%
-% Sigma1 = [1,0.5;0.5,1]; Sigma2 = [1,3/4;3/4,1];
-% voxel1 = mvnrnd(mu,Sigma1,nsubj)'; voxel2 = mvnrnd(mu,Sigma2,nsubj)';
-% mate1 = zeros(2,nsubj); mate2 = mate1;
-% mate1(1,:) = voxel1(1,:); mate2(1,:) = voxel1(2,:);
-% mate1(2,:) = voxel2(1,:); mate2(2,:) = voxel2(2,:);
-% vectcov(mate1, mate2, 2)
-%
-% % 2D
-% Dim = [5,5]; nsubj = 1000; mu =[0,0]'; Sigma = [1,0.5;0.5,1];
-% data = mvnrnd(mu,Sigma,nsubj*prod(Dim))';
-% mate1 = reshape(data(1,:), [Dim, nsubj]); mate2 = reshape(data(2,:), [Dim, nsubj]);
-% vectcov(mate1, mate2, 3)
-% 
-% Sigma1 = [1,0.5;0.5,1]; Sigma2 = [1,3/4;3/4,1];
-% voxel1 = mvnrnd(mu,Sigma1,nsubj)'; voxel2 = mvnrnd(mu,Sigma2,nsubj)';
-% voxel3 = mvnrnd(mu,Sigma2,nsubj)'; voxel4 = mvnrnd(mu,Sigma1,nsubj)';
-% mate1 = zeros([2,2,nsubj]); mate2 = mate1;
-% mate1(1,1,:) = voxel1(1,:); mate2(1,1,:) = voxel1(2,:);
-% mate1(2,1,:) = voxel2(1,:); mate2(2,1,:) = voxel2(2,:);
-% mate1(1,2,:) = voxel3(1,:); mate2(1,2,:) = voxel3(2,:);
-% mate1(2,2,:) = voxel4(1,:); mate2(2,2,:) = voxel4(2,:);
-% vectcov(mate1, mate2)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
+% Obtain the array sizes 
 s1 = size(array1); s2 = size(array2);
-if nargin < 3
+
+%%  Add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('dimension', 'var')
+    % default option of dimension
     dimension = length(s1);
 end
-if nargin < 4
-    normalize = 0;
+if ~exist('normalize', 'var')
+    % default option of normalize
+    normalize = 1;
 end
 
+%% Error checking
+%--------------------------------------------------------------------------
 if ~isequal(s1, s2)
    error('The arrays must have the same dimension')
 end
@@ -61,12 +47,20 @@ if dimension > length(s1)
     error('The dimension must be <= the number of dimensions of the arrays')
 end
 
+%% Main function
+%--------------------------------------------------------------------------
+% Calculate the mean of the first araay along the specified dimension
 array1_mean = mean(array1, dimension);
 
+% Calculate the covariance between array1 and array2 along the specified
+% dimension
 cov_array = mean((array1 - array1_mean).*array2, dimension);
 
+% Compute the total number of subjects
 N = size(array1, dimension);
 
+% If the normalize option is specified scale the covariance by the
+% normalizing factor
 if normalize == 1
     cov_array = (cov_array)*(N/(N-1));
 end

@@ -1,17 +1,17 @@
 function [Lambda_array, xvals ] = Lambda_numeric_est( lat_data, Kernel,...
-                                                      resAdd, enlarge, h )
-% LAMBDA_EST( lat_data, FWHM, D, spacing, h ) calculates an estimate of 
-% Lambda(v) = cov(\nabla X(v)) at each voxel
+                                                      resadd, enlarge, h )
+% LAMBDA_NUMERIC_EST( lat_data, FWHM, resadd, enlarge, h ) calculates an 
+% estimate of Lambda(v) = cov(\nabla X(v)) at each voxel
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
 %   lat_data data array T_1 x ... x T_D x N. Last index enumerates the
-%            samples. Note that N > 1 is required!
+%            number of subjects. Note that N > 1 is required!
 %   Kernel   array 1x1 or 1xD containing the FWHM for different directions
 %            for smoothing with a Gaussian kernel, if numeric an isotropic
 %            kernel is assumed.
 % Optional
-%   resAdd   integer denoting the amount of voxels padded between existing
+%   resadd   integer denoting the amount of voxels padded between existing
 %            voxels to increase resolution
 %   enlarge  integer denoting the amount of voxels padded between existing
 %            voxels to increase resolution
@@ -26,103 +26,67 @@ function [Lambda_array, xvals ] = Lambda_numeric_est( lat_data, Kernel,...
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
 % EXAMPLES
-% % 1D (stationary example)
-% FWHM = 10; D = 1; sigma = FWHM2sigma(FWHM); nvox = 100; nsubj = 10000;
-% Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,nvox,nsubj);
-% Lambda_estimates = Lambda_est( lat_data, FWHM, D );
-% Lambda_theory
-% mean(Lambda_estimates(5:95)) % Not the ends because of edge effects
-% plot(Lambda_estimates); hold on; abline('h', Lambda_theory);
-%
-% % 2D (stationary example)
-% FWHM = 5; sigma = FWHM2sigma(FWHM); Dim = [100,100]; D = length(Dim); nsubj = 50;
-% Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
-% Lambda_estimates = Lambda_est( lat_data, FWHM, D );
-% first_entry = Lambda_estimates(1,1,5:95,5:95);
-% Lambda_theory(1,1)
-% mean(first_entry(:))
-% onetwo_entry = Lambda_estimates(1,2,5:95,5:95);
-% Lambda_theory(1,2)
-% mean(onetwo_entry(:))
-% plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
-%
-% % 3D (stationary example)
-% FWHM = 10; sigma = FWHM2sigma(FWHM); Dim = [50,50,50]; D = length(Dim); nsubj = 50;
-% Lambda_theory = diag(repmat(sigma^(-2),1,D))/2; lat_data = normrnd(0,1,[Dim,nsubj]);
-% Lambda_estimates = Lambda_est( lat_data, FWHM, D );
-% first_entry = Lambda_estimates(1,1,5:45,5:45,5:45);
-% Lambda_theory(1,1)
-% mean(first_entry(:))
-% onetwo_entry = Lambda_estimates(1,2,5:45,5:45,5:45);
-% Lambda_theory(1,2)
-% mean(onetwo_entry(:))
-% plot(first_entry(:)); hold on; abline('h', Lambda_theory(1,1));
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport, Fabian Telschow
 %--------------------------------------------------------------------------
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Check input and get important constants from the mandatory input
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Get constants from the mandatory input
-% size of the domain
+%% Check input and get important constants from the mandatory input
+%--------------------------------------------------------------------------
+% Size of the domain
 s_lat_data = size( lat_data );
 
-% dimension of the domain
+% Dimension of the domain
 D = length( s_lat_data( 1:end-1 ) );
 
-% get variable domain counter
+% Get variable domain counter
 index  = repmat( {':'}, 1, D );
 
-% check that method is implemented for dimension D
+% Check that method is implemented for dimension D
 if D > 3
     error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% add/check optional values
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ~exist( 'resAdd', 'var' )
+%% add/check optional values
+%--------------------------------------------------------------------------
+if ~exist( 'resadd', 'var' )
    % default number of resolution increasing voxels between observed voxels
-   resAdd = 1;
+   resadd = 1;
 end
 
 if ~exist( 'enlarge', 'var' )
    % default number of resolution increasing voxels between observed voxels
-   enlarge = ceil( resAdd / 2 );
+   enlarge = ceil( resadd / 2 );
 end
 
 if  ~exist( 'h', 'var' )
-    h = 0.00001; % Note don't take h to be substantially lower than this 
+    h = 0.0000001; % Note don't take h to be substantially lower than this 
                  % or there will be numerical precision issues
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% main function
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% main function
+%--------------------------------------------------------------------------
 % Evaluate the value of the convolution field
-[ fieldseval, xvals, Kernel ] = convfield_struct( lat_data, Kernel, resAdd,...
-                                              D, 0, enlarge ); 
-% Get the standard derivation of the fields everywhere                                 
+[ fieldseval, xvals, Kernel ] = convfield( lat_data, Kernel, resadd,...
+                                                           D, 0, enlarge ); 
+% Get the standard deviation of the fields everywhere                                 
 fields_std = sqrt( var( fieldseval, 0, D+1 ) );
 
 % Obtain a variance 1 field
 fieldseval = fieldseval ./ fields_std; 
 clear fields_std
 
-% get size of high resolution field
+% Get the size of the high resolution field
 Dimhr = size( fieldseval );
 
 % Main loop
 if D == 1
     % Define the shifted kernel
     Kernelh = Kernel;
-    Kernelh.adjust_kernel = h;
+    Kernelh.adjust = h;
 
     % Obtain the variance 1 field at an offset of h everywhere
-    fieldsplush = convfield_struct( lat_data, Kernelh, resAdd, D, 0,...
-                                     enlarge );
+    fieldsplush = convfield( lat_data, Kernelh, resadd, D, 0, enlarge );
     fieldsplush_std = sqrt( var( fieldsplush, 0, D+1 ) );
     fieldsplush     = fieldsplush ./ fieldsplush_std;
     clear fieldsplush_std
@@ -132,7 +96,7 @@ if D == 1
     clear fieldsplush fieldseval
     
     % Calculate Lambda
-    Lambda_array = vectcov( derivs, derivs );
+    Lambda_array = vectcov( derivs, derivs, 2, 0 );
     clear derivs
     
 elseif D == 2 || D == 3
@@ -142,11 +106,10 @@ elseif D == 2 || D == 3
     for d = 1:D
         % define the Kernel object to be for shifted h along an offset of
         % the d-th standard direction or R^D
-        Kernel.adjust_kernel = h*sbasis( d, D );
+        Kernel.adjust = h*sbasis( d, D );
 
         % Obtain the variance 1 field at an offset of h*e_d everywhere
-        fieldsplush = convfield_struct( lat_data, Kernel, resAdd,...
-                                              D, 0, enlarge );                                          
+        fieldsplush = convfield( lat_data, Kernel, resadd, D, 0, enlarge );                                          
         fieldsplush_std = sqrt( var( fieldsplush, 0, D+1 ) );
         fieldsplush = fieldsplush ./ fieldsplush_std;
         clear fieldsplush_std
@@ -163,8 +126,7 @@ elseif D == 2 || D == 3
             % Calculate the covariance between the d1th partial derivative
             % and the d2th partial derivative
             Lambda_array( index{:}, d1, d2 ) = vectcov( ...
-                   derivs( index{:}, :, d1), derivs( index{:}, :, d2 ),...
-                                                                      D+1);
+                   derivs(index{:}, :, d1), derivs(index{:}, :, d2 ),D+1);
         end
     end
 else
