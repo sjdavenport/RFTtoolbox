@@ -1,4 +1,4 @@
-function [ mask_hr, weights, old_weights ] = mask_highres( mask, resadd,...
+function [ mask_hr, weights ] = mask_highres( mask, resadd,...
                                                            enlarge, plots )
 % mask_highres( mask, resadd, enlarge, plots ) computes a high resolution
 % version of a mask. It has an option to enlarge the mask region by 'resadd'.
@@ -158,7 +158,6 @@ end
 if resadd == 0
     mask_hr = mask;
     weights = mask_hr;
-    old_weights = mask_hr;
     return
 end
 
@@ -177,7 +176,6 @@ end
 if all( mask(:) )
     mask_hr = true( s_hr );
     weights = mask_hr;
-    old_weights = mask_hr;
     return
 end
 
