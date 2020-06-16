@@ -156,7 +156,7 @@ switch D
         VdxY = var( convYx, 0, D+1 );
         VdyY = var( convYy, 0, D+1 );
 %         VdzY = var( convYy, 0, D+1 );
-        VdzY = var( convYz, 0, D+1 )
+        VdzY = var( convYz, 0, D+1 );
         
         CdxYdyY = sum( ( convYy - mean( convYy, D+1 ) ) .* ...
                        ( convYx - mean( convYx, D+1 ) ), D+1 ) / (nsubj-1);
