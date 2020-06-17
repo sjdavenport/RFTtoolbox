@@ -1,27 +1,40 @@
-function [Lambda_array, xvals ] = Lambda_numeric_est( lat_data, Kernel,...
+function [Lambda_array, xvals_vecs] = Lambda_numeric_est( lat_data, Kernel,...
                                                       resadd, enlarge, h )
 % LAMBDA_NUMERIC_EST( lat_data, FWHM, resadd, enlarge, h ) calculates an 
 % estimate of Lambda(v) = cov(\nabla X(v)) at each voxel
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%   lat_data data array T_1 x ... x T_D x N. Last index enumerates the
+%  lat_data data array T_1 x ... x T_D x N. Last index enumerates the
 %            number of subjects. Note that N > 1 is required!
-%   Kernel   array 1x1 or 1xD containing the FWHM for different directions
+%  Kernel   array 1x1 or 1xD containing the FWHM for different directions
 %            for smoothing with a Gaussian kernel, if numeric an isotropic
 %            kernel is assumed.
 % Optional
-%   resadd   integer denoting the amount of voxels padded between existing
+%  resadd   integer denoting the amount of voxels padded between existing
 %            voxels to increase resolution
-%   enlarge  integer denoting the amount of voxels padded between existing
+%  enlarge  integer denoting the amount of voxels padded between existing
 %            voxels to increase resolution
-%   h        the h used to calculate the derivatives i.e. via
+%  h        the h used to calculate the derivatives i.e. via
 %            (X(v+h)-X(v))/h. Default is 0.00001. Avoid taking h to be
 %            too small for numerical precision reasons
 %--------------------------------------------------------------------------
 % OUTPUT
-% Lambda_array  a D by D by prod(Dim) array giving the Lambda matrix at each
-%               voxel
+%  Lambda_array  a D by D by prod(Dim) array giving the Lambda matrix at 
+%               eachvoxel
+%  xvals_vecs    a D-dimensional cell array whose entries are vectors 
+%           giving the xvalues at each each dimension along the lattice. It 
+%           assumes a regular, rectangular lattice (though within a given
+%               dimension the voxels can be spaced irregularly).
+%               I.e suppose that your initial lattice grid is a
+%               4by5 2D grid with 4 voxels in the x direction and 5 in
+%               the y direction. And that the x-values take the values:
+%               [1,2,3,4] and the y-values take the values: [0,2,4,6,8].
+%               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
+%               The default is to assume that the spacing between the
+%               voxels is 1. If only one xval_vec direction is set the
+%               others are taken to range up from 1 with increment given by
+%               the set direction.
 % -------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
@@ -67,7 +80,7 @@ end
 %% main function
 %--------------------------------------------------------------------------
 % Evaluate the value of the convolution field
-[ fieldseval, xvals, Kernel ] = convfield( lat_data, Kernel, resadd,...
+[ fieldseval, xvals_vecs, Kernel ] = convfield( lat_data, Kernel, resadd,...
                                                            D, 0, enlarge ); 
 % Get the standard deviation of the fields everywhere                                 
 fields_std = sqrt( var( fieldseval, 0, D+1 ) );
