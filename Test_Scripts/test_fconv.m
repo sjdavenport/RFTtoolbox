@@ -28,6 +28,11 @@ end
 plot( smoothed_spm, 'color',  [ 0 0.447 0.7410 ] ); hold on;
 plot( smoothed_fconv, '--', 'color', [ 0.85 0.325 0.0980 ] );
 
+%% Using SepKernel object
+sepK = SepKernel(1, 3);
+lat_data = normrnd(0,1,1,100);
+smoothed_fconv = fconv(lat_data, sepK);
+
 %% %% 2D Examples
 %% % Simple 2D example using numeric FWHM input
 lat_data = normrnd( 0, 1, 25, 25 ); FWHM = 5;

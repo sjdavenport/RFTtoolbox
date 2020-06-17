@@ -14,7 +14,9 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 %                 function handle for the univariate kernel to smooth the
 %                 d-th dimension.
 %               - a numeric or 1 by D vector, in which case fconv smoothes
-%                 with a multivariate Gaussian kernel of FWHM = sep_kernel 
+%                 with a multivariate Gaussian kernel of FWHM = sep_kernel
+%               - a SepKernel object, in which case the 'kernel' field is
+%                 used for smoothing.
 % Optional
 %  D           the dimension of the input data
 %  truncation  either a numeric, a 1 x D vector or a 2 x D array containing
@@ -48,7 +50,10 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 % figure, clf,
 % plot(smoothed_spm); hold on; plot(smoothed_fconv, '--')
 % legend('spm\_conv', 'fconv') 
-% 
+% %% Using SepKernel object
+% sepK = SepKernel(1, 3);
+% lat_data = normrnd(0,1,1,100);
+% smoothed_fconv = fconv(lat_data, sepK);
 % %% 1D multiple subjects
 % nvox = 100; nsubj = 2; FWHM = 3; D = 1;
 % lat_data = normrnd( 0, 1, nvox, nsubj );
@@ -165,7 +170,6 @@ else
     horz2vert = 0;
 end
 
-
 % Reject if D is to large.
 if D > 3
     error( 'fconv not coded for dimension > 3' );
@@ -186,6 +190,28 @@ if isnumeric( sep_kern )
     % Get the standard truncation for the Gaussian kernel
     truncation = sep_kern.truncation;
     
+elseif isa( sep_kern, 'SepKernel' )
+    if length( sep_kern.kernel ) == D
+        for d = 1:D
+            Kernel{d} = sep_kern.kernel{d};
+        end
+        
+        % Define the truncation and adjust_kernel, if not provided
+        if ~exist( 'truncation', 'var' )
+            if ~any( isnan( sep_kern.truncation ) )
+                truncation = sep_kern.truncation;
+            else
+                error( "You need to provide a valid truncation." )
+            end
+        end
+        
+        if ~exist( 'adjust_kernel', 'var' )
+            adjust_kernel = sep_kern.adjust;
+        end
+        
+    else
+        error( 'Your SepKernel object needs to have the same dimension as your data.' )
+    end
 else
     if iscell( sep_kern ) 
         if length( sep_kern ) == 1
