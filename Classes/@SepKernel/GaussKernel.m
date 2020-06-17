@@ -54,7 +54,7 @@ for d = 1:obj.D
 end
 
 % Fill the field truncation and dtruncation
-obj.truncation   = ceil( 4 * FWHM2sigma( FWHM ) );
+obj.truncation   = ceil( 3 * FWHM2sigma( FWHM ) );
 obj.dtruncation  = obj.truncation;
 obj.d2truncation = obj.truncation;
 else
