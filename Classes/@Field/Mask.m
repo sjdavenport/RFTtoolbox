@@ -5,6 +5,7 @@ function obj = Mask( obj, mask )
 % ARGUMENTS
 % Mandatory
 %  obj   of type Field
+% Optional
 %  mask  a logical of size obj.sizeDomain.
 %
 %--------------------------------------------------------------------------
@@ -29,8 +30,12 @@ function obj = Mask( obj, mask )
 % Author: Fabian Telschow
 %--------------------------------------------------------------------------
 
-%% Check mandatory input
+%% Check optional input
 %--------------------------------------------------------------------------
+
+if ~exist( 'mask', 'var' )
+    mask = obj.mask;
+end
 
 if ~all( islogical( mask(:) ) )
      error( "'mask' must be a logical array." )
