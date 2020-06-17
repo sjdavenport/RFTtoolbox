@@ -24,10 +24,9 @@ function coverage = record_coverage( spfn, sample_size, FWHM, mask, niters, useh
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if nargin < 5
-    niters = 1000;
-end
 
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
 sample_image_size = size(spfn(1));
 % Dim = sample_image_size(1:end-1); %This returns the image dimension by construction.
 if sample_image_size(1) == 1 
@@ -40,6 +39,15 @@ else
     Dim = sample_image_size;
     D = length(Dim);
 end
+
+%%  Add/check optional values
+%--------------------------------------------------------------------------
+if ~exist( 'niters', 'var' )
+    % default option of niters
+    niters = 1000;
+end
+
+
 
 if nargin < 4
     if D == 1
