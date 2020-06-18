@@ -1,5 +1,5 @@
 function obj = Mask( obj, mask )
-% WhiteNoiseField( obj, FWHM ) constructs a Fields object having white
+% Mask( obj, mask ) constructs a Field object having white
 % noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
