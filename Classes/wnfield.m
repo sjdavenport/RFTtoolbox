@@ -1,15 +1,19 @@
-function obj = WhiteNoiseField( sizeDomain, sizeFiber, mask )
-% WhiteNoiseField( obj, FWHM ) constructs a Fields object having white
-% noise in the fiber.
+function obj = wnfield( varmask, fibersize, xvals )
+% wnfield( masksize, fibersize, mask ) constructs a Fields object having
+% white noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  sizeDomain  a vector containing the size of the domain
+%  varmask     Possible values are
+%              - a 1 x D vector containing the size of the mask. The field
+%                'mask' is then set to true( varmask ). 
+%              - a T_1 x ... x T_D logical array containing the mask.
 %
 % Optional
-%  sizeFiber   a vector containing the size of the fiber. Default is 1,
+%  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
-%  mask        a logical of size sizeDomain. Default true( sizeDomain ).
+%  xvals       a 1 x D cell array containing the xvals.
+%              Default { 1:masksize(1), ..., 1:masksize(D) }.
 %
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -36,54 +40,45 @@ function obj = WhiteNoiseField( sizeDomain, sizeFiber, mask )
 
 %% Check mandatory input
 %--------------------------------------------------------------------------
+
 % Check input argument and make it a vector
-if  ~isnumeric( sizeDomain )
-    error( "The sizeDomain must be a 1xD or Dx1 numerical vector." )
+if  ~isnumeric( varmask ) && ~islogical( varmask ) 
+    error( "varmask must be a 1xD or Dx1 numerical vector or a logical array." )
 else
-    tmp = size( sizeDomain );
-    if ~( length( tmp ) == 2 && any( tmp == 1 ) )
-        error( "The sizeDomain must be a 1xD or Dx1 numerical vector." )
-    elseif tmp( 2 ) == 1
-        sizeDomain = sizeDomain';
+    svarmask = size( varmask );
+    if isnumeric( varmask ) && ~( length( svarmask ) == 2 ...
+                                                && any( svarmask == 1 ) )
+        error( "The masksize must be a 1xD or Dx1 numerical vector." )
+    elseif isnumeric( varmask ) && svarmask( 2 ) == 1
+        varmask = varmask';
     end
 end
 
-%% Check mandatory input
+%% Check optional input
 %--------------------------------------------------------------------------
 
 % Fill the defaults of the optional parameters if necessary
-if ~exist( 'sizeFiber', 'var')
-    sizeFiber = 1;
-end
-
-if ~exist( 'mask', 'var')
-    mask = true( sizeDomain );
+if ~exist( 'fibersize', 'var')
+    fibersize = 1;
 end
 
 % Check the optional inputs
-if  ~isnumeric( sizeFiber )
-    error( "The sizeFiber must be a 1xK or Kx1 numerical vector." )
+if  ~isnumeric( fibersize )
+    error( "The fibersize must be a 1xK or Kx1 numerical vector." )
 else
-    tmp = size( sizeFiber );
+    tmp = size( fibersize );
     if ~( length( tmp ) == 2 && any( tmp == 1 ) )
-        error( "The sizeFiber must be a 1xK or Kx1 numerical vector." )
+        error( "The fibersize must be a 1xK or Kx1 numerical vector." )
     elseif tmp( 2 ) == 1
-        sizeFiber = sizeFiber';
+        fibersize = fibersize';
     end
 end
 
-if ~all( islogical( mask(:) ) )
-     error( "'mask' must be a logical array of size sizeDomain." )
-end
-
-if ~all( size( mask ) == sizeDomain )
-     error( "'mask' must be a logical array of size sizeDomain." )
-end
 
 %% Main function
 %--------------------------------------------------------------------------
 obj = Field();
-obj.field = randn( [ sizeDomain sizeFiber ] );
+obj.field = randn( [ masksize fibersize ] );
 obj.mask = mask;
 
 return
