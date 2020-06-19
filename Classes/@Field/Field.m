@@ -2,21 +2,41 @@ classdef Field
    % Field is a class to make the use of multidimensional arrays, which are
    % considered to represent a field over a domain easy.
    %   The class is an object keeping track of the field and further
-   %   important properties of the field.
+   %   important properties of the field like dimensions of the domain and 
+   %   the fiber as well as their size. Moreover, it ensures that all these
+   %   quantities are consistent.
+   %   A complete field object consists of the following fields:
+   %   - field   a T_1 x ... x T_D x F_1 x ... x F_K numeric array
+   %             containing the values of the field. The T_1 x ... x T_D
+   %             part is assumed to be the domain of the field and the
+   %             part F_1 x ... x F_K is considered the fiber. A field
+   %             of dimension T_1 x ... x T_D x {1} is a scalar field.
+   %             Multiple observations of a scalar field are
+   %             represented as a T_1 x ... x T_D x F_1 field, where
+   %             F_1 denotes the sample size.
+   %   - mask    a T_1 x ... x T_D logical array. Denoting a
+   %             restriction of the field to a reduced domain given by
+   %             the true values in mask. The dependend field 'masked'
+   %             indicates whether the 'field' field has only all NaN,
+   %             0 or -Inf for the values -Inf. Transforming a
+   %             non-masked to a masked Field object can be achieved
+   %             by the function Masked().
+   %   - xvals   a 1 x D cell array which contains in the d-th entry
+   %             the grid coordinates for the field. Note that a field
+   %             object currently assumes that it is defined over a
+   %             grid, i.e. it is defined on the cartesian product 
+   %             xvals{1} x ... x xvals{D}.
    properties
       field double % an array representing a field
       mask         % a logical array indicating which elements of the domain are inside the domain of the field
-      xvals cell   % a cell of size 1xlength(size(mask)) containing the coordinates of the voxels for each dimension
+      xvals cell   % a cell of size 1 x length(size(mask)) containing the coordinates of the voxels for each dimension
    end
-   properties ( Dependent ) % @Sam: Are these all properties we care about
-                            % derived from the domain and the field?
-                            % I think it would be useful to add the xvec
-                            % here as well! What do you think?
-      sizeField  % the size of the Field
-      Dim        % the dimension of the domain 
-      sizeDomain % the size of the domain of the field
-      fiberDim   % the dimension of the fiber above a point
-      sizeFiber  % the size of the fiber above a point
+   properties ( Dependent ) 
+      fieldsize  % the size of the Field
+      D        % the dimension of the domain 
+      masksize % the size of the domain of the field
+      fiberD   % the dimension of the fiber above a point
+      fibersize  % the size of the fiber above a point
       masked     % 1 if the field is masked, zero else
    end
    properties ( Dependent, Access = private ) 
@@ -26,7 +46,8 @@ classdef Field
        %% Validate compatibility of the properties
        % Note this solution is kind of a work around since validation
        % functions in matlab seem to work, badly. Hence we simply redefine
-       % the set.property function.
+       % the set.property functions to ensure compatibility between the
+       % fields of a Field object.
        %-------------------------------------------------------------------
        % Change set.mask function
        function obj = set.mask( obj, val )
@@ -47,7 +68,7 @@ classdef Field
                obj.mask = val;
            else
                sM = size( val ); 
-               if ~all( sM == obj.dim_xvals )
+               if ~all( sM(1:obj.D) == obj.dim_xvals )
                   error( 'fields needs to have a compatible dimension with xvals.' )
                end
                
@@ -69,10 +90,10 @@ classdef Field
                sF = size( val );
                l  = length( sM );
                ll = length( sF );
-               if ll < l
+               if l > ll
                    error( "field must have at least as many dimensions as mask." )
                else
-                   if ~all( sF( 1:l ) == sM )
+                   if ~all( sF( 1:obj.D ) == sM( 1:obj.D ) )
                       error( 'field must have a compatible dimension with mask.' )
                    end
                end
@@ -80,7 +101,7 @@ classdef Field
                obj.field = val;
            else
                sF = size( val ); 
-               if ~all( sF( 1:D ) == obj.dim_xvals )
+               if ~all( sF( 1:obj.D ) == obj.dim_xvals )
                   error( 'fields needs to have a compatible dimension with xvals.' )
                end
                
@@ -109,8 +130,8 @@ classdef Field
            elseif mask_set % mask field provided
                sM = size( obj.mask );
                D  = length( val(:) );
-               l  = length( sM );
-               if D == l
+
+               if D == obj.D
                    for d = 1:D
                          if ~isnumeric( val{d} )
                              error( 'xvals entries needs to be a numeric vector.' )
@@ -155,43 +176,52 @@ classdef Field
         
        %% Fill the dependent properties
        %-------------------------------------------------------------------
-       % Fill the sizeField field
-       function value = get.sizeField( obj )
+       % Fill the fieldsize field
+       function value = get.fieldsize( obj )
          value = size( obj.field );
        end
        
-       % Fill the sizeDomain field
-       function value = get.sizeDomain( obj )
+       % Fill the masksize field
+       function value = get.masksize( obj )
          value = size( obj.mask );
        end
        
        % Fill the D field
-       function D = get.Dim( obj )
-         D = length( obj.sizeDomain );
-         if any( obj.sizeDomain == 1) && D == 2
-             D = 1;
+       function D = get.D( obj )
+         if length( obj.mask(:) ) ~= 1
+             D = length( obj.masksize );
+             if any( obj.masksize == 1) && D == 2
+                 D = 1;
+             end
+         else
+             D = length( obj.xvals );
          end
+             
        end
        
-       % Fill the fiberDim field
-       function D = get.fiberDim( obj )
-         D = length( obj.sizeField ) - length( obj.sizeDomain );
+       % Fill the fiberD field
+       function D = get.fiberD( obj )
+         l = length( obj.fieldsize );
+         if l == 2 && obj.fieldsize( 2 ) == 1
+             l = 1;
+         end
+         D = l - obj.D;
          if D == 0
              D = 1;
          end
        end
        
-       % Fill the sizeFiber field
-       function sF = get.sizeFiber( obj )
-           if obj.fiberDim == 1
-               sF = obj.sizeField( end );
+       % Fill the fibersize field
+       function sF = get.fibersize( obj )
+           if obj.fiberD == 1
+               sF = obj.fieldsize( end );
                
-               if length( obj.sizeField ) == obj.Dim
+               if length( obj.fieldsize ) == obj.D
                    sF = 1;
                end
                
            else
-               sF = obj.sizeField( (obj.Dim+1):end );
+               sF = obj.fieldsize( (obj.D+1):end );
            end
        end
        
@@ -219,16 +249,42 @@ classdef Field
        function obj = Field( varargin )
           % FIELD( varargin ) is a basic constructor for a Field class
           % object.
+          % Default values for mask is always true( masksize ) and default
+          % for xvals is { 1:masksize(1), ..., 1:masksize(D) }. If not an
+          % input the field 'field' is always empty and needs to be
+          % specified by the user.
           %----------------------------------------------------------------
           % ARGUMENTS
           % varargin
-          %  If 1:  
-          %
+          %  If 0: Generates empty field object.
+          %  If 1: possible inputs are
+          %     - 1 x D vector defining the size of the mask. 'mask' and 
+          %       'xvals' are set to the default value.
+          %     - 1 x D cell array containing the xvals. 'mask' is default.
+          %     - T_1 x ... x T_D logical array containing the mask.
+          %       'xvals' is set to default.
+          %  If 2: possible inputs are
+          %     - T_1 x ... x T_D x F_1 x ... x F_K numerical array, which
+          %         defines the values of the field.
+          %       T_1 x ... x T_D logical array containing the mask.
+          %       'xvals' is set to default.
+          %     - T_1 x ... x T_D x F_1 x ... x F_K numerical array, which
+          %         defines the values of the field.
+          %       1 x D cell array containing the xvals.
+          %       'mask' is default.
+          %     - T_1 x ... x T_D x F_1 x ... x F_K numerical array, which
+          %         defines the values of the field.
+          %       an integer D, which specifies 'D'
+          %       'mask' and 'xvals' are default.
+          %  If 3: possible inputs are
+          %     - T_1 x ... x T_D x F_1 x ... x F_K numerical array, which
+          %         defines the values of the field.
+          %       T_1 x ... x T_D logical array containing the mask.
+          %       1 x D cell array containing the xvals.
           %----------------------------------------------------------------
           % OUTPUT
-          % obj  an object of class SepKernel where the fields are
-          %      initialised. If FWHM is provided obj is an object of class
-          %      SepKernel representing a seperable Gaussian Kernel.
+          % obj  an object of class Field where the fields are
+          %      initialised by the input or defaults.
           %
           %----------------------------------------------------------------
           % EXAMPLES
@@ -253,29 +309,39 @@ classdef Field
              obj.mask = true;
              obj.xvals = {};
           elseif nargin == 1
-              if isnumeric( varargin{1} )
+              if isnumeric( varargin{1} ) % Input is masksize
                 % Check that varargin{1} is a vector
                 Dim = varargin{1};
-                sDim = size( Dim );
+                sDim = size( [ Dim 1 ] );
                 if ~( length( sDim ) == 2 && sDim(1) == 1 )
                     error( "Input must be a 1xD vector." )
                 end
                 
                 % Set mask to be all true
-                obj.mask = true( Dim );
+                obj.mask = true( [ Dim 1 ] );
              
                 % Set xvals to be equidistant in all dimensions with 
                 % voxelsize 1
-                xvals = cell( [ 1 obj.Dim ] );
-                for d = 1:obj.Dim
-                     xvals{d} = 1:obj.sizeDomain(d);
+                xvals = cell( [ 1 obj.D ] );
+                for d = 1:obj.D
+                     xvals{d} = 1:obj.masksize(d);
                 end
                 obj.xvals = xvals;
                 
-              elseif iscell( varargin{1} )
+              elseif iscell( varargin{1} ) % Input is xvals
                   obj.mask  = true;
                   obj.xvals = varargin{1};
                   obj.mask  = true( obj.dim_xvals );
+                  
+              elseif islogical( varargin{1} ) % Input is mask
+                  obj.mask  = varargin{1};
+                  % Set xvals to be equidistant in all dimensions with 
+                  % voxelsize 1
+                  xvals = cell( [ 1 obj.D ] );
+                  for d = 1:obj.D
+                       xvals{d} = 1:obj.masksize(d);
+                  end
+                  obj.xvals = xvals;
                   
               else
                   error( strcat( "Input must be either a cell",...
@@ -300,6 +366,10 @@ classdef Field
                       % Get field of mask dimension
                       obj = Field( size( varargin{2} ) );
                       obj.mask  = varargin{2};
+                      obj.field = varargin{1};
+                  elseif iscell( varargin{2} ) % Second input is xvals
+                      % Get field of mask dimension
+                      obj = Field( varargin{2} );
                       obj.field = varargin{1};
                   else
                       error( "Input type for second input not supported." )
