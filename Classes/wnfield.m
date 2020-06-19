@@ -17,23 +17,31 @@ function obj = wnfield( varmask, fibersize, xvals )
 %
 %--------------------------------------------------------------------------
 % OUTPUT
-% obj  an object of class Fields representing white noise.
+% obj  an object of class Fields representing white noise, which is not
+%      masked. 
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% % Simple example with whole domain mask
 % %% scalar field
-% lat_data = WhiteNoiseField( [4 2 3] )
+% lat_data = wnfield( [4 2 3] )
 %
 % %% many subjects field
-% lat_data = WhiteNoiseField( [4 2 3], 100 )
+% lat_data = wnfield( [4 2 3], 100 )
 %
 % %% Simple example with mask
-% sDomain = [ 4 2 3 ]
-% mask = true( [ 4 2 3 ] )
-% mask(:,1,2) = 0;
-% lat_data = WhiteNoiseField( [4 2 3], 1, mask )
-% 
+% mask = true( [ 4, 12 ] )
+% mask = logical( pad_vals( mask ) )
+% lat_data = wnfield( mask, 1 )
+% figure, clf,
+% imagesc( lat_data ), colorbar
+% title( 'not masked field' )
+% % Generate masked data
+% lat_data = Mask( wnfield( mask, 1 ) )
+% figure, clf,
+% imagesc( lat_data )
+% title( 'masked field' )
+%
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -74,11 +82,19 @@ else
     end
 end
 
-
 %% Main function
 %--------------------------------------------------------------------------
-obj = Field();
-obj.field = randn( [ masksize fibersize ] );
-obj.mask = mask;
+
+if islogical( varmask)
+    obj = Field( varmask );
+    obj.field = randn( [ size( varmask ) fibersize ] );    
+else
+    obj = Field( varmask );
+    obj.field = randn( [ varmask fibersize ] );
+end
+
+if exist( 'xvals', 'var' )
+    obj.xvals = xvals;
+end
 
 return
