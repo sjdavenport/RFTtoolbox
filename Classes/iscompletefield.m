@@ -24,9 +24,7 @@ function out = iscompletefield( var )
 out = 0;
 
 if isa( var, 'Field' )
-    if var.complete
-        out = true;    
-    end
+    out = iscomplete( var );    
 end
 
 return
