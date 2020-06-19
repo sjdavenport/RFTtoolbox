@@ -248,7 +248,8 @@ classdef Field
        
        % Fill the complete field
        function value = get.complete( obj )
-           if ~isempty( obj.field ) && length( obj.mask(:) ) > 1 && ~isempty(tmp.xvals)
+           if ~isempty( obj.field ) && length( obj.mask(:) ) > 1 ...
+                                            && ~isempty( obj.xvals )
                 value = true;
            else
                value = false;
@@ -402,6 +403,11 @@ classdef Field
        %%% Functions for class Field
        % Function for masking data
        obj = Mask( obj, mask )
+       
+       % Function for obtaining the private complete field
+       function val = iscomplete( obj )
+           val = obj.complete;
+       end
        
    end
 end
