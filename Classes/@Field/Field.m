@@ -41,6 +41,8 @@ classdef Field
    end
    properties ( Dependent, Access = private ) 
       dim_xvals  % dimension obtained from the provided xvals vector
+      complete   % indicates whether 'field', 'mask' and 'xvals' fields are
+                 % all set to compatible values.
    end
    methods
        %% Validate compatibility of the properties
@@ -241,6 +243,15 @@ classdef Field
            dim_xvals = zeros( [ 1 D ] );
            for d = 1:D
                dim_xvals(d) = length( obj.xvals{d} );
+           end
+       end
+       
+       % Fill the complete field
+       function value = get.complete( obj )
+           if ~isempty( obj.field ) && length( obj.mask(:) ) > 1 && ~isempty(tmp.xvals)
+                value = true;
+           else
+               value = false;
            end
        end
 
