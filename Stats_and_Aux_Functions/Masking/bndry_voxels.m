@@ -301,7 +301,7 @@ if D == 2 || D == 3
             
         case 3            
             if any( strcmp( type, "xy" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "x" ) )
+                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "z" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, :, 2 ) = 1;
@@ -323,7 +323,7 @@ if D == 2 || D == 3
             end
                 
             if any( strcmp( type, "xz" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "z" ) ) || any( strcmp( type, "x" ) )
+                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "z" ) )
                 % Dilate kernel
                 h = zeros( ones(1, D) * 3 );
                 h( :, 2, : ) = 1;
@@ -338,7 +338,7 @@ if D == 2 || D == 3
                 % Preallocate the weights array
                 weights.xz = zeros( s_mask );
                 % Find weights for integration
-                for y = 2:s_mask(2)
+                for y = 1:s_mask(2)
                     weights.xz( :, y, : ) = getweights( squeeze(...
                                                     bndry.xz( :, y, : ) ) );
                 end
