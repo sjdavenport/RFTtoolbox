@@ -97,6 +97,11 @@ elseif strcmp(field_type, 'T')
     D = length(Ldim);
 end
 
+% Ensure peak_est_locs is of the right size
+if size(peak_est_locs,1) > D
+    error('peak_est_locs must be of the right size')
+end
+
 %%  add/check optional values
 %--------------------------------------------------------------------------
 if ~exist('peak_est_locs', 'var')
@@ -182,8 +187,7 @@ else
     masked_field = cfield;
 end
 
-% At the moment this is just done on the initial lattice. Need to
-% change so that it's on the field evaluated on the lattice.
+% If not peak estimates are provided calculate the top ones on the lattice
 if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
                    [1,1])) && (floor(peak_est_locs(1)) == peak_est_locs(1))
     % Set the number of maxima to define

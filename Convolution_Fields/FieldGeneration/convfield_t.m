@@ -1,4 +1,4 @@
-function [tcfield, xvals_vecs] = convfield_t( lat_data, Kernel, resadd, enlarge )
+function [tcfield, xvals_vecs, setofconvfields] = convfield_t( lat_data, Kernel, resadd, enlarge )
 % CONVFIELD_T( lat_data, FWHM, resadd ) computes a convolution t field
 % with specified FWHM with resadd additional voxels added between the
 % original points of the lattice.

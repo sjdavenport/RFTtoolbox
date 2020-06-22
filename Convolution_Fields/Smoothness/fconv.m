@@ -18,7 +18,8 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 %               - a SepKernel object, in which case the 'kernel' field is
 %                 used for smoothing.
 % Optional
-%  D           the dimension of the input data
+%  D           the dimension of the input data, if not specified then the
+%              data is smoothed assuming that there is only one realisation
 %  truncation  either a numeric, a 1 x D vector or a 2 x D array containing
 %              the value for the truncation of the kernel in each dimension.
 %              If it is a vector the truncation is assumed to be symmetric
@@ -150,6 +151,8 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 % Find the dimension, of the data if not provided. Here it is assumed that
 % nsubj = 1.
 s_data = size( data );
+
+% If D is not provided the data is smoothed assuming that nsubj = 1
 if ~exist( 'D', 'var' )
     s_data = size( data );
     D = length( s_data );
