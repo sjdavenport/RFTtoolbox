@@ -31,7 +31,7 @@ classdef Field
       mask         % a logical array indicating which elements of the domain are inside the domain of the field
       xvals cell   % a cell of size 1 x length(size(mask)) containing the coordinates of the voxels for each dimension
    end
-   properties ( Dependent ) 
+   properties ( Dependent, Access = public ) 
       fieldsize  % the size of the Field
       D        % the dimension of the domain 
       masksize % the size of the domain of the field
@@ -398,8 +398,7 @@ classdef Field
        
        %% Functions for class Field
        %-------------------------------------------------------------------
-       
-       %%% Functions for class Field
+
        % Function for masking data
        obj = Mask( obj, mask )
        
@@ -410,6 +409,28 @@ classdef Field
        
        % Function for creating an Euclidean metric object
        obj = EuclideanMetric( obj, mask )
+       
+       % Transform a Field class object into a ConvField object
+       function out = Field2ConvField( obj, Kernel, resadd, enlarge )
+            if ~exist( 'Kernel', 'var' ) || isa( Kernel, 'SepKernel' )
+                error( "An object of class SepKernel need to be provided." );
+            end
+            if ~exist( 'resadd', 'var' )
+                resadd = 0;
+            end
+            if ~exist( 'enlarge', 'var' )
+                enlarge = 0;
+            end
+            
+            % Create an empty ConvField object
+            out = ConvField();
+            out.Kernel = Kernel;
+            out.resadd = resadd;
+            out.enlarge = enlarge;
+            out.field = obj.field;
+            out.mask = obj.mask;
+            out.xvals = obj.xvals;            
+       end
 
        % Function for checking whether two Field objects are compatible
        function val = iscompatible( obj1, obj2 )
