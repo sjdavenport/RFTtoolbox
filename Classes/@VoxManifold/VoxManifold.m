@@ -37,7 +37,6 @@ classdef VoxManifold
    end
    properties ( Dependent, Access = private ) 
       dim_xvals  % dimension obtained from the provided xvals vector
-      complete   % Check whether all essential fields are filled
    end
    methods
        %% Validate compatibility of the properties
@@ -224,15 +223,6 @@ classdef VoxManifold
                dim_xvals(d) = length( obj.xvals{d} );
            end
        end
-       
-       % Fill the complete field
-       function value = get.complete( obj )
-           value = false;
-           if ~isempty( obj.g ) && ~isempty( obj.xvals )...
-                                               && length( obj.mask(:) ) > 1
-                    value = true;
-           end
-       end
 
        %% Basic constructor
        %-------------------------------------------------------------------
@@ -386,10 +376,6 @@ classdef VoxManifold
        %% Functions for class VoxManifold
        %-------------------------------------------------------------------
        
-       % Function for obtaining the private property 'complete'
-       function val = iscomplete( obj )
-           val = obj.complete;
-       end
        
    end
 end
