@@ -1,6 +1,6 @@
-function obj = Mask( obj, mask )
-% Mask( obj, mask ) constructs a Field object having white
-% noise in the fiber.
+function obj = EuclideanMetric( obj, mask )
+% EuclideanMetric( obj ) fills the field property of a Field object such
+% that it has the Euclidean Riemmanian metric as fibers.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -10,21 +10,10 @@ function obj = Mask( obj, mask )
 %
 %--------------------------------------------------------------------------
 % OUTPUT
-% obj  an object of class Fields representing white noise.
+% obj  an object of class Fields representing the Euclidean metric.
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% sDomain = [ 10 10 ];
-% mask = true( [ 10 10 ] );
-% mask(:,2:4) = 0;
-% lat_data = WhiteNoiseField( sDomain, 1, mask )
-% 
-% figure, clf,
-% imagesc( lat_data.field ), colorbar
-% 
-% masked_lat_data = Mask( lat_data, mask )
-% figure, clf,
-% imagesc( masked_lat_data.field ), colorbar
 % 
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow
@@ -37,23 +26,18 @@ if ~exist( 'mask', 'var' )
     mask = obj.mask;
 end
 
-% Check whether the mask and the field fit together
-sMask  = size( mask );
-sField = size( obj.field );
-if ~all( sMask == sField( 1:length( sMask ) ) )
-     error( "'mask' must be a logical array of size of the first length mask coordinates." )
-end
-
 %% Main function
 %--------------------------------------------------------------------------
 % Get dimension of the Domain
+sMask = size( mask );
 D = length( sMask );
 if any( sMask == 1) && D == 2
     D = 1;
 end
 
 % Mask the field
-obj.field = repmat( mask, [ ones( [ 1 D ] ), sField( D+1:end ) ] ) .* obj.field;
+obj.field = permute( repmat( eye( obj.D ), [ 1 1 sMask ] ), ...
+                                                        [ 3:(D+2), 1, 2 ] );
 
 % Put the mask into the object
 obj.mask = mask;

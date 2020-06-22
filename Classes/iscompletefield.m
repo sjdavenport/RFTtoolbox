@@ -21,7 +21,7 @@ function out = iscompletefield( var )
 
 %% Main function
 %--------------------------------------------------------------------------
-out = 0;
+out = false;
 
 if isa( var, 'Field' )
     out = iscomplete( var );    
