@@ -27,7 +27,7 @@ classdef Field
    %             grid, i.e. it is defined on the cartesian product 
    %             xvals{1} x ... x xvals{D}.
    properties
-      field double % an array representing a field
+      field  {mustBeNumeric} % an array representing a field
       mask         % a logical array indicating which elements of the domain are inside the domain of the field
       xvals cell   % a cell of size 1 x length(size(mask)) containing the coordinates of the voxels for each dimension
    end
@@ -84,7 +84,7 @@ classdef Field
            % 1 if mask is already filled
            mask_set = ~( length( obj.mask(:) ) == 1 );
            
-           if ~mask_set  && isempty( tmp.xvals ) % neither mask nor xvals specified
+           if ~mask_set  && isempty( obj.xvals ) % neither mask nor xvals specified
              % Assign the value
              obj.field = val;
            elseif mask_set % mask already specified
@@ -117,8 +117,8 @@ classdef Field
            mask_set = ~( length( obj.mask(:) ) == 1 && obj.mask );
            if ~mask_set && isempty( obj.field ) % other fields not provided
                 % Catch wrong xvals input  
-                D  = length( val );
-                for d = 1:D
+                DD  = length( val );
+                for d = 1:DD
                      if ~isnumeric( val{d} )
                          error( 'xvals entries needs to be a numeric vector.' )
                      end
@@ -131,10 +131,10 @@ classdef Field
              
            elseif mask_set % mask field provided
                sM = size( obj.mask );
-               D  = length( val(:) );
+               DD  = length( val(:) );
 
-               if D == obj.D
-                   for d = 1:D
+               if DD == obj.D
+                   for d = 1:DD
                          if ~isnumeric( val{d} )
                              error( 'xvals entries needs to be a numeric vector.' )
                          end
@@ -152,11 +152,11 @@ classdef Field
                end
 
            else
-               D  = length( val );
+               DD  = length( val );
                sF = size( obj.field );
                l  = length( sF );
-               if D <= l
-                   for d = 1:D
+               if DD <= l
+                   for d = 1:DD
                        if ~isnumeric( val{d} )
                            error( 'xvals entries needs to be a numeric vector.' )
                        end
@@ -190,15 +190,14 @@ classdef Field
        
        % Fill the D field
        function D = get.D( obj )
-         if length( obj.mask(:) ) ~= 1
-             D = length( obj.masksize );
-             if any( obj.masksize == 1) && D == 2
-                 D = 1;
-             end
-         else
-             D = length( obj.xvals );
-         end
-             
+          if ~isempty( obj.xvals )
+              D = length( obj.xvals );
+          else 
+              D = length( obj.masksize );
+              if any( obj.masksize == 1) && D == 2
+                  D = 1;
+              end
+          end
        end
        
        % Fill the fiberD field
@@ -229,7 +228,8 @@ classdef Field
        
        % Fill the masked field
        function masked = get.masked( obj )
-           tmp = obj.field( ~obj.mask(:) );
+           s = prod( obj.fibersize );
+           tmp = obj.field( repmat( ~obj.mask(:), [ s 1 ] ) );
            
            masked = 0;
            if all( tmp == 0 ) || all( isnan( tmp ) ) || all( tmp == -Inf )
@@ -248,8 +248,7 @@ classdef Field
        
        % Fill the complete field
        function value = get.complete( obj )
-           if ~isempty( obj.field ) && length( obj.mask(:) ) > 1 ...
-                                            && ~isempty( obj.xvals )
+           if ~isempty( obj.field ) && ~isempty( obj.xvals )
                 value = true;
            else
                value = false;
@@ -324,7 +323,7 @@ classdef Field
               if isnumeric( varargin{1} ) % Input is masksize
                 % Check that varargin{1} is a vector
                 Dim = varargin{1};
-                sDim = size( [ Dim 1 ] );
+                sDim = size( Dim );
                 if ~( length( sDim ) == 2 && sDim(1) == 1 )
                     error( "Input must be a 1xD vector." )
                 end
@@ -407,6 +406,24 @@ classdef Field
        % Function for obtaining the private complete field
        function val = iscomplete( obj )
            val = obj.complete;
+       end
+       
+       % Function for creating an Euclidean metric object
+       obj = EuclideanMetric( obj, mask )
+
+       % Function for checking whether two Field objects are compatible
+       function val = iscompatible( obj1, obj2 )
+            val = false;
+            if obj1.D == obj2.D
+                if all( obj1.masksize == obj2.masksize )
+                    val = true;
+                    for d = 1:obj1.D
+                        if ~all( obj1.xvals{ d } == obj2.xvals{ d } )
+                            val = false;
+                        end
+                    end
+                end
+            end
        end
        
    end
