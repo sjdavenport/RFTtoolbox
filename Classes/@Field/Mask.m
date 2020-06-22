@@ -37,10 +37,6 @@ if ~exist( 'mask', 'var' )
     mask = obj.mask;
 end
 
-if ~all( islogical( mask(:) ) )
-     error( "'mask' must be a logical array." )
-end
-
 % Check whether the mask and the field fit together
 sMask  = size( mask );
 sField = size( obj.field );
