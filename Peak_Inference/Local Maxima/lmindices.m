@@ -1,4 +1,4 @@
-function [ lmarrayindices, lmind ] = lmindices( Y, top, mask, CC )
+function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % lmindices( Y, top, CC, mask ) finds the top local maxima of an image,
 % given a conectivity criterion CC, that lie within a specified mask.
 %--------------------------------------------------------------------------
@@ -19,7 +19,8 @@ function [ lmarrayindices, lmind ] = lmindices( Y, top, mask, CC )
 % a = zeros([91,109,91]);
 % a(16,100,40) = 5;
 % a(10,50,35) = 3;
-% lmindices(a,2)
+% [peaklocs, peakinds, peakvals] = lmindices(a,2)
+% a(peakinds) %== peakvals
 %
 % %1D example 
 % lmindices([1,2,1])
@@ -85,6 +86,9 @@ if D == 2
         lmarrayindices = lmarrayindicesx;
     end
 end
+
+% Obtain the values at the peaks
+peakvals = Y(lmind);
 
 end
 

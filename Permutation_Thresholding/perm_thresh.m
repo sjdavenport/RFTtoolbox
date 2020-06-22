@@ -1,4 +1,4 @@
-function [threshold, vec_of_maxima] = perm_thresh( data, stat, niters, include_original, subject_mask, alpha )
+function [threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, niters, include_original, subject_mask, alpha )
 % PERM_THRESH( data, stat, niters, include_original, subject_mask, alpha ) 
 % implements the permutation test voxelwise on a dataset in order to 
 % estimate a one-sample threshold with which to perform multiple 
@@ -26,25 +26,32 @@ function [threshold, vec_of_maxima] = perm_thresh( data, stat, niters, include_o
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if nargin < 2
+if ~exist('stat', 'var')
     stat = 'T';
 end
-if nargin < 3
+if ~exist('niters', 'var')
     niters = 5000;
 end
-if nargin < 4
+if ~exist('include_original', 'var')
     include_original = 1;
 end
-if nargin < 5
+if ~exist('FWHM', 'var')
+    FWHM = NaN;
+end
+if ~exist('subject_mask', 'var')
     subject_mask = NaN;
 end
-if nargin < 6
+if ~exist('alpha', 'var')
     alpha = 0.05;
 end
 
 sD = size(data);
 nsubj = sD(end);
 D = length(sD) - 1;
+
+if ~isnan(FWHM)
+    data = fconv(data, FWHM, D);
+end
 
 if include_original
 %     niters = niters - 1;
