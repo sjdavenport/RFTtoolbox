@@ -135,7 +135,7 @@ end
 %--------------------------------------------------------------------------
 if ~exist( 'enlarge', 'var' )
    % Default option of 'enlarge'
-    enlarge = ceil(resadd/2);
+    enlarge = ceil( resadd / 2 );
 end
 
 if ~isnumeric( enlarge )
@@ -251,7 +251,7 @@ end
 if mod( resadd, 2 ) == 0 
     weights = NaN;
 else
-    weights = getweights(mask_hr);
+    weights = getweights( mask_hr );
 end
 
 % In 1D transpose to ensure you return row vectors if you entered a
