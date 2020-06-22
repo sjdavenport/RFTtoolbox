@@ -1,4 +1,4 @@
-function LKC = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
+function [ LKC, convY ] = LKC_conv_est( lat_data, mask, Kernel, resadd, mask_lat,...
                              enlarge, version )
 % LKC_CONV_EST( lat_data, mask, Kernel, resadd, mask_lat, enlarge, version )
 % estimates the Lipschitz Killing curvatures for a convolution field
@@ -290,7 +290,7 @@ end
 
 %%% Get the Riemannian metric/Lambda matrix from the data
 if strcmp( version, "analytical")
-    [ g, xvals ] = Lambda_conv_est( lat_data, Kernel, resadd, enlarge );
+    [ g, convY, xvals ] = Lambda_conv_est( lat_data, Kernel, resadd, enlarge );
 elseif strcmp( version, "numerical")
     [ g, xvals ] = Lambda_numeric_est( lat_data, Kernel, resadd, enlarge );
 else
