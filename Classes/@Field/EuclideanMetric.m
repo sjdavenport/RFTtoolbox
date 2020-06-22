@@ -1,6 +1,6 @@
 function obj = EuclideanMetric( obj, mask )
 % EuclideanMetric( obj ) fills the field property of a Field object such
-% that it has the euclidean metric as fibers.
+% that it has the Euclidean Riemmanian metric as fibers.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
