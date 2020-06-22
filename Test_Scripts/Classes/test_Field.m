@@ -15,7 +15,7 @@ F = Field()
 F.mask = true( [ 3 4 5 ] )
 % Fill the fields field. Note that the first dimensions have to agree with
 % the dimensions of the mask
-F.field = randn( [ 3 4 5 10] )
+F.field = randn( [ 3 4 5 1000] )
 % Fill the xvals field. Note that it must be compatible with mask
 % dimensions
 F.xvals = { 1:3, [ 0.5, 3, 6, 6.5 ], 15:19 }
