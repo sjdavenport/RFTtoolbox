@@ -23,6 +23,16 @@ mask = true( [ 2, 3 ] )
 mask = logical( pad_vals( mask ) )
 Mfd.mask = mask
 
+figure, clf,
+imagesc( Mfd.g.field(:,:,1) )
+title( "metric g not masked" )
+
+% mask the field
+Mfd = Mask(Mfd)
+figure, clf,
+imagesc( Mfd.g.field(:,:,1) )
+title( "metric g is masked" )
+
 %% % Input can be a 1xD cell array containing vectors.
 % mask field is defaulted to be of compatible dimension with the xvals.
 % Hence only a field need to be added.
