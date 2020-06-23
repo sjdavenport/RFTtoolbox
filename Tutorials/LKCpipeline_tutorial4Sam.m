@@ -5,7 +5,7 @@ close all
 sigma = 5;
 T     = 49;
 FWHM  = sigma2FWHM( 5 );
-nsubj = 100;
+nsubj = 20;
 pad   = ceil(4*sigma);
 dim   = [T T];
 dimp  = dim + 2 * pad;
@@ -30,6 +30,22 @@ lat_data = wnfield( mask, nsubj);
 % lat_data = wnfield( dim, nsubj) % mask is assumed to be all true. 
 % lat_data.mask = mask
 
+% Plot a slice at a point of a Field object with default
+% (:, ceil( smask(2)/2 ), ..., ceil( smask(end)/2 ) )
+figure(1), clf,
+plot(lat_data)
+figure(2), clf,
+plot( lat_data, [ 12, NaN ] )
+
+% Plot an image slice at a point of a Field object with default
+% (:, :, ceil( smask(2)/2 ), ..., ceil( smask(end)/2 ) )
+figure(3), clf
+imagesc( lat_data )
+
+% Different slice and subj
+figure(4), clf
+imagesc( lat_data, [ NaN, NaN ], 3 )
+
 % Want to change voxelsize?
 lat_data.xvals = xvals;
 % %Shorter in that case is
@@ -53,6 +69,12 @@ lat_masked = false;
 % Generate convolution fields from lattice data
 cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
 dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
+
+figure, clf
+imagesc( cfield )
+
+figure, clf
+imagesc( Mask( cfield) )
 
 % Mask lat_data manually for the old convfield
 if lat_masked
