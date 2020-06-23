@@ -16,7 +16,7 @@ record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
 
 %% %% 2D examples
 %% small 2D example
-FWHM = 3; sample_size = 50; Dim = [5,5 ]; mask = true(Dim); resadd = 1;
+FWHM = 3; sample_size = 50; Dim = [2,2]; mask = true(Dim); resadd = 1;
 spfn = @(nsubj) normrnd(0,1,[Dim, nsubj]); niters = 1000;
 record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
 

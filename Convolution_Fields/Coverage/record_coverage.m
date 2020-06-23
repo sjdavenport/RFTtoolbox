@@ -178,10 +178,10 @@ for b = 1:niters
         nabovethresh_finelat = nabovethresh_finelat + 1;
     end
     
-    max_tfield_lat
-    max_tfield_finelat
-    max_tfield_at_lms
-    pause
+%     max_tfield_lat
+%     max_tfield_finelat
+%     max_tfield_at_lms
+%     pause
 %     threshold
 %     pause
     
