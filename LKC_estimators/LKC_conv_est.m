@@ -370,7 +370,7 @@ switch D
         % boundary. They will be count double otherwise.
         L(1)  = 0.5 *...
                 ( sum( sqrt( g_xx( bdry.x ) ) .* weights.x( bdry.x ) ) * dx...
-                + sum( sqrt( g_yy( bdry.y ) .* weights.y( bdry.y ) ) ) * dy );
+                + sum( sqrt( g_yy( bdry.y ) ) .* weights.y( bdry.y ) ) * dy );
                                
         %%% Fill the output structure
         geom.vol_form = vol_form;
