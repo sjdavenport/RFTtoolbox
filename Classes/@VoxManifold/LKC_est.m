@@ -54,13 +54,9 @@ clear voxmfd
 L = NaN * ones( [ 1 D ] );
 
 %%% Get the weights for integration
-if resadd ~= 0
-    weights = getweights( mask );
-    % Reduce weights matrix only to active voxels for speed up
-    weights = weights( mask(:) );
-else
-    weights = ones( [ sum( mask(:) ), 1 ] );
-end
+weights = getweights( mask );
+% Reduce weights matrix only to active voxels for speed up
+weights = weights( mask(:) );
 
 %%%%%% BEGIN estimate the LKCs in different dimensions
 %%% Compute 0th LKC
@@ -123,7 +119,7 @@ switch D
         % boundary. They will be count double otherwise.
         L(1)  = 0.5 *...
                 ( sum( sqrt( g_xx( bdry.x ) ) .* weights.x( bdry.x ) ) * dx...
-                + sum( sqrt( g_yy( bdry.y ) .* weights.y( bdry.y ) ) ) * dy );
+                + sum( sqrt( g_yy( bdry.y ) ) .* weights.y( bdry.y ) ) * dy );
                                
     case 3
         % Get the voxel grid dimensions after resolution increase
