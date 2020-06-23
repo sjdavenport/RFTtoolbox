@@ -447,5 +447,11 @@ classdef Field
             end
        end
        
+       % Redefine plot
+       function out = plot( field, slice )
+           
+       % Redefine imagesc
+       out = imagesc( field, slice, subj )
+       
    end
 end
