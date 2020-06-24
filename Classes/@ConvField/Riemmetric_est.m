@@ -1,5 +1,5 @@
-function g = riemmetric_est( cfield, dcfield )
-% riemmetric_est( cfield, dcfield ) estimates the induced Riemannian metric
+function g = Riemmetric_est( cfield, dcfield )
+% Riemmetric_est( cfield, dcfield ) estimates the induced Riemannian metric
 % from a convolution field and its derivative.
 % This function uses the exact formula from taking the derivatives of the
 % kernels and computing the corresponding convolutions, see [1, Theorem ???].
