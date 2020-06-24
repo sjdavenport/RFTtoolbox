@@ -1,14 +1,15 @@
 function voxmfd = ConvField2VoxManifold( cfield, dcfield, masked )
-% ConvField2VoxManifold( obj1, obj2 ) constructs a VoxManifold object from
-% convolution fields.
-% The convolution fields should be generated using convfield.m.
+% ConvField2VoxManifold( cfield, dcfield, masked ) returns the VoxManifold
+% object from a convolution field and its derivative. The manifold is given
+% by the mask and the Riemannian metric is the induced metric from the
+% convolution field.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  cfield   an object of class ConvField of derivtype 0 and fiberD = 1 and
+%  cfield   an object of class ConvField of derivtype 0, fiberD = 1 and
 %           fibersize > 1.
-%  dcfield  an object of class ConvField of derivtype 1 and fiberD = 1 and
+%  dcfield  an object of class ConvField of derivtype 1, fiberD = 1 and
 %           fibersize > 1.
 % Optional
 %  masked   a logical indicating whether the objects of class Field in the
@@ -16,7 +17,7 @@ function voxmfd = ConvField2VoxManifold( cfield, dcfield, masked )
 %
 %--------------------------------------------------------------------------
 % OUTPUT
-% obj  an object of class VoxManifold
+% voxmfd  an object of class VoxManifold
 %
 %--------------------------------------------------------------------------
 % EXAMPLES

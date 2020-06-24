@@ -1,49 +1,65 @@
 classdef ConvField < Field
-   % Field is a class to make the use of multidimensional arrays, which are
-   % considered to represent a field over a domain easy.
-   %   The class is an object keeping track of the field and further
-   %   important properties of the field like dimensions of the domain and 
-   %   the fiber as well as their size. Moreover, it ensures that all these
-   %   quantities are consistent.
-   %   A complete field object consists of the following fields:
-   %   - field   a T_1 x ... x T_D x F_1 x ... x F_K numeric array
-   %             containing the values of the field. The T_1 x ... x T_D
-   %             part is assumed to be the domain of the field and the
-   %             part F_1 x ... x F_K is considered the fiber. A field
-   %             of dimension T_1 x ... x T_D x {1} is a scalar field.
-   %             Multiple observations of a scalar field are
-   %             represented as a T_1 x ... x T_D x F_1 field, where
-   %             F_1 denotes the sample size.
-   %   - mask    a T_1 x ... x T_D logical array. Denoting a
-   %             restriction of the field to a reduced domain given by
-   %             the true values in mask. The dependend field 'masked'
-   %             indicates whether the 'field' field has only all NaN,
-   %             0 or -Inf for the values -Inf. Transforming a
-   %             non-masked to a masked Field object can be achieved
-   %             by the function Masked().
-   %   - xvals   a 1 x D cell array which contains in the d-th entry
-   %             the grid coordinates for the field. Note that a field
-   %             object currently assumes that it is defined over a
-   %             grid, i.e. it is defined on the cartesian product 
-   %             xvals{1} x ... x xvals{D}.
+   % ConvField is a class storing fields derived from convolving lattice
+   % data with a smoothing kernel.
+   %   It is a subclass of the Field class and should be generated from a
+   %   Field class object using the function convfield.m.
+   %   Additional to Field it tracks information on its generation, i.e.:  
+   %   - resadd     an integer denoting the amount of voxels added inbetween 
+   %                each original voxel. It increases the resolution of the field
+   %                by evaluation of the convolution field on these voxels.     
+   %   - enlarge    an integer denoting by how many voxels in high resolution
+   %                the mask is dilated. Note that this allows for different
+   %                interpretations of the domains of the convolution field.
+   %                We recommend to only consider enlarge = 0, i.e.
+   %                interpreting the boundary voxels of the original mask as
+   %                being on the boundary of the domain of the convolution
+   %                field. Another canonical choice is enlarge = ceil( resadd
+   %                / 2 ), which means that each voxel of the original mask is
+   %                considered to be in the center of a cube, which defines
+   %                the manifold. In this case resadd needs to be odd in order
+   %                to ensure that the boundary voxels of the high resolution
+   %                mask are samples from the boundary.
+   %   - derivtype  an integer denoting whether the original field is
+   %                stored or derivatives thereof.
+   %   - kernel     an object of class SepKernel, which was used to generate
+   %                the convolution field.
    properties
-      lat_data
-      resadd(1,1)  { mustBeNonnegative, mustBeInteger }
-      enlarge(1,1) { mustBeNonnegative, mustBeInteger }
-      derivtype(1,1) { mustBeNonnegative, mustBeInteger }
-      kernel  SepKernel % a cell of size 1 x length(size(mask)) containing the coordinates of the voxels for each dimension
+      resadd(1,1)  { mustBeNonnegative, mustBeInteger } % an integer denoting how many voxels are introduced between two existing voxels.
+      enlarge(1,1) { mustBeNonnegative, mustBeInteger } % an integer denoting by how many voxels in the high resolution the original boundary of the mask is dilated. 
+      derivtype(1,1) { mustBeNonnegative, mustBeInteger } % an integer denoting whether the smoothed field (0), its first derivatives (1) or its second derivatives (2) are stored in this field property.
+      kernel  SepKernel % an object of class SepKernel, which was used to generate the convolution field. 
+   end
+   properties ( Dependent, Access = public ) 
+      origsize % a 1 x D vector containing the size of the image before the resolution has been increased.
    end
    methods
+       %% Fill the dependent properties
+       %-------------------------------------------------------------------
+       % Fill the fieldsize field
+       function origsize = get.origsize( obj )
+           enl = obj.enlarge;
+           res = obj.resadd;
+           sm  = obj.masksize;
+           % Compute low resolution size
+           origsize = sm - ( sm - 1 ) * res;
+           % Correct for the enlargement
+           if obj.D ==1
+               origsize = origsize - [ 2 * enl, 0 ];
+           else
+               origsize = origsize - 2 * enl;
+           end
+       end
+       
        %% Functions for class Field
        %-------------------------------------------------------------------
 
        % Function converting a ConvField of derivetype 0 and a ConvField
        % of derivetype 1 into a VoxelManifold
-       obj = ConvFields2VoxManifold( obj1, obj2 )
+       voxmfd = ConvField2VoxManifold( cfield, dcfield, masked )
        
        % Function to compute the Riemannian metric induced by a convolution
        % field
-       Lambda = Lambda_est( cfield, dcfield )
+       g = Riemmetric_est( cfield, dcfield )
        
        % Function to compute the LKC from a voxel manifold obtained from
        % a convolution field
