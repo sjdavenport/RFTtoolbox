@@ -150,7 +150,6 @@ expanded_lat_data( index{:}, : ) = lat_data.field;
 % Create a ConvField class object with high resolution mask
 cfield = ConvField();
 % Fill the properties
-cfield.lat_data  = lat_data;
 cfield.kernel    = Kernel;
 cfield.enlarge   = enlarge;
 cfield.resadd    = resadd;
