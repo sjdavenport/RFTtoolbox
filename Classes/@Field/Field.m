@@ -1,11 +1,12 @@
 classdef Field
-   % Field is a class to make the use of multidimensional arrays, which are
-   % considered to represent a field over a domain easy.
-   %   The class is an object keeping track of the field and further
-   %   important properties of the field like dimensions of the domain and 
-   %   the fiber as well as their size. Moreover, it ensures that all these
-   %   quantities are consistent.
-   %   A complete field object consists of the following fields:
+   % Field is a class making the use of multidimensional arrays, which are
+   % considered to represent a field (or for mathematicians a fiber bundle)
+   % over a domain easy.
+   %   The class is an object keeping track of the field and important
+   %   properties thereof, for example, the dimensions of the domain
+   %   and the fiber as well as their sizes. Moreover, it ensures that all
+   %   these quantities are consistent.
+   %   A complete Field object consists of the following properties:
    %   - field   a T_1 x ... x T_D x F_1 x ... x F_K numeric array
    %             containing the values of the field. The T_1 x ... x T_D
    %             part is assumed to be the domain of the field and the
@@ -13,12 +14,12 @@ classdef Field
    %             of dimension T_1 x ... x T_D x {1} is a scalar field.
    %             Multiple observations of a scalar field are
    %             represented as a T_1 x ... x T_D x F_1 field, where
-   %             F_1 denotes the sample size.
+   %             F_1 > 1 denotes the number of observations.
    %   - mask    a T_1 x ... x T_D logical array. Denoting a
    %             restriction of the field to a reduced domain given by
    %             the true values in mask. The dependend field 'masked'
-   %             indicates whether the 'field' field has only all NaN,
-   %             0 or -Inf for the values -Inf. Transforming a
+   %             indicates whether the field property has only all NaN,
+   %             0 or -Inf for the values outside the mask. Transforming a
    %             non-masked to a masked Field object can be achieved
    %             by the function Masked().
    %   - xvals   a 1 x D cell array which contains in the d-th entry
@@ -27,22 +28,22 @@ classdef Field
    %             grid, i.e. it is defined on the cartesian product 
    %             xvals{1} x ... x xvals{D}.
    properties
-      field  {mustBeNumeric} % an array representing a field
-      mask         % a logical array indicating which elements of the domain are inside the domain of the field
-      xvals cell   % a cell of size 1 x length(size(mask)) containing the coordinates of the voxels for each dimension
+      field  {mustBeNumeric} % an T_1 x ... x T_D x F_1 x ... x F_K numeric array representing the values of the field.
+      mask         % a T_1 x ... x T_D logical array indicating which voxels belong to the domain of the field.
+      xvals cell   % a 1 x D cell containing the d-th coordinate of each the voxels.
    end
    properties ( Dependent, Access = public ) 
-      fieldsize  % the size of the Field
-      D        % the dimension of the domain 
-      masksize % the size of the domain of the field
-      fiberD   % the dimension of the fiber above a point
-      fibersize  % the size of the fiber above a point
-      masked     % 1 if the field is masked, zero else
+      fieldsize  % the size of the Field, i.e., [ T_1, ..., T_D, F_1, ..., F_K ].
+      D          % the dimension of the domain, i.e., D.
+      masksize   % the size of the domain of the field, i.e., [ T_1, ..., T_D ].
+      fiberD     % the dimension of the fiber above a point, i.e., K.
+      fibersize  % the size of the fiber above a point, i.e., [ F_1, ..., F_K ].
+      masked     % 1 if the field is masked, else 0.
    end
    properties ( Dependent, Access = private ) 
       dim_xvals  % dimension obtained from the provided xvals vector
-      complete   % indicates whether 'field', 'mask' and 'xvals' fields are
-                 % all set to compatible values.
+      complete   % indicates whether 'field', 'mask' and 'xvals' properties
+                 % are all set to compatible non-default values.
    end
    methods
        %% Validate compatibility of the properties
@@ -262,7 +263,7 @@ classdef Field
           % object.
           % Default values for mask is always true( masksize ) and default
           % for xvals is { 1:masksize(1), ..., 1:masksize(D) }. If not an
-          % input the field 'field' is always empty and needs to be
+          % input the property 'field' is always empty and needs to be
           % specified by the user.
           %----------------------------------------------------------------
           % ARGUMENTS
@@ -446,12 +447,178 @@ classdef Field
                 end
             end
        end
-       
+       %% Plot functions for class Field
+       %-------------------------------------------------------------------
        % Redefine plot
        out = plot( field, slice )
            
        % Redefine imagesc
        out = imagesc( field, slice, subj )
+       
+       %% Algebra Functions for class Field
+       %-------------------------------------------------------------------     
+       % Redefine matrix multiplication
+       out = mtimes( obj, v )
+       
+       % Redefine .* operator
+       function out = times( obj1, obj2 )
+           if isa( obj1, 'Field' )
+               A = obj1.field;
+               out = obj1;
+           else
+               A = obj1;
+           end
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+           
+           out.field = A .* B;
+       end
+       
+       % Redefine ./ operator
+       function out = rdivide( obj1, obj2 )
+           if isa( obj1, 'Field' )
+               A = obj1.field;
+               out = obj1;
+           else
+               A = obj1;
+           end
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+           
+           out.field = A ./ B;
+       end
+       
+       % Redefine .\ operator
+       function out = ldivide( obj1, obj2 )
+           if isa( obj1, 'Field' )
+               A = obj1.field;
+               out = obj1;
+           else
+               A = obj1;
+           end
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+           
+           out.field = A .\ B;
+       end
+       
+       % Redefine .^ operator
+       function out = power( obj1, obj2 )
+           out = obj1;
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+                      
+           out.field = obj1.field.^B;
+       end
+       
+       % Redefine addition
+       function out = plus( obj1, obj2 )
+           if isa( obj1, 'Field' )
+               A = obj1.field;
+               out = obj1;
+           else
+               A = obj1;
+           end
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+           
+           out.field = A + B;
+       end
+       
+       % Redefine subtraction
+       function out = minus( obj1, obj2 )
+           if isa( obj1, 'Field' )
+               A = obj1.field;
+               out = obj1;
+           else
+               A = obj1;
+           end
+           
+           if isa( obj2, 'Field' )
+               B = obj2.field;
+               out = obj2;
+           else
+               B = obj2;
+           end
+           
+           out.field = A - B;
+       end
+       
+       % Redefine equal
+       function out = eq( obj1, obj2 )
+           out = [ false, false, false ];
+           
+           if obj1.D == obj2.D && obj1.fiberD == obj2.fiberD
+               if all( obj1.masksize == obj2.masksize ) ...
+                        &&  all( obj1.fibersize == obj2.fibersize )
+                   if all( obj1.field == obj2.field )
+                       out(1) = true;
+                   end
+
+                   if all( obj1.mask == obj2.mask )
+                       out(2) = true;
+                   end
+
+                   for d = 1:obj1.D
+                        if all( obj1.xvals{d} == obj2.xvals{d} )
+                            out(3) = true;
+                        end 
+                   end
+               end
+           end
+       end
+       
+       % Define a subfield function
+       function out = Subfield( obj, S )
+            S1  = S(1:obj.D);
+            out = Field( obj.mask( S1{:} ) );
+            out.field = obj.field( S{:} );
+            for d = 1:obj.D
+                val = obj.xvals{d}(S{d});
+                if ischar( S{d} )
+                    val = val';
+                end
+                out.xvals{d} = val;
+            end
+       end
+       
+       % Redefine a squeeze function
+       function out = squeeze( obj )
+            out       = Field( squeeze( obj.mask ) );
+            out.field = squeeze( obj.field );
+            ind       = false( [ 1 obj.D ] );
+            for d = 1:obj.D
+                if length( obj.xvals{d} ) > 1
+                    ind( d ) = true;
+                end
+            end
+            out.xvals = obj.xvals( ind );
+       end
        
    end
 end
