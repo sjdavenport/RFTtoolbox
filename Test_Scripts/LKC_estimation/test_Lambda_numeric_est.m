@@ -56,6 +56,19 @@ onetwo_entry = Lambdahat_conv(5:45,5:45,5:45,1,2);
 Lambda_theory(1,2)
 mean(onetwo_entry(:))
 
+%% Visual comparison to Lambda_conv_est
+FWHM = 3; sample_size = 50; Dim = [5,5]; mask = true(Dim); resadd = 11;
+nsubj = 1000; lat_data = normrnd(0,1,[Dim, nsubj]);
+a = 2; b = 2;
+ghat = Lambda_numeric_est( lat_data, FWHM, resadd );
+first_entry = ghat(:,:,a,b);
+mean(ghat(:))
+subplot(2,1,1);imagesc(first_entry); title('Lambda num est')
+ghat = Lambda_conv_est( lat_data, FWHM, resadd );
+first_entry = ghat(:,:,a,b);
+mean(ghat(:))
+subplot(2,1,2); imagesc(first_entry); title('Lambda conv est')
+
 %% %% Comparison to Lambda_conv_est
 %% 1D example
 FWHM  = 10;

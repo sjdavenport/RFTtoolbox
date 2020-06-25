@@ -81,8 +81,8 @@ end
 
 if ~exist('lkc_est_version', 'var')
     lkc_est_version = 'conv';
-elseif ~strcmp(lkc_est_version, 'conv') || ~strcmp(lkc_est_version, 'hpe')
-    error('lck_est_version must be conv or hpe');
+elseif ~(strcmp(lkc_est_version, 'conv') || strcmp(lkc_est_version, 'hpe'))
+    error('lkc_est_version must be conv or hpe');
 end
 
 %%  Main Function Loop
@@ -120,11 +120,11 @@ for b = 1:niters
         LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
     elseif strcmp(lkc_est_version, 'hpe')
         % Need to check this is still the right format for the HPE estimate!
-        LKCs  = LKC_HP_est( smooth_data, mask, 1 );
+        LKCs  = LKC_HP_est( smooth_data, mask_hr, 1 );
     end
     
     % Convert the LKCs to resels
-    resel_vec = LKC2resel(LKCs.hatL, LKCs.L0);
+    resel_vec = LKC2resel(LKCs);
     
     % Calculate the RFT threshold using SPM
     threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
@@ -167,6 +167,9 @@ for b = 1:niters
 %     if max_tfield_at_lms < max_tfield_finelat
 %         disp('Here there is an issue');
 %     end
+    if max_tfield_at_lms > max_tfield_finelat + 0.2
+       disp('weird') 
+    end
 
     if max_tfield_at_lms > threshold
         nabovethresh = nabovethresh + 1;
@@ -188,7 +191,7 @@ for b = 1:niters
     if do_spm
         % Calculate the resels under the assumption of stationarity
         if D == 3
-            lat_FWHM_est = est_smooth(smooth_data, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+            lat_FWHM_est = est_smooth(smooth_data, mask_hr); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
             spm_resel_vec = spm_resels_vol(mask,lat_FWHM_est);
         elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
             lat_FWHM_est = est_smooth(smooth_data, mask_hr); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
@@ -203,15 +206,14 @@ for b = 1:niters
         else
             max_tfield_at_lms = max_tfield_finelat;
         end
-        
         if max_tfield_at_lms > threshold_spm
-            nabovethresh_spm = nabovethresh + 1;
+            nabovethresh_spm = nabovethresh_spm + 1;
         end
         if  max_tfield_lat > threshold_spm
-            nabovethresh_lat_spm = nabovethresh_lat + 1;
+            nabovethresh_lat_spm = nabovethresh_lat_spm + 1;
         end
-        if  max_tfield_lat > threshold_spm
-            nabovethresh_finelat_spm = nabovethresh_finelat + 1;
+        if  max_tfield_finelat > threshold_spm
+            nabovethresh_finelat_spm = nabovethresh_finelat_spm + 1;
         end
     end
 end
