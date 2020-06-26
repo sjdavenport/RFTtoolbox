@@ -568,6 +568,44 @@ classdef Field
            
            out.field = A - B;
        end
+
+       % Redefine cross
+       function obj = cross( obj1, obj2 )
+           obj = obj1;
+           obj.field = cross( obj1.field, obj2.field );
+       end
+       
+       % Redefine sqrt
+       function obj = sqrt( obj )
+           obj.field = sqrt( obj.field );
+       end
+       
+       % Redefine transpose
+       function obj = transpose( obj )
+           fD = obj.fiberD;
+           if fD > 2
+               error( "Transpose is only defined for a matrix or vector" )
+           end
+           
+           if fD == 1
+               obj.field = reshape( obj.field,...
+                                    [ obj.masksize( 1:obj.D ), 1, obj.fibersize ] );
+           elseif fD == 2 && obj.fibersize(1) == 1
+               obj = squeeze( obj );
+           else
+           end
+               
+       end
+       
+       % Define inverse of symmetric 2x2 or 3x3 matrix
+       function obj = invsym( obj )
+           obj.field = invsym( obj.field );
+       end
+       
+       % Define acos
+       function obj = acos( obj )
+           obj.field = acos( obj.field );
+       end
        
        % Redefine equal
        function out = eq( obj1, obj2 )
@@ -598,7 +636,7 @@ classdef Field
             S1  = S(1:obj.D);
             out = Field( obj.mask( S1{:} ) );
             out.field = obj.field( S{:} );
-            for d = 1:obj.D
+            for d = 1:out.D
                 val = obj.xvals{d}(S{d});
                 if ischar( S{d} )
                     val = val';
@@ -618,6 +656,26 @@ classdef Field
                 end
             end
             out.xvals = obj.xvals( ind );
+       end
+       
+       % Collapse: a function collapsing either the fiber or the domain to
+       % one dimension
+       function out = collapse( obj, part )
+            if ~exist( 'part', 'var' )
+                part = "domain";
+            end
+            
+            if strcmp( part, 'domain' )
+                out = Field( obj.mask(:) );
+                out.field = reshape( obj.field,...
+                                     [ prod( obj.masksize ), obj.fibersize ] );
+            elseif strcmp( part, 'fiber' )
+                out = obj;
+                out.field = reshape( obj.field,...
+                                     [ obj.masksize, prod( obj.fibersize ) ] );
+            else
+                error( "You need to choose a valid part to collapse. Either domain or fiber." )
+            end
        end
        
    end
