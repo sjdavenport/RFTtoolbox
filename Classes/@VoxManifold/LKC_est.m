@@ -47,7 +47,6 @@ mask    = voxmfd.mask;
 xvals   = voxmfd.xvals;
 g       = voxmfd.g.field;
 D       = voxmfd.D;
-resadd  = voxmfd.resadd;
 clear voxmfd
 
 % Allocate vector for Lipschitz Killing curvature
@@ -161,7 +160,7 @@ switch D
         % oriented always has 1/4 or 3/4 of its vectors pointing inside the
         % voxel manifold. I think that should be the case, yet needs to be
         % carefully considered.
-        [ bdry, weights ] = bndry_voxels( mask );
+        [ bdry, weights, eucangle ] = bndry_voxels( mask );
         
         %%% Calculate LKC 2;
         % Integrate volume form of faces to get LKC2
@@ -181,18 +180,24 @@ switch D
                               .* weights.yz(:) ) * dy * dz / 2;
         
         %%% Calculate LKC 1
-        % Integrate volume form of edges to get LKC2
+        % Get the opening angles with respect to the metric g
+        angle = IntegralAlpha( VoxManifold( Field( g, 3 ) ),...
+                                       bdry, eucangle );
+
+        % Integrate volume form of edges to get LKC2        
         weights.x = weights.x( weights.x ~= 0 );        
         L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
-                              .* weights.x(:) ) * dx;
+                              .* weights.x .* angle.x ) * dx;
+                          
+        weights.y = weights.y( weights.y ~= 0 );
+        L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
+                              .* weights.y .* angle.y ) * dy;
                           
         weights.z = weights.z( weights.z ~= 0 );
         L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
-                              .* weights.z(:) ) * dz;
+                              .* weights.z .* angle.z ) * dz;
+        L(1) = L(1) / 2 / pi;
 
-        weights.y = weights.y( weights.y ~= 0 );
-        L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
-                              .* weights.y(:) ) * dy;
 end
 %%%%%% END estimate the LKCs in different dimensions
            
