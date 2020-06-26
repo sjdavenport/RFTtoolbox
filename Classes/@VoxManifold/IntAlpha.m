@@ -1,10 +1,11 @@
-function F = Alpha( voxmfd, type )
+function F = IntAlpha( voxmfd, type )
 % Alpha( voxmfd, type ) computes a field .
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
 %  voxmfd  an object of class VoxManifold
+%  type    type of edge considered 'x', 'y' or 'z'
 %--------------------------------------------------------------------------
 % OUTPUT
 %   F   
@@ -23,6 +24,15 @@ function F = Alpha( voxmfd, type )
 
 %% Main function
 %--------------------------------------------------------------------------
+
+switch type
+    case 'x'
+        
+    case 'y'
+        
+    case 'z'
+        
+end
 
 F = v.' * ( voxmfd.g * w );
            
