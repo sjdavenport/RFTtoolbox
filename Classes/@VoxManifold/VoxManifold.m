@@ -375,7 +375,9 @@ classdef VoxManifold
        
        %% Functions for class VoxManifold
        %-------------------------------------------------------------------
+       [ L, L0 ] = LKC_est( voxmfd )
        
+       F = InnerProd( voxmfd, v, w )
        
    end
 end
