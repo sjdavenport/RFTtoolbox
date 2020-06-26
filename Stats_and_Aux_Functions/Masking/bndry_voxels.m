@@ -1,4 +1,4 @@
-function [ bndry, weights ] = bndry_voxels( mask, type )
+function [ bndry, weights, angle ] = bndry_voxels( mask, type )
 % This function computes boundary voxels and weights for a given mask. Note
 % that the weights only make sense for masks which are resolution increased
 % by an odd number using mask_highres.m.
@@ -252,6 +252,7 @@ end
 % Preallocate the structures for the output
 bndry   = struct();
 weights = struct();
+angle   = struct();
 
 % Compute the full boundary
 bndry.full = ( dilate_mask( ~larger_image, 1 ) ) & larger_image;
@@ -378,39 +379,45 @@ if D == 2 || D == 3
                 % Get the x edges
                 bndry.x = bndry.xy & bndry.xz;
  
-                % Get the neighbours. Note that the openeing angle on an
-                % edge is either 3/4 or 1/4
-                weights.x = zeros( s_mask + 2);
+                % Get the angle of the edge in euclidean space.
+                % Note that the openeing angle is either 3/4 or 1/4
+                angle.x = zeros( s_mask + 2);
                 for x = 1:(s_mask(1)+2)
-                    weights.x( x, :, : ) = getweights( squeeze(...
+                    angle.x( x, :, : ) = getweights( squeeze(...
                                                     larger_image( x, :, : ) ) );
                 end
-                weights.x = weights.x( locs{:} );
-                weights.x( ~bndry.x ) = 0;
-                weights.x( weights.x == 0.5 ) = 1/4;
-                weights.x( weights.x == 1   ) = 3/4;
-                                 
+                angle.x = angle.x( locs{:} );
+                angle.x( ~bndry.x ) = 0;
+                angle.x( angle.x == 0.5 | angle.x == 0.25 ) = 2 * pi / 4;
+                angle.x( angle.x == 1   | angle.x == 0.75 ) = 2 * pi * 3 / 4;
+
+                % Get the integration weights
+                weights.x = zeros( s_mask );
+                weights.x( bndry.x ) = 1;
                 % Find the corners of each edge and halft its weight
                 weights.x( bndry.xy & bndry.xz & bndry.yz ) = ...
-                weights.x( bndry.xy & bndry.xz & bndry.yz ) / 2; 
+                weights.x( bndry.xy & bndry.xz & bndry.yz ) / 2;
             end
             
             if any( strcmp( type, "y" ) )
                 % Get the y edges
                 bndry.y = bndry.xy & bndry.yz;
                 
-                % Get the neighbours. Note that the openeing angle on an
-                % edge is either 3/4 or 1/4
-                weights.y = zeros( s_mask + 2);
+                % Get the angle of the edge in euclidean space.
+                % Note that the openeing angle is either 3/4 or 1/4
+                angle.y = zeros( s_mask + 2);
                 for y = 1:( s_mask(1) + 2 )
-                    weights.y( :, y, : ) = getweights( squeeze(...
+                    angle.y( :, y, : ) = getweights( squeeze(...
                                                     larger_image( :, y, : ) ) );
                 end
-                weights.y = weights.y( locs{:} );
-                weights.y( ~bndry.y ) = 0;
-                weights.y( weights.y == 0.5 ) = 1/4;
-                weights.y( weights.y == 1   ) = 3/4;
-                 
+                angle.y = angle.y( locs{:} );
+                angle.y( ~bndry.y ) = 0;
+                angle.y( angle.y == 0.5 | angle.y == 0.25 ) = 2 * pi / 4;
+                angle.y( angle.y == 1   | angle.y == 0.75 ) = 2 * pi * 3 / 4;
+                
+                % Get the integration weights
+                weights.y = zeros( s_mask );
+                weights.y( bndry.y ) = 1;              
                 % Find the corners of each edge and halft its weight
                 weights.y( bndry.xy & bndry.xz & bndry.yz ) = ...
                 weights.y( bndry.xy & bndry.xz & bndry.yz ) / 2;  
@@ -420,18 +427,21 @@ if D == 2 || D == 3
                 % Get the z edges
                 bndry.z = bndry.yz & bndry.xz;
                  
-                % Get the neighbours. Note that the openeing angle on an
-                % edge is either 3/4 or 1/4
-                weights.z = zeros( s_mask + 2);
+                % Get the angle of the edge in euclidean space.
+                % Note that the openeing angle is either 3/4 or 1/4
+                angle.z = zeros( s_mask + 2);
                 for z = 1:(s_mask(1)+2)
-                    weights.z( :, :, z ) = getweights( squeeze(...
+                    angle.z( :, :, z ) = getweights( squeeze(...
                                                 larger_image( :, :, z ) ) );
                 end
-                weights.z = weights.z( locs{:} );
-                weights.z( ~bndry.z ) = 0;
-                weights.z( weights.z == 0.5 ) = 1/4;
-                weights.z( weights.z == 1   ) = 3/4;
-                 
+                angle.z = angle.z( locs{:} );
+                angle.z( ~bndry.z ) = 0;
+                angle.z( angle.z == 0.5 | angle.z == 0.25 ) = 2 * pi / 4;
+                angle.z( angle.z == 1   | angle.z == 0.75 ) = 2 * pi * 3 / 4;
+
+                % Get the integration weights
+                weights.z = zeros( s_mask );
+                weights.z( bndry.z ) = 1;
                 % Find the corners of each edge and halft its weight
                 weights.z( bndry.xy & bndry.xz & bndry.yz ) = ...
                 weights.z( bndry.xy & bndry.xz & bndry.yz ) / 2;
