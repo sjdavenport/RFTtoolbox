@@ -379,5 +379,7 @@ classdef VoxManifold
        
        F = InnerProd( voxmfd, v, w )
        
+       angles = IntegralAlpha( voxmfd, mask, angle )
+       
    end
 end
