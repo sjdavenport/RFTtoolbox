@@ -10,15 +10,17 @@ classdef ConvField < Field
    %   - enlarge    an integer denoting by how many voxels in high resolution
    %                the mask is dilated. Note that this allows for different
    %                interpretations of the domains of the convolution field.
-   %                We recommend to only consider enlarge = 0, i.e.
+   %                We recommend to use enlarge = ceil( resadd
+   %                / 2 ), which means that each voxel of the original mask
+   %                is considered to be in the center of a cube, which defines
+   %                the underlying manifold. In this case resadd needs to be
+   %                odd in order to ensure that the boundary voxels of the 
+   %                high resolution mask are samples from the boundary.
+   %                Another canonical choice is enlarge = 0, i.e.
    %                interpreting the boundary voxels of the original mask as
    %                being on the boundary of the domain of the convolution
-   %                field. Another canonical choice is enlarge = ceil( resadd
-   %                / 2 ), which means that each voxel of the original mask is
-   %                considered to be in the center of a cube, which defines
-   %                the manifold. In this case resadd needs to be odd in order
-   %                to ensure that the boundary voxels of the high resolution
-   %                mask are samples from the boundary.
+   %                field. This has the advantage that resadd can be
+   %                arbitrary.
    %   - derivtype  an integer denoting whether the original field is
    %                stored or derivatives thereof.
    %   - kernel     an object of class SepKernel, which was used to generate
@@ -50,19 +52,26 @@ classdef ConvField < Field
            end
        end
        
-       %% Functions for class Field
+       %% Functions for class ConvField
        %-------------------------------------------------------------------
+       
+       % Function for checking whether two ConvField objects are compatible
+       function val = iscompatible( obj1, obj2 )
+            val = false;
+            if obj1.D == obj2.D
+                if all( obj1.masksize == obj2.masksize )
+                    val = true;
+                    for d = 1:obj1.D
+                        if ~all( obj1.xvals{ d } == obj2.xvals{ d } )
+                            val = false;
+                        end
+                    end
+                    if obj1.resadd ~= obj2.resadd || obj1.enlarge ~= obj2.enlarge
+                        val = false;
+                    end
+                end
+            end
+       end       
 
-       % Function converting a ConvField of derivetype 0 and a ConvField
-       % of derivetype 1 into a VoxelManifold
-       voxmfd = ConvField2VoxManifold( cfield, dcfield, masked )
-       
-       % Function to compute the Riemannian metric induced by a convolution
-       % field
-       g = Riemmetric_est( cfield, dcfield )
-       
-       % Function to compute the LKC from a voxel manifold obtained from
-       % a convolution field
-       [ L, L0 ] = LKC_voxmfd_est( cfield, dcfield )
    end
 end
