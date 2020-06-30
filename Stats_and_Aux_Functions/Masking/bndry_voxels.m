@@ -48,6 +48,8 @@ function [ bndry, weights, angle, orientation ] = bndry_voxels( mask, type )
 % This function doesn't work for column vectors atm, need to fix it
 % E.g: 
 % mask = true(D,1), bndry_voxels( mask, "full" )
+% Fix the bug for resadd=0 weights, somehow then it might happen that edges
+% do not get half weight since they
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% %% D = 1 
@@ -458,15 +460,16 @@ if D == 2 || D == 3
                 end
                 angle.y = angle.y( locs{:} );
                 angle.y( ~bndry.y ) = 0;
-                angle.y( angle.y == 0.5 | angle.y == 0.25 ) = 2 * pi / 4;
-                angle.y( angle.y == 1   | angle.y == 0.75 ) = 2 * pi * 3 / 4;
                 
                 % Get the integration weights
                 weights.y = zeros( s_mask );
                 weights.y( bndry.y ) = 1;              
                 % Find the corners of each edge and halft its weight
                 weights.y( bndry.xy & bndry.xz & bndry.yz ) = ...
-                weights.y( bndry.xy & bndry.xz & bndry.yz ) / 2;  
+                weights.y( bndry.xy & bndry.xz & bndry.yz ) / 2;
+            
+                angle.y( angle.y == 0.5 | angle.y == 0.25 ) = 2 * pi / 4;
+                angle.y( angle.y == 1   | angle.y == 0.75 ) = 2 * pi * 3 / 4;
             end
             
             if any( strcmp( type, "z" ) )
