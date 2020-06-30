@@ -39,7 +39,7 @@ end
 % Construct VoxManifold object by providing Riemannian metric and resadd
 % and enlarge
 voxmfd = VoxManifold( Riemmetric_est( cfield, dcfield ),...
-                    cfield.resadd, cfield.enlarge );
+                      cfield.resadd, cfield.enlarge );
                 
 % Mask the Field properties in voxmfd, if required.
 if masked
