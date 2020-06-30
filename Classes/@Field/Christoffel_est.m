@@ -1,7 +1,8 @@
 function Gamma = Christoffel_est( field, dfield, d2field )
 % Christoffel_est( field, dfield, d2field ) estimates the Christoffel
 % symbols of the induced Riemannian metric induced by random twice
-% differentiable fields. It uses the analytic formula derived in [1].
+% differentiable fields. It uses the analytic formula derived in 
+% [1, Theorem ???].
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS

@@ -397,7 +397,7 @@ classdef Field
           end
       end
        
-       %% Functions for class Field
+       %% General functions for class Field
        %-------------------------------------------------------------------
 
        % Function for masking data
@@ -447,6 +447,26 @@ classdef Field
                 end
             end
        end
+       
+       %% Functions for Geometry
+       %-------------------------------------------------------------------
+       
+       % Function converting two fields representing the field and its
+       % derivative into a VoxelManifold
+       voxmfd = Field2VoxManifold( field, dfield, masked )
+       
+       % Function computing from two fields representing the field and its
+       % derivative the Riemannian metric induced by the field
+       g = Riemmetric_est( field, dfield )
+
+       % Function computing from a field and its first and 2nd derivatives
+       % the Riemannian metric induced by the field
+       Gamma = Christoffel_est( field, dfield, d2field )
+       
+       % Function to compute the LKC from a voxel manifold obtained from
+       % a convolution field
+       [ L, L0 ] = LKC_voxmfd_est( field, dfield, d2field, version )
+       
        %% Plot functions for class Field
        %-------------------------------------------------------------------
        % Redefine plot
