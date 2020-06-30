@@ -1,4 +1,4 @@
-function [ bndry, weights, angle ] = bndry_voxels( mask, type )
+function [ bndry, weights, angle, orientation ] = bndry_voxels( mask, type )
 % This function computes boundary voxels and weights for a given mask. Note
 % that the weights only make sense for masks which are resolution increased
 % by an odd number using mask_highres.m.
@@ -215,7 +215,7 @@ s_mask = size( mask );
 
 % Get the dimension
 D = length( s_mask );
-if D == 2 && (any(s_mask == 1))
+if D == 2 && ( any( s_mask == 1 ) )
     D = 1;
 end
 
@@ -228,9 +228,9 @@ end
 if ~exist( 'type', 'var' )
    switch D
        case 2
-           type = ["x", "y"];
+           type = [ "x", "y" ];
        case 3
-           type = ["x", "y", "z", "xy", "xz", "yz"];
+           type = [ "x", "y", "z", "xy", "xz", "yz" ];
    end
 end
 
@@ -253,6 +253,7 @@ end
 bndry   = struct();
 weights = struct();
 angle   = struct();
+orientation = struct();
 
 % Compute the full boundary
 bndry.full = ( dilate_mask( ~larger_image, 1 ) ) & larger_image;
@@ -312,7 +313,22 @@ if D == 2 || D == 3
                 % the edges in the plane which belonged to a face and have
                 % been removed
                 bndry.xy = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+                
+                % Get logical field to obtain the orientation array
+                maskp = logical( pad_vals( mask ) );
+                tmp = zeros( s_mask + 2 );
+                tmp( :, :, 1:end-1 ) = bndry.xy( :, :, 1:end-1) &...
+                                                       maskp( :, :, 2:end);
+                tmp = tmp( locs{:} );
+                
+                % Reduce boundary to original size
                 bndry.xy = bndry.xy( locs{:} );
+                
+                % Orientation 1 if euclidean normal points outwards, -1 else
+                orientation.xy = zeros( s_mask );
+                orientation.xy( tmp == 0 ) = 1;
+                orientation.xy( tmp == 1 ) = -1;
+                orientation.xy( ~bndry.xy ) = 0;
                 
                 % Preallocate the weights array
                 weights.xy = zeros( s_mask );
@@ -334,7 +350,22 @@ if D == 2 || D == 3
                 % the edges in the plane which belonged to a face and have
                 % been removed
                 bndry.xz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+                
+                % Get logical field to obtain the orientation array
+                maskp = logical( pad_vals( mask ) );
+                tmp = zeros( s_mask + 2 );
+                tmp( :, 1:end-1, : ) = bndry.xz( :, 1:end-1, :) &...
+                                                       maskp( :, 2:end, : );
+                tmp = tmp( locs{:} );
+                
+                % Reduce boundary to original size
                 bndry.xz = bndry.xz( locs{:} );
+                
+                % Orientation 1 if euclidean normal points outwards, -1 else
+                orientation.xz = zeros( s_mask );
+                orientation.xz( tmp == 0  ) = 1;
+                orientation.xz( tmp == 1  ) = -1;
+                orientation.xz( ~bndry.xz ) = 0;
                 
                 % Preallocate the weights array
                 weights.xz = zeros( s_mask );
@@ -357,7 +388,22 @@ if D == 2 || D == 3
                 % the edges in the plane which belonged to a face and have
                 % been removed
                 bndry.yz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
+
+                % Get logical field to obtain the orientation array
+                maskp = logical( pad_vals( mask ) );
+                tmp = zeros( s_mask + 2 );
+                tmp( 1:end-1, :, : ) = bndry.yz( 1:end-1, :, : ) &...
+                                                       maskp( 2:end, :, : );
+                tmp = tmp( locs{:} );
+                
+                % Reduce boundary to original size
                 bndry.yz = bndry.yz( locs{:} );
+                
+                % Orientation 1 if euclidean normal points outwards, -1 else
+                orientation.yz = zeros( s_mask );
+                orientation.yz( tmp == 0  ) = 1;
+                orientation.yz( tmp == 1  ) = -1;
+                orientation.yz( ~bndry.yz ) = 0;
                 
                 % Preallocate the weights array
                 weights.yz = zeros( s_mask );
@@ -472,7 +518,7 @@ end
 % Make output arrays if type is a string
 if length( type ) == 1
     bndry    = bndry.(type);
-    weights = weights.(type);
+    weights  = weights.(type);
 elseif ~any( strcmp( type, "full" ) )
     bndry = rmfield( bndry, 'full' );
     weights = rmfield( weights, 'full' );
