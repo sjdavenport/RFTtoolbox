@@ -1,34 +1,14 @@
 classdef VoxManifold
    % VoxManifold is a class, which summarizes geometrical information of a
    % manifold defined by voxels.
-   %   A voxel manifold is defined by 
-   %   A complete field object consists of the following fields:
-   %   - field   a T_1 x ... x T_D x F_1 x ... x F_K numeric array
-   %             containing the values of the field. The T_1 x ... x T_D
-   %             part is assumed to be the domain of the field and the
-   %             part F_1 x ... x F_K is considered the fiber. A field
-   %             of dimension T_1 x ... x T_D x {1} is a scalar field.
-   %             Multiple observations of a scalar field are
-   %             represented as a T_1 x ... x T_D x F_1 field, where
-   %             F_1 denotes the sample size.
-   %   - mask    a T_1 x ... x T_D logical array. Denoting a
-   %             restriction of the field to a reduced domain given by
-   %             the true values in mask. The dependend field 'masked'
-   %             indicates whether the 'field' field has only all NaN,
-   %             0 or -Inf for the values -Inf. Transforming a
-   %             non-masked to a masked Field object can be achieved
-   %             by the function Masked().
-   %   - xvals   a 1 x D cell array which contains in the d-th entry
-   %             the grid coordinates for the field. Note that a field
-   %             object currently assumes that it is defined over a
-   %             grid, i.e. it is defined on the cartesian product 
-   %             xvals{1} x ... x xvals{D}.
+   %    It contains the mask, i.e., the points belonging to the manifold.
+   %    Note that the code is ambigious in the sense that the boundary
+   %    voxels of the mask are considered to be on the boundary.
    properties
       mask                 % a logical array indicating which elements define a voxel
       xvals        cell    % the size of the voxel in the different dimensions
       g            Field   % an object of class Field representing the Riemannian metric
-      resadd(1,1)  { mustBeNonnegative, mustBeInteger }
-      enlarge(1,1) { mustBeNonnegative, mustBeInteger }
+      Gamma        Field   % an object containing the Christoffel symbols with respect to g
    end
    properties ( Dependent ) 
       size     % the size of the Field
@@ -306,6 +286,11 @@ classdef VoxManifold
                        xvals{d} = 1:varargin{1}(d);
                   end
                   obj.xvals = xvals;
+                  
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( 0, [ obj.masksize obj.D * [ 1 1 1] ],...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
                 
               elseif iscell( varargin{1} ) % Input is xvals
                   obj.g       = EuclideanMetric( Field( varargin{1} ) );
@@ -314,6 +299,10 @@ classdef VoxManifold
                   obj.xvals = varargin{1};
                   obj.mask  = true( obj.dim_xvals );
                   obj.g     = EuclideanMetric( obj.g, obj.mask );
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
                   
               elseif islogical( varargin{1} ) % Input is mask
                   obj.g       = EuclideanMetric( Field( varargin{1} ) );
@@ -325,6 +314,10 @@ classdef VoxManifold
                        xvals{d} = 1:obj.size(d);
                   end
                   obj.xvals = xvals;
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
                   
               else
                   error( strcat( "Input must be either a cell",...
@@ -337,11 +330,17 @@ classdef VoxManifold
                   obj.mask  = varargin{1};
                   obj.xvals = varargin{2};
                   obj.g     = EuclideanMetric( obj.g, obj.mask );
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
                   
               elseif isa( varargin{1}, 'Field' ) && isnumeric( varargin{2} ) % Input is g and resadd
                   obj         = VoxManifold( varargin{1} );
-                  obj.resadd  = varargin{2};
-                  obj.enlarge = ceil( obj.resadd / 2 );
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
               else
                   error( strcat( "VoxManifold constructor not available",...
                                  " for the chosen input. Please refer to",...
@@ -354,15 +353,20 @@ classdef VoxManifold
                   obj.g     = EuclideanMetric( Field( varargin{1} ) );
                   obj.mask  = varargin{1};
                   obj.xvals = varargin{2};
-                  obj.resadd  = varargin{3};
-                  obj.enlarge = ceil( obj.resadd / 2 );
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
                   
               elseif isa( varargin{1}, 'Field' ) && isnumeric( varargin{2} )...
                                                     && isnumeric( varargin{3} )
                   % Input is g, resadd and enlarge
                   obj         = VoxManifold( varargin{1} );
-                  obj.resadd  = varargin{2};
-                  obj.enlarge = varargin{3};
+                  % Default Christoffelsymbols are zero
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1 ] ), obj.size ,...
+                                                                obj.xvals );
+                  obj.Gamma.mask = obj.mask;
+                  
               else
                   error( strcat( "VoxManifold constructor not available",...
                                  " for the chosen input. Please refer to",...
@@ -375,11 +379,14 @@ classdef VoxManifold
        
        %% Functions for class VoxManifold
        %-------------------------------------------------------------------
+       % Inner integral in the \partial_1 M part of LKC1
+       angles = IntegralAlpha( voxmfd, mask, eucangle )
+       
+       % Estimation of Lipschitz-Killing curvatures
        [ L, L0 ] = LKC_est( voxmfd )
        
+       % Inner product between vector fields
        F = InnerProd( voxmfd, v, w )
-       
-       angles = IntegralAlpha( voxmfd, mask, angle )
        
    end
 end
