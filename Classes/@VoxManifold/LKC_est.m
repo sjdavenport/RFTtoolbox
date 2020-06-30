@@ -1,14 +1,19 @@
-function [ L, L0 ] = LKC_est( voxmfd )
-% LKC_est( voxmfd ) computes the Lipschitz Killing curvatures for a voxel
-% manifold.
-%
-% While 1D and 2D allow for general non-isotropic fields, the estimate in
-% 3D assumes 'local isotropy' for L1. This might be fixed in the future.
-%
+function [ L, L0 ] = LKC_est( voxmfd, version )
+% LKC_est( voxmfd, version ) computes the Lipschitz Killing curvatures for 
+% a voxel manifold for an arbitrary metric g.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  voxmfd  an object of class VoxManifold
+%  voxmfd  an object of class VoxManifold. voxmfd.D < 4.
+%
+% Optional
+%  version a logical/ logical vector. Length depends on voxmfd.D
+%          - D = 1, always true.
+%          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else.
+%          - D = 3, logical of length 3. version(1), indicates whether L2
+%          should be estimated, version(2) whether the first integral is
+%          used in L1 and version(3) whether the second integral is used.
+%       
 %--------------------------------------------------------------------------
 % OUTPUT
 %   L   a 1 x voxmfd.D vector containing the LKCs L1,..., L_voxmfd.D
@@ -16,7 +21,6 @@ function [ L, L0 ] = LKC_est( voxmfd )
 %       equivalently the zeroth LKC.
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - fix local isotropy assumption in L1 by computing the second integral
 %--------------------------------------------------------------------------
 % EXAMPLES
 %
@@ -33,6 +37,16 @@ if voxmfd.D > 3
                    'voxel manifolds has not been implemented yet.' ) )
 end
 
+%% Check optional input and get important constants
+%--------------------------------------------------------------------------
+if ~exist( version, 'var' )
+    if voxmfd.D < 3
+        version = true;
+    else
+        version = true( [ 1 3 ] );
+    end
+end
+
 %% Main function
 %--------------------------------------------------------------------------
 
@@ -47,7 +61,6 @@ mask    = voxmfd.mask;
 xvals   = voxmfd.xvals;
 g       = voxmfd.g.field;
 D       = voxmfd.D;
-clear voxmfd
 
 % Allocate vector for Lipschitz Killing curvature
 L = NaN * ones( [ 1 D ] );
@@ -107,18 +120,20 @@ switch D
         % volume of the boundary voxels needs to be halved, or quartered, etc
         L(2) = sum( vol_form(:) .* weights(:) ) * dx * dy;
             
-        %%% Calculate LKC 1
-        % Find x and y shift boundary voxels, i.e. horizontal boundary
-        % and vertical parts.
-        [ bdry, weights] = bndry_voxels( mask, [ "x", "y" ] );
-        
-        % Integrate using trapozoid rule.
-        % Note that we later need to remove half of the end points value,
-        % of each line segment which are contained in the x and the y shift
-        % boundary. They will be count double otherwise.
-        L(1)  = 0.5 *...
-                ( sum( sqrt( g_xx( bdry.x ) ) .* weights.x( bdry.x ) ) * dx...
-                + sum( sqrt( g_yy( bdry.y ) ) .* weights.y( bdry.y ) ) * dy );
+        %%% Calculate LKC 1       
+        if version(1)
+            % Find x and y shift boundary voxels, i.e. horizontal boundary
+            % and vertical parts.
+            [ bdry, weights] = bndry_voxels( mask, [ "x", "y" ] );
+
+            % Integrate using trapozoid rule.
+            % Note that we later need to remove half of the end points value,
+            % of each line segment which are contained in the x and the y shift
+            % boundary. They will be count double otherwise.
+            L(1)  = 0.5 *...
+                    ( sum( sqrt( g_xx( bdry.x ) ) .* weights.x( bdry.x ) ) * dx...
+                    + sum( sqrt( g_yy( bdry.y ) ) .* weights.y( bdry.y ) ) * dy );
+        end
                                
     case 3
         % Get the voxel grid dimensions after resolution increase
@@ -160,42 +175,102 @@ switch D
         % oriented always has 1/4 or 3/4 of its vectors pointing inside the
         % voxel manifold. I think that should be the case, yet needs to be
         % carefully considered.
-        [ bdry, weights, eucangle ] = bndry_voxels( mask );
+        [ bdry, weights, eucangle, orientation ] = bndry_voxels( mask );
         
         %%% Calculate LKC 2;
-        % Integrate volume form of faces to get LKC2
-        weights.xy = weights.xy( weights.xy ~= 0 );        
-        L(2) = sum( sqrt( max( g_xx( bdry.xy ) .* g_yy( bdry.xy )...
-                              - g_xy( bdry.xy ).^2, 0 ) )...
-                              .* weights.xy(:) ) * dx * dy / 2;
-                          
+        % Weights for integration
+        weights.xy = weights.xy( weights.xy ~= 0 );
         weights.xz = weights.xz( weights.xz ~= 0 );
-        L(2) = L(2) + sum( sqrt( max( g_xx( bdry.xz ) .* g_zz( bdry.xz )...
-                              - g_xz( bdry.xz ).^2, 0 ) )...
-                              .* weights.xz(:) ) * dx * dz / 2;
-
         weights.yz = weights.yz( weights.yz ~= 0 );
-        L(2) = L(2) + sum( sqrt( max( g_yy( bdry.yz ) .* g_zz( bdry.yz )...
-                              - g_yz( bdry.yz ).^2, 0 ) )...
-                              .* weights.yz(:) ) * dy * dz / 2;
+        
+        % Volume form on boundaries
+        vol_xy = sqrt( max( g_xx( bdry.xy ) .* g_yy( bdry.xy )...
+                              - g_xy( bdry.xy ).^2, 0 ) );
+        vol_xz = sqrt( max( g_xx( bdry.xz ) .* g_zz( bdry.xz )...
+                              - g_xz( bdry.xz ).^2, 0 ) );
+        vol_yz = sqrt( max( g_yy( bdry.yz ) .* g_zz( bdry.yz )...
+                              - g_yz( bdry.yz ).^2, 0 ) );
+        if version(1)                  
+            % Integrate volume form of faces to get LKC2
+            L(2) =   sum( vol_xy .* weights.xy(:) ) * dx * dy / 2 ...                        
+                   + sum( vol_xz .* weights.xz(:) ) * dx * dz / 2 ...
+                   + sum( vol_yz .* weights.yz(:) ) * dy * dz / 2;
+        end
         
         %%% Calculate LKC 1
         % Get the opening angles with respect to the metric g
-        angle = IntegralAlpha( VoxManifold( Field( g, 3 ) ),...
-                                       bdry, eucangle );
+        angle = IntegralAlpha( voxmfd, bdry, eucangle );
+        clear eucangle
 
-        % Integrate volume form of edges to get LKC2        
-        weights.x = weights.x( weights.x ~= 0 );        
-        L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
-                              .* weights.x .* angle.x ) * dx;
-                          
-        weights.y = weights.y( weights.y ~= 0 );
-        L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
-                              .* weights.y .* angle.y ) * dy;
-                          
-        weights.z = weights.z( weights.z ~= 0 );
-        L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
-                              .* weights.z .* angle.z ) * dz;
+        % Integrate volume form of edges against the internal cutting
+        % angles with orthogonal plane
+        if version(2)
+            weights.x = weights.x( weights.x ~= 0 );        
+            L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
+                                  .* weights.x .* angle.x ) * dx;
+
+            weights.y = weights.y( weights.y ~= 0 );
+            L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
+                                  .* weights.y .* angle.y ) * dy;
+
+            weights.z = weights.z( weights.z ~= 0 );
+            L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
+                                  .* weights.z .* angle.z ) * dz;
+        end
+                       
+        % Integrate volume form of faces versus the trace of the shape operator
+        % x-y faces
+        if version(3)
+            for type = ["xy", "xz", "yz"]
+                % Order needs to ensure that E_k x E_l = E_m
+                switch type
+                    case "xy"
+                        k = 1;
+                        l = 2;
+                        dVol = dx * dy;
+                    case "xz"
+                        k = 3;
+                        l = 1;
+                        dVol = dx * dz;
+                    case "yz"
+                        k = 2;
+                        l = 3;
+                        dVol = dy * dz;
+                end
+                
+                % Get the orthonormal frame with first two vectors embedded
+                % into the type-face and picking the relevant coordinates
+                [ U, V, W ] = OrthNormFrame( voxmfd, [1 2 3], bdry.(type), 1 );
+                Uk = Subfield( U, { ':', k} );
+                clear U
+                Vk = Subfield( V, { ':', k} );
+                Vl = Subfield( V, { ':', l} );
+                clear V
+
+                % Get the vectors derived from the Christoffel symbols
+                Gammakk = squeeze( collapse( ...
+                                Subfield( voxmfd.Gamma, { ':', ':', ':', k, k, ':'} )...
+                           ) );
+                Gammakk = Subfield( Gammakk, { bdry.(type)(:), ':' } );
+                Gammall = squeeze( collapse( ...
+                                Subfield( voxmfd.Gamma, { ':', ':', ':', l, l, ':'} )...
+                           ) );
+                Gammall = Subfield( Gammall, { bdry.(type)(:), ':' } );
+                Gammakl = squeeze( collapse( ...
+                                Subfield( voxmfd.Gamma, { ':', ':', ':', k, l, ':'} )...
+                           ) );
+                Gammakl = Subfield( Gammakl, { bdry.(type)(:), ':' } );
+
+                % Add the integral part belonging to type-face integrals
+                integrand = ( ( Uk.^2 + Vk.^2 ) .* ( W.' *  Gammakk ) ...
+                                + Vl.^2 .* ( W.' * Gammall ) + Vk .* Vl .* ( W.' * Gammakl ) )...
+                                       .* orientation.xy(bdry.xy(:)) .* vol_xy;
+
+                L(1) = L(1) + sum( integrand.field ) * dVol;
+            end
+        end
+        
+        % Get the correct scaling
         L(1) = L(1) / 2 / pi;
 
 end
