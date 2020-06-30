@@ -6,21 +6,19 @@ function F = InnerProd( voxmfd, v, w )
 % ARGUMENTS
 % Mandatory
 %  voxmfd  an object of class VoxManifold
+%  v       an object of class Field with fibersize = voxmfd.D
+%  w       an object of class Field with fibersize = voxmfd.D
 %--------------------------------------------------------------------------
 % OUTPUT
 %   F   an object of class field representing the scalar field obtained by
 %       v.' * voxmfd.g * w
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - fix local isotropy assumption in L1 by computing the second integral
 %--------------------------------------------------------------------------
 % EXAMPLES
 %
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
-%--------------------------------------------------------------------------
-
-%% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
 %% Main function
