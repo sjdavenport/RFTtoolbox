@@ -39,7 +39,7 @@ end
 
 %% Check optional input and get important constants
 %--------------------------------------------------------------------------
-if ~exist( version, 'var' )
+if ~exist( 'version', 'var' )
     if voxmfd.D < 3
         version = true;
     else
@@ -221,6 +221,10 @@ switch D
         % Integrate volume form of faces versus the trace of the shape operator
         % x-y faces
         if version(3)
+            if isnan( L(1) )
+                L(1) = 0;
+            end
+            
             for type = ["xy", "xz", "yz"]
                 % Order needs to ensure that E_k x E_l = E_m
                 switch type

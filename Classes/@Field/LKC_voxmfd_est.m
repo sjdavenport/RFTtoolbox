@@ -36,8 +36,8 @@ function [ L, L0 ] = LKC_voxmfd_est( field, dfield, d2field, version )
 %% Check and add optional input
 %--------------------------------------------------------------------------
 
-if ~exist( version, 'var' )
-    if voxmfd.D < 3
+if ~exist( 'version', 'var' )
+    if field.D < 3
         version = true;
     else
         version = true( [ 1 3 ] );
@@ -50,7 +50,7 @@ end
 % Construct VoxManifold object by providing Riemannian metric
 voxmfd = VoxManifold( Riemmetric_est( field, dfield ) );
 
-if exist( d2field, 'var' )
+if exist( 'd2field', 'var' )
     voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
 end
 

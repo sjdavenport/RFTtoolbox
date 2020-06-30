@@ -383,7 +383,7 @@ classdef VoxManifold
        angles = IntegralAlpha( voxmfd, mask, eucangle )
        
        % Estimation of Lipschitz-Killing curvatures
-       [ L, L0 ] = LKC_est( voxmfd )
+       [ L, L0 ] = LKC_est( voxmfd, version )
        
        % Inner product between vector fields
        F = InnerProd( voxmfd, v, w )

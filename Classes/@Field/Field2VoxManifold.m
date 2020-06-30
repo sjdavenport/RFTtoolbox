@@ -34,7 +34,7 @@ function voxmfd = Field2VoxManifold( field, dfield, d2field )
 % and enlarge
 voxmfd = VoxManifold( Riemmetric_est( field, dfield ) );
    
-if exist( d2field, 'var' )
+if exist( 'd2field', 'var' )
     voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
 end
 
