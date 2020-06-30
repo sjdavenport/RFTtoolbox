@@ -4,23 +4,22 @@ function angles = IntegralAlpha( voxmfd, mask, eucangle )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  voxmfd  an object of class VoxManifold
+%  voxmfd    an object of class VoxManifold
 %  mask
-%  type    type of edge considered 'x', 'y' or 'z'
+%  eucangle  the euclidean inside opening angles at the edges,
+%            since a voxel manifold is built out of cubes these are either
+%            pi/2 or 3*pi/2
 %--------------------------------------------------------------------------
 % OUTPUT
-%   F   
+%   angles   the inside angles between the voxel manifold and the orthogonal
+%            plane to the edge (wrt voxmfd.g)  
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
-%   - fix local isotropy assumption in L1 by computing the second integral
 %--------------------------------------------------------------------------
 % EXAMPLES
 %
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
-%--------------------------------------------------------------------------
-
-%% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
 %% Main function
