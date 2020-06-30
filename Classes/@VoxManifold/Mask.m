@@ -40,12 +40,13 @@ if any( sMask == 1) && D == 2
     D = 1;
 end
 
-% Mask the field
-obj.g.field = repmat( mask, [ ones( [ 1 D ] ), sField( D+1:end ) ] )...
-                                                            .* obj.g.field;
-
-% Put the mask into the object
-obj.mask = mask;
+% Mask the Riemmanian metric and the Christoffel symbols
 obj.g.mask = mask;
+obj.g = Mask( obj.g );
+obj.Gamma.mask = mask;
+obj.Gamma = Mask( obj.Gamma );
+
+% Put the mask into the voxmanifold
+obj.mask = mask;
 
 return
