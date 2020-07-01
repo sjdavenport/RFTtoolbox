@@ -1,4 +1,4 @@
-function [peaklocs, peakvals] = findconvpeaks_new(lat_data, Kernel, ...
+function [peaklocs, peakvals] = findconvpeaks_old(lat_data, Kernel, ...
         peak_est_locs, field_type, mask, truncation, xvals_vecs )
 % FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
 %                                                  truncation, xvals_vecs )
@@ -172,6 +172,17 @@ end
 
 %%  main function
 %--------------------------------------------------------------------------
+% Define convolution field
+if strcmp(field_type, 'Z')
+    cfield = @(tval) applyconvfield(tval, lat_data, Kernel, mask, ...
+                                                   truncation, xvals_vecs);
+elseif strcmp(field_type, 'T')
+    cfield = @(tval) applyconvfield_t( tval, lat_data, Kernel, ...
+                                            mask, truncation, xvals_vecs );
+end
+
+% Set field that defines the mask
+mfield = @(x) mask_field( x, mask, 0, xvals_vecs );
 
 % masked_field = @(x) mask_field( x, mask, xvals_vecs, 0 ).*cfield(x);
 % masked_field = @(x) cfield(x) + (mask_field( x, mask, xvals_vecs, 0 )-1);
@@ -184,7 +195,7 @@ end
 % end
 
 % If not peak estimates are provided calculate the top ones on the lattice
-if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
+if (D > 1 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
                    [1,1])) && (floor(peak_est_locs(1)) == peak_est_locs(1))
     % Set the number of maxima to define
     numberofmaxima2find = peak_est_locs;
@@ -224,68 +235,27 @@ end
 % Obtain the number of peaks
 npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 
-
-% Set field that defines the mask
-mfield = @(x) mask_field( x, mask, 0, xvals_vecs );
+% Set the default box sizes within which to search for maxima
+% box_sizes = repmat({1}, 1, npeaks);
+% 
+% % Obtain the boundary field (i.e. a field that is 1 if within 0.5 of a
+% % boundary voxel and 0 otherwise)
+% boundary_field =  @(x) mask_field( x, boundary, 0, xvals_vecs );
 [ lowerbounds, upperbounds ] = assign_bounds( peak_est_locs, mfield );
 
-% Find box around peak within which to calculate
-lowerbox = zeros(D,npeaks);
-upperbox = zeros(D,npeaks);
-for I = 1:npeaks
-    lowerbox(:,I) = min(lowerbounds{I}, [], 2);
-    upperbox(:,I) = max(upperbounds{I}, [], 2);
-end
-
-% set truncation distance
-truncation = 4*FWHM2sigma(FWHM);
-
-%%% Note atm assumes the standard xvals_vecs!!!
-
-% Encorporate truncation
-for d = 1:D
-    lowerbox(d,:) = max(lowerbox(d,:)-truncation,xvals_vecs{d}(1));
-    upperbox(d,:) = min(upperbox(d,:)-truncation,xvals_vecs{d}(end));
-end
-lowerbox = floor(lowerbox);
-upperbox = ceil(upperbox);
+% for I = 1:npeaks
+%    if ~isnan(boundary_field(peak_est_locs(:,I)))
+%        box_sizes{I} = 0.5;
+%    end
+% end
 
 % Find local maxima
-for I = 1:npeaks
-    % Define the local xvals_vecs
-    local_xvals_vecs = cell(1,D);
-    for d = 1:D
-        local_xvals_vecs{d} = lowerbox(d,I):upperbox(d,I) + xvals_vecs{d}(1) - 1;
-    end
-    
-    % Define local lat_data subset
-    if D == 1
-        local_lat_data = lat_data(lowerbox(1,I):upperbox(1,I));
-    elseif D == 2
-        local_lat_data = lat_data(lowerbox(1,I):upperbox(1,I),lowerbox(2,I):upperbox(2,I));
-    elseif D == 3
-        local_lat_data = lat_data(lowerbox(1,I):upperbox(1,I),lowerbox(2,I):upperbox(2,I), lowerbox(3,I):upperbox(3,I));
-    end
-    
-    % Define local convolution field (taking truncation = 0 have already
-    % truncated to a small box)
-    if strcmp(field_type, 'Z')
-        cfield = @(tval) applyconvfield(tval, local_lat_data, Kernel, mask, ...
-            0, local_xvals_vecs);
-    elseif strcmp(field_type, 'T')
-        cfield = @(tval) applyconvfield_t( tval, local_lat_data, Kernel, ...
-            mask, 0, local_xvals_vecs );
-    end
-end
+[ peaklocs, peakvals ] = findlms_mod2( cfield, peak_est_locs, lowerbounds, upperbounds );
 
-% Define convolution field
-if strcmp(field_type, 'Z')
-    cfield = @(tval) applyconvfield(tval, lat_data, Kernel, mask, ...
-                                                   truncation, xvals_vecs);
-elseif strcmp(field_type, 'T')
-    cfield = @(tval) applyconvfield_t( tval, lat_data, Kernel, ...
-                                            mask, truncation, xvals_vecs );
-end
+% [ peaklocs, peakvals ] = findlms_mod( cfield, peak_est_locs, lbs, ubs, mfield );
+
+% [ peaklocs, peakvals ] = findlms( cfield, peak_est_locs, box_sizes, mfield );
+% [ peaklocs, peakvals ] = findlms( masked_field, peak_est_locs, box_sizes );
 
 end
 

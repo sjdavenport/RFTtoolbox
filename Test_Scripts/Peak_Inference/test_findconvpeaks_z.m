@@ -16,7 +16,7 @@ findconvpeaks(Y, 3, 1)
 %% 1D with different xvals_vecs
 Y = [1,1,2,2,1,1];
 xvals_vecs = 11:(length(Y)+10);
-findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), -1, xvals_vecs)
+findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), xvals_vecs)
 
 %% 1D multiple peaks
 Y = [1,2,1,1,1,1,2,1];

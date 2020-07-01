@@ -160,14 +160,14 @@ for b = 1:niters
     end
     peaksest2use = peak_est_locs(:, peakvals > (threshold - gap));
     
-    % Convert to a cell array in 1D for input to findconvpeaks
+    % Convert to a cell array in 1D for input to findconvpeaks_old
     if D == 1
         peaksest2use = num2cell(peaksest2use);
     end
     
     % Find the peaks of the convolution t-field
     if ~isempty(peaksest2use)
-        [~, max_tfield_at_lms] = findconvpeaks(lat_data, Kernel, peaksest2use, 'T', mask);
+        [~, max_tfield_at_lms] = findconvpeaks_old(lat_data, Kernel, peaksest2use, 'T', mask);
     else
         max_tfield_at_lms = max_tfield_finelat;
     end
@@ -220,7 +220,7 @@ for b = 1:niters
         
         % Since the threshold 
         if isempty(peaksest2use) && (peakvals(1) > (threshold_spm - gap))
-            [~, max_tfield_at_lms] = findconvpeaks(lat_data, Kernel, peak_est_locs(:,1), 'T', mask, boundary);
+            [~, max_tfield_at_lms] = findconvpeaks_old(lat_data, Kernel, peak_est_locs(:,1), 'T', mask, boundary);
         else
             max_tfield_at_lms = max_tfield_finelat;
         end
