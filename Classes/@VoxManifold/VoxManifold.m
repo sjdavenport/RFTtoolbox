@@ -270,6 +270,12 @@ classdef VoxManifold
                     obj.g = varargin{1};
                     obj.mask = obj.g.mask;
                     obj.xvals = obj.g.xvals;
+                    % Default Christoffelsymbols are zero
+                    obj.Gamma = constfield( zeros( obj.D * [ 1 1 1] ),...
+                                            [ obj.size ],...
+                                              obj.xvals );
+                    obj.Gamma.mask = obj.mask;
+
                 else
                     error( "The input Field object needs to be complete, i.e. all entries must be filled." )
                 end
@@ -288,8 +294,9 @@ classdef VoxManifold
                   obj.xvals = xvals;
                   
                   % Default Christoffelsymbols are zero
-                  obj.Gamma = constfield( 0, [ obj.masksize obj.D * [ 1 1 1] ],...
-                                                                obj.xvals );
+                  obj.Gamma = constfield( zeros( obj.D * [ 1 1 1] ),...
+                                            [ obj.size ],...
+                                              obj.xvals );
                   obj.Gamma.mask = obj.mask;
                 
               elseif iscell( varargin{1} ) % Input is xvals
