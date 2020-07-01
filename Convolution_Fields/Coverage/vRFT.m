@@ -73,7 +73,7 @@ max_finelat = max(tfield_fine(:));
 LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
 
 % Compute the resels from the LKCs (essentially a scaling factor)
-resel_vec = LKC2resel(LKCs.hatL, LKCs.L0);
+resel_vec = LKC2resel(LKCs);
 
 % Calculate the threshold using SPM (for now) 
 threshold = spm_uc_RF(alpha,[1,nsubj-1],'T',resel_vec,1);

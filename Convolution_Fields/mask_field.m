@@ -1,4 +1,4 @@
-function mfield_out = mask_field( x, mask, xvals_vecs, asnan )
+function [mfield_out, ceq] = mask_field( x, mask, asnan, xvals_vecs )
 % MASK_FIELD( x, mask, xvals_vecs, asnan ) generates an indicator of
 % whether a given point x is within 0.5 distance of a voxel that lies in
 % the mask. Note that mask_field (like the applyconvfields) is designed to
@@ -23,7 +23,7 @@ function mfield_out = mask_field( x, mask, xvals_vecs, asnan )
 %               voxels is 1. If only one xval_vec direction is set the
 %               others are taken to range up from 1 with increment given by
 %               the set direction.
-%  asnan        0/1 whether to returns 0s or NaNs outside of the mask.
+%  asnan        0/1 whether to returns -Infs or NaNs outside of the mask.
 %               Default is 1 i.e. to return NaNs.
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -51,11 +51,26 @@ end
 
 % Divide to normalize (as at edges of the box kernel voxels can be counted
 % twice)
-if ~asnan 
-    mfield_out = inf2zero(mfield(x)./mfield(x));
+val = mfield(x);
+if asnan == -1
+    mfield_out = inf2nan(val./val);
+    mfield_out(isnan(mfield_out)) = -1;
+    mfield_out = -mfield_out;
 else
-    mfield_out = inf2nan(mfield(x)./mfield(x)); %Returns NaN outside of the mask!
+    if isinf(asnan)
+%         mfield_out = mfield(x)./mfield(x);
+%         mfield_out(isnan(mfield_out)) = 0.2;
+        mfield_out = nan2inf(val./val,-1);
+    elseif asnan == 0
+        mfield_out = val./val;
+        mfield_out = nan2zero(mfield_out);
+        mfield_out = inf2zero(mfield_out);
+    elseif asnan
+        mfield_out = inf2nan(val./val); %Returns NaN outside of the mask!
+    end
 end
+
+ceq = [];
 
 end
 

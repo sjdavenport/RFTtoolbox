@@ -98,7 +98,7 @@ Dimhr = ( Dim - 1 ) * resadd + Dim + 2*enlarge';
 [maxfineval, maxfineloc ] = max(fine_field(:))
 converted_maxfineloc = convind(maxfineloc, Dimhr);
 
-% Initializes at the max of the fine lattice
+%% Initializes at the max of the fine lattice
 finelatmaxloc = zeros(D,1);
 for d = 1:D
     finelatmaxloc(d) = xvals_vecs{d}(converted_maxfineloc(d));

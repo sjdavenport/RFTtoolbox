@@ -48,12 +48,21 @@ surf(fine_data)
 zlim(zlimits)
 title('Convolution Field')
 
+%% Dealing with the prefab issues
+% smooth_data_prefab = convfield_prefab( lat_data, FWHM, 1, 2)
+% smooth_data_pre = convfield_dep( lat_data, FWHM, 1, 2)
+
 %% Matching to applyconvfield
 cfield = @(x) applyconvfield(x, lat_data, FWHM);
+mask = true(Dim);
+cfieldnotrunc = @(x) applyconvfield(x, lat_data, FWHM, mask, 0);
+
 smooth_data(20,20)
 cfield([20,20]')
+cfieldnotrunc([20,20]')
 smooth_data(1,10)
 cfield([1,10]')
+cfieldnotrunc([1,10]')
 
 %% 2D derivatives
 Dim = [25,25];

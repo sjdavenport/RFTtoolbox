@@ -59,6 +59,11 @@ resadd = 10; fine_eval = convfield_t( lat_data, FWHM, resadd );
 max(fine_eval(:))
 surf(fine_eval)
 
+%% Small 2D application
+Dim = [5,5]; nsubj = 50; lat_data = normrnd(0,1,[Dim,nsubj]); FWHM = 3;
+resadd = 5; tfield = convfield_t( lat_data, FWHM, resadd );
+surf(tfield)
+findconvpeaks(lat_data, FWHM, 1, 'T')
 %% Finding peaks on the boundary
 FWHM = 3; corner_val = 10; mu = [corner_val,1,1;1,1,1;corner_val,1,1]; 
 Dim = size(mu); nsubj = 20; lat_data = mu + randn([Dim, nsubj]);
@@ -118,3 +123,106 @@ mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
 cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
 surf(squeeze(cfield(1,:,:)))
 max(cfield(:))
+
+%% %% Boundary examples
+%% 2D
+FWHM = 3; nsubj = 50; Dim = [5,5]; mask = true(Dim); 
+lat_data = normrnd(0,1,[Dim, nsubj]); niters = 1000; resadd = 1; sresadd = 5;
+[ tfield_lat ] = convfield_t( lat_data, FWHM, 0 );
+% [ tfield_finelat, xvals ] = convfield_t( lat_data, FWHM, resadd );
+[ tfield_superfinelat, xvals ] = convfield_t( lat_data, FWHM, 5 );
+
+[ peak_est_locs, ~, peakvals ] = lmindices(tfield_lat, 3, mask);
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T', mask)
+
+max(tfield_superfinelat(:))
+mask_hr = mask_highres(mask, sresadd);
+[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_superfinelat, 3, mask_hr);
+converted_locs = xvaleval(finemaxlocs, xvals);
+
+%% Initialize on the fine lattice
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, converted_locs(:,1), 'T', mask)
+
+%%
+acf = @(tval) applyconvfield_t( tval, lat_data, FWHM, mask );
+acf([5.5,0.5]')
+
+lb = [0.5,0.5];
+ub = [5.5,5.5];  
+
+% There are no linear constraints, so set those arguments to |[]|. 
+A = [];
+b = [];
+Aeq = [];
+beq = [];  
+
+% Choose an initial point satisfying all the constraints. 
+x0 = peak_est_locs(:,1);  
+
+% options = optimoptions(@fmincon,'Display','off'); % Ensures that no output 
+                                                  % is displayed.
+% options.Algorithm = 'sqp';
+% mask_field( x, mask, xvals_vecs, 0 ) - 0.5;
+
+mfield = @(x) mask_field(x, mask, 1:5, -1);
+
+x = fmincon(@(y)-acf(y),x0,A,b,Aeq,beq,lb,ub,mfield)
+%% 3D
+FWHM = 3; nsubj = 50; Dim = [5,5,5]; mask = true(Dim); 
+lat_data = normrnd(0,1,[Dim, nsubj]); niters = 1000; resadd = 1; sresadd = 9;
+[ tfield_lat, xvals_lat ] = convfield_t( lat_data, FWHM, 1 );
+% [ tfield_finelat, xvals ] = convfield_t( lat_data, FWHM, resadd );
+[ tfield_superfinelat, xvals_super ] = convfield_t( lat_data, FWHM, sresadd );
+
+[ peak_est_locs, ~, peakvals ] = lmindices(tfield_lat, 3, mask_highres(mask, 1));
+peak_est_locs = xvaleval(peak_est_locs, xvals_lat);
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T', mask)
+
+max(tfield_superfinelat(:))
+mask_hr = mask_highres(mask, sresadd);
+[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_superfinelat, 3, mask_hr)
+converted_locs = xvaleval(finemaxlocs, xvals_super);
+
+%% Initialize on the fine lattice
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, converted_locs(:,1), 'T', mask)
+
+%% Test to make sure it's finding the maxima
+niters = 1000;
+for I = 1:niters
+    I
+    FWHM = 3; nsubj = 50; Dim = [5,5,5]; mask = true(Dim);
+    lat_data = normrnd(0,1,[Dim, nsubj]); niters = 1000; resadd = 1; sresadd = 9;
+    [ tfield_lat, xvals_lat ] = convfield_t( lat_data, FWHM, 1 );
+    % [ tfield_finelat, xvals ] = convfield_t( lat_data, FWHM, resadd );
+    [ tfield_superfinelat, xvals_super ] = convfield_t( lat_data, FWHM, sresadd );
+    
+    [ peak_est_locs, ~, peakvals ] = lmindices(tfield_lat, 3, mask_highres(mask, 1));
+    peak_est_locs = xvaleval(peak_est_locs, xvals_lat);
+    [peaklox, peakvals] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T', mask);
+    
+    if max(tfield_superfinelat(:)) > max(peakvals) + 0.01
+        disp('found one')
+        
+        disp('found one')
+    end
+end
+
+%%
+cfield = @(tval) applyconvfield_t( tval, lat_data, FWHM, mask)
+
+cfield(peaklox(:,1))
+cfield(peaklox(:,1)+[0.01,0,0]')
+cfield(peaklox(:,1)+[0,0.01,0]')
+cfield(peaklox(:,1)+[0,0,0.01]')
+
+%%
+mask_hr = mask_highres(mask, 5);
+[ peak_est_locs, ~, peakvals ] = lmindices(tfield_superfinelat, 3, mask_hr);
+
+%%
+[peaklox, peakvals] = findconvpeaks_new(lat_data, FWHM, peak_est_locs, 'T', mask)
+% xvaleval(peak_est_locs(:,1), 
+%%
+%%
+[peaklox, peakvals] = findconvpeaks_new(lat_data, FWHM, [4,1.5,2.5]', 'T', mask)
+
