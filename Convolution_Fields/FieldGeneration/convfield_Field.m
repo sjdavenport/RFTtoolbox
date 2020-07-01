@@ -1,6 +1,5 @@
 function cfield = convfield_Field( lat_data, Kernel, derivtype,resadd,...
                                    lat_masked, enlarge )
-                                               
 % CONVFIELD_FIELD( lat_data, Kernel, resadd, derivtype, enlarge )
 % generates an object of class Field containing the convolution field
 % derived from lattice data smoothed with a seperable kernel.
@@ -30,7 +29,7 @@ function cfield = convfield_Field( lat_data, Kernel, derivtype,resadd,...
 %  resadd     the amount of voxels added equidistantly in between the
 %             existing voxels. Default is 1.
 %  lat_masked a logical, if true lat_data is masked by the provided mask in
-%             the lat_data Field object.  
+%             the lat_data Field object. Default is true.
 %  enlarge    a numeric which must be a positive integer or zero. The
 %             convolution field is computed on a domain enlarged in each
 %             direction by 'enlarge' voxels. Note if resadd ~=0 the added
