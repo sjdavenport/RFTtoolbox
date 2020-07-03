@@ -62,7 +62,7 @@ switch D
     case 1
         
         % Rename the partial derivatives of the convolution field
-        Yx = squeeze( dfield( index{:}, :, 1 ) );
+        Yx  = squeeze( dfield( index{:}, :, 1 ) );
         Yxx = squeeze( d2field( index{:}, :, 1, 1 ) );
         
         clear dfield d2field
@@ -70,9 +70,9 @@ switch D
         % Get the estimates of the covariances
         VY   = var( Y,  0, D+1 );
         
-        CdYY = vectcov( Y, Yx, D+1, 1 );
-        Cd2YY = vectcov( Y, Yxx, D+1, 1 );
-        CdYdY = var( Yx,  0, D+1 );
+        CdYY   = vectcov( Y, Yx, D+1, 1 );
+        Cd2YY  = vectcov( Y, Yxx, D+1, 1 );
+        CdYdY  = var( Yx,  0, D+1 );
         Cd2YdY = vectcov( Yxx, Yx, D+1, 1 );
         
         Gamma.field( index{:}, 1, 1, 1 ) = ...
@@ -211,8 +211,8 @@ switch D
         Cd2YdY( index{:}, 3, 1, 3 ) = Cd2YdY( index{:}, 1, 3, 3 );
         
         Cd2YdY( index{:}, 2, 3, 1 ) = vectcov( Yyz, Yx, D+1, 1 );
-        Cd2YdY( index{:}, 2, 3, 2 ) = vectcov( Yyz, Yy, D+1, 2 );
-        Cd2YdY( index{:}, 2, 3, 3 ) = vectcov( Yyz, Yz, D+1, 3 );
+        Cd2YdY( index{:}, 2, 3, 2 ) = vectcov( Yyz, Yy, D+1, 1 );
+        Cd2YdY( index{:}, 2, 3, 3 ) = vectcov( Yyz, Yz, D+1, 1 );
         Cd2YdY( index{:}, 3, 2, 1 ) = Cd2YdY( index{:}, 2, 3, 1 );
         Cd2YdY( index{:}, 3, 2, 2 ) = Cd2YdY( index{:}, 2, 3, 2 );
         Cd2YdY( index{:}, 3, 2, 3 ) = Cd2YdY( index{:}, 2, 3, 3 );
