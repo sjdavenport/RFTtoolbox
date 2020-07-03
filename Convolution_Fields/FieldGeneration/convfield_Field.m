@@ -167,7 +167,7 @@ if D < 4
     if derivtype == 0
         % calculates the convolution field
         cfield.field = fconv( expanded_lat_data, Kernel.kernel, D,...
-                              Kernel.truncation(1), dx_hr, Kernel.adjust );
+                              Kernel.truncation, dx_hr, Kernel.adjust );
         
     elseif derivtype == 1        
         % preallocate the output field for speed
