@@ -1,17 +1,22 @@
-function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, D, LKC0, type )
+function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, LKC0,...
+                                                      type, df, outfield )
 % EEC( uvals, LKC, D, LKC0, type )
 % calculates the expected Euler characteristic curves for given LKC values
 % at all values uvals
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% uvals	an Nuvals length vector whose entries are the real numbers, where
-%       the EEC is evaluated
-% LKC   an D by N length vector containing N estimates of the Lipschitz
-%       Killing curvatures.
-% D     dimension of the domain
-% LKC0  Euler characteristic of the domain
-% type	string specifying the type of random field the EEC is computed from.
-%       Default option is "gaussian". (later "t","F","") will follow.
+% Mandatory
+%   uvals	an Nuvals length vector whose entries are the real numbers, where
+%           the EEC is evaluated
+%   LKC     an D by N length vector containing N estimates of the Lipschitz
+%           Killing curvatures.
+%   LKC0    Euler characteristic of the domain
+%
+% Optional
+%   type	string specifying the type of random field the EEC is computed from.
+%           Default option is "gaussian". (later "t","F","") will follow.
+%   df      value depends on type
+%           - "t" an numeric the degrees of freedom.
 %--------------------------------------------------------------------------
 % OUTPUT
 % EEC_vals    an Nuvals x N array containing the EEC curves evaluated
@@ -43,20 +48,33 @@ function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, D, LKC0, type 
 %
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
-%
-%%%%%%%%%%%%%% add default values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if nargin < 3
-    LKC0   = 1;
-    type = "gaussian";
-end
-if nargin < 4
+%--------------------------------------------------------------------------
+
+%% Check mandatory input and get important constants
+%--------------------------------------------------------------------------
+
+if ~exist( 'type', 'var' )
     type = "gaussian";
 end
 
-%%%%%%%%%%%%%% constants from input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sLKC = size(LKC);
-N    = sLKC(2);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% main function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+N    = sLKC(1);
+D    = sLKC(2);
+
+%% Check optional input
+%--------------------------------------------------------------------------
+
+if ~exist( 'outfield', 'var' )
+    outfield = 1;
+end
+
+%% Main function
+%--------------------------------------------------------------------------
+
+% Create output field
+EEC_vals = Field( { uvals } );
+
+% Compute the EC curves
 if strcmp( type, "gaussian" )
     % matrix containing the Hermite polynomials evaluated on uvals
     H      = [ ones( 1, length(uvals) ); uvals; ( uvals.^2 - 1 ) ]';
@@ -65,17 +83,35 @@ if strcmp( type, "gaussian" )
                     exp( -uvals.^2/2 ) / (2*pi)^(3/2);...
                     exp( -uvals.^2/2 ) / (2*pi)^(4/2) ]';
     % marginal part of GKF
-    EEC_vals = ( 1 - normcdf( uvals ) )' * LKC0;
+    EEC_vals.field = ( 1 - normcdf( uvals ) )' * LKC0;
+    
+elseif strcmp( type, "t" )
+    if df > 250
+        fac = 1;
+    else
+        fac = gamma( (df + 1) / 2 ) / gamma( df / 2 ) / sqrt(df/2);
+    end
+    
+    % matrix containing the Hermite polynomials evaluated on uvals
+    H      = [ ones( 1, length(uvals) );
+               fac * uvals;
+               ( (df-1) / df * uvals.^2 - 1 ) ]';
+    % matrix containing the  EC densities evaluated on uvals
+    rho    = H .* [ ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(2/2);...
+                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(3/2);...
+                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(4/2) ]';
+    % marginal part of GKF
+    EEC_vals.field = tcdf( uvals, df, 'upper' )' * LKC0;
 end
 
-EEC_vals = EEC_vals + rho(:, 1:D) * LKC;
+EEC_vals.field = EEC_vals.field + rho(:, 1:D) * LKC';
 
 % compute estimated se of EEC estimator and standard error
 if N > 1
     % covariance of LKC estimator
-    Sigma_hat = cov( LKC' );
+    Sigma_hat = cov( LKC );
     % mean of EEC curve
-    mEEC = mean( EEC_vals, 2 );
+    mEEC = mean( EEC_vals, 1 );
     % covariance matrix of EEC curve
     C_hat = rho( :, 1:D ) * Sigma_hat * rho( :, 1:D )';
     % standard error of EEC curve
@@ -85,4 +121,9 @@ else
     EEC_se_hat = NaN;
     mEEC       = EEC_vals;
 end
+
+if ~outfield
+    EEC_vals = EEC_vals.field;
+end
+
 return
