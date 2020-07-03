@@ -38,10 +38,6 @@ if cfield.fibersize == 1
     error( "The cfield input must have more than one observation of a scalar field." )
 end
 
-if cfield.derivtype ~= 0 
-    error( "The cfield must be of derivtype 0." )
-end
-
 
 %%% Check the dcfield input
 if dcfield.fiberD ~= cfield.fiberD + 1 && dcfield.fiberD ~= 1 
@@ -50,10 +46,6 @@ end
 
 if dcfield.fibersize(1) == 1
     error( "The dcfield input must have more than one observation of a scalar field." )
-end
-
-if dcfield.derivtype ~= 1
-    error( "The dcfield must be of derivtype 1." )
 end
 
 %%% Check that cfield and dcfield are compatible
