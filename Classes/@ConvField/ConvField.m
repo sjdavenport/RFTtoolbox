@@ -54,7 +54,22 @@ classdef ConvField < Field
        
        %% Functions for class ConvField
        %-------------------------------------------------------------------
-       
+       function varargout = subsref(obj, s)
+            if strcmp(s(1).type, '()')
+                 ss = s;
+                 ss.subs = s.subs(1:obj.D);
+                 newf = ConvField();
+                 newf.mask = builtin( 'subsref', obj.mask, ss );
+                 newf.resadd = obj.resadd;
+                 newf.xvals = obj.xvals;
+                 newf.enlarge = obj.enlarge;
+                 newf.field = builtin( 'subsref', obj.field, s );
+                 varargout{1} = newf;
+            else
+                 [varargout{1:nargout}] = builtin('subsref', obj, s);
+            end
+       end
+        
        % Function for checking whether two ConvField objects are compatible
        function val = iscompatible( obj1, obj2 )
             val = false;
