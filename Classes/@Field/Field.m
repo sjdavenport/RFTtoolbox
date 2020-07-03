@@ -343,7 +343,7 @@ classdef Field
               elseif iscell( varargin{1} ) % Input is xvals
                   obj.mask  = true;
                   obj.xvals = varargin{1};
-                  obj.mask  = true( obj.dim_xvals );
+                  obj.mask  = true( [ obj.dim_xvals, 1] );
                   
               elseif islogical( varargin{1} ) % Input is mask
                   obj.mask  = varargin{1};
@@ -399,7 +399,17 @@ classdef Field
        
        %% General functions for class Field
        %-------------------------------------------------------------------
-
+       function varargout = subsref(obj, s)
+            if strcmp(s(1).type, '()')
+                 ss = s;
+                 ss.subs = s.subs(1:obj.D);
+                 newf = Field( builtin( 'subsref', obj.mask, ss ) );
+                 newf.field = builtin( 'subsref', obj.field, s );
+                 varargout{1} = newf;
+            else
+                 [varargout{1:nargout}] = builtin('subsref', obj, s);
+            end
+        end
        % Function for masking data
        obj = Mask( obj, mask )
        
@@ -474,6 +484,15 @@ classdef Field
            
        % Redefine imagesc
        out = imagesc( field, slice, subj )
+
+       %% Stats Functions for class Field
+       %-------------------------------------------------------------------            
+       % Redefine mean()
+       function out = mean( obj, D )
+           out = Field( obj.mask );
+           out.xvals = obj.xvals;
+           out.field = mean( obj.field, obj.D + D );
+       end    
        
        %% Algebra Functions for class Field
        %-------------------------------------------------------------------     
