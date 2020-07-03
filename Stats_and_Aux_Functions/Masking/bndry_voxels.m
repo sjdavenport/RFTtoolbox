@@ -454,7 +454,7 @@ if D == 2 || D == 3
                 % Get the angle of the edge in euclidean space.
                 % Note that the openeing angle is either 3/4 or 1/4
                 angle.y = zeros( s_mask + 2);
-                for y = 1:( s_mask(1) + 2 )
+                for y = 1:( s_mask(2) + 2 )
                     angle.y( :, y, : ) = getweights( squeeze(...
                                                     larger_image( :, y, : ) ) );
                 end
@@ -479,7 +479,7 @@ if D == 2 || D == 3
                 % Get the angle of the edge in euclidean space.
                 % Note that the openeing angle is either 3/4 or 1/4
                 angle.z = zeros( s_mask + 2);
-                for z = 1:(s_mask(1)+2)
+                for z = 1:(s_mask(3)+2)
                     angle.z( :, :, z ) = getweights( squeeze(...
                                                 larger_image( :, :, z ) ) );
                 end
