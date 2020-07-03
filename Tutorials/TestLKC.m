@@ -3,17 +3,17 @@ close all
 
 % Domain
 D     = 3;
-T     = 20;
+T     = 5;
 nsubj = 25;
 dim   = T * ones( [ 1 D ] );
 
 % Kernel
-sigma = 1.1; % smoothing parameter
-FWHM  = 3;%sigma2FWHM( sigma );
-pad   = ceil(4*sigma);
+FWHM1  = [ 10 2 3 ];%sigma2FWHM( sigma );
+FWHM2  = [ 2 10 3 ];
+pad   = 0;
 
 % Theory LKCs
-theoryL = LKC_isogauss_theory( FWHM, dim )
+%theoryL = LKC_isogauss_theory( FWHM, dim )
 
 % Construction
 resadd  = 1;
@@ -31,14 +31,42 @@ lat_data = squeeze( wnfield( mask, nsubj ) );
 
 % logical indicating whether the lat_data gets masked before smoothing or
 % not,
-lat_masked = false;
+lat_masked = true;
 
-field   = Mask( convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge ) );
-dfield  = Mask( convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge ) );
-d2field = Mask( convfield_Field( lat_data, FWHM, 2, resadd, lat_masked, enlarge ) );
+field   = Mask( convfield_Field( lat_data, FWHM1, 0, resadd, lat_masked, enlarge ) );
+dfield  = Mask( convfield_Field( lat_data, FWHM1, 1, resadd, lat_masked, enlarge ) );
+d2field = Mask( convfield_Field( lat_data, FWHM1, 2, resadd, lat_masked, enlarge ) );
 
-% Estimate LKCs
-L = LKC_voxmfd_est( field, dfield, d2field, [1 1 1] )
+
+lat_data.field = permute( lat_data.field, [2 1 3 4] );
+field2   = Mask( convfield_Field( lat_data, FWHM2, 0, resadd, lat_masked, enlarge ) );
+dfield2  = Mask( convfield_Field( lat_data, FWHM2, 1, resadd, lat_masked, enlarge ) );
+d2field2 = Mask( convfield_Field( lat_data, FWHM2, 2, resadd, lat_masked, enlarge ) );
+
+L1 = LKC_voxmfd_est( field, dfield, d2field, [ 1 1 1 ] )
+L2 = LKC_voxmfd_est( field2, dfield2, d2field2, [ 1 1 1 ] )
+
+L3 = LKC_voxmfd_est( field, dfield, d2field, [ 1 0 1 ] )
+L4 = LKC_voxmfd_est( field2, dfield2, d2field2, [ 1 1 0 ] )
+
+%% EEC curve and threshold
+EEC1 = EEC( -6:0.1:6, L, L0 );
+EEC2 = EEC( -6:0.1:6, [ 0, L(1:2) ], L0 );
+EEC3 = EEC( -6:0.1:6, L2, L0 );
+EEC4 = EEC( -6:0.1:6, L3, L0 );
+
+figure, clf, hold on
+plot( EEC1 )
+plot( EEC2 )
+plot( EEC3 )
+plot( EEC4 )
+
+u1 = EECthreshold( 0.05, L, L0 );
+u2 = EECthreshold( 0.05, [ 0, L(1:2) ], L0 );
+u3 = EECthreshold( 0.05, L2, L0 );
+u4 = EECthreshold( 0.05, L3, L0 );
+
+[ u1, u2, u3, u4 ]
 
 %% Timing the parts if the pipeline depending on inclusion of L1
 %--------------------------------------------------------------------------
