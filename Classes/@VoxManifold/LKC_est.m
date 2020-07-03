@@ -219,58 +219,65 @@ switch D
         end
                        
         % Integrate volume form of faces versus the trace of the shape operator
-        % x-y faces
         if version(3)
             if isnan( L(1) )
                 L(1) = 0;
             end
             
+            tmp = NaN*zeros( [ 1 3 ] );
+            count = 0;
+            
             for type = ["xy", "xz", "yz"]
+                count = count + 1;
                 % Order needs to ensure that E_k x E_l = E_m
                 switch type
                     case "xy"
                         k = 1;
                         l = 2;
-                        dVol = dx * dy;
+                        direc = [ k l 3];
+                        dVol = vol_xy .* dx * dy;
                     case "xz"
                         k = 3;
                         l = 1;
-                        dVol = dx * dz;
+                        direc = [ k l 2];
+                        dVol = vol_xz .*dx * dz;
                     case "yz"
                         k = 2;
                         l = 3;
-                        dVol = dy * dz;
+                        direc = [ k l 1];
+                        dVol = vol_yz .* dy * dz;
                 end
                 
                 % Get the orthonormal frame with first two vectors embedded
                 % into the type-face and picking the relevant coordinates
-                [ U, V, W ] = OrthNormFrame( voxmfd, [1 2 3], bdry.(type), 1 );
-                Uk = Subfield( U, { ':', k} );
+                [ U, V, W ] = OrthNormFrame( voxmfd, direc, bdry.(type), 1 );
+                Uk = U( :, k );
                 clear U
-                Vk = Subfield( V, { ':', k} );
-                Vl = Subfield( V, { ':', l} );
+                Vk = V( :, k );
+                Vl = V( :, l );
                 clear V
 
                 % Get the vectors derived from the Christoffel symbols
                 Gammakk = squeeze( collapse( ...
-                                Subfield( voxmfd.Gamma, { ':', ':', ':', k, k, ':'} )...
+                                voxmfd.Gamma( :, :, :, k, k, : )...
                            ) );
-                Gammakk = Subfield( Gammakk, { bdry.(type)(:), ':' } );
+                Gammakk = Gammakk( bdry.(type)(:), : );
                 Gammall = squeeze( collapse( ...
-                                Subfield( voxmfd.Gamma, { ':', ':', ':', l, l, ':'} )...
+                                voxmfd.Gamma( :, :, :, l, l, : )...
                            ) );
-                Gammall = Subfield( Gammall, { bdry.(type)(:), ':' } );
+                Gammall = Gammall( bdry.(type)(:), : );
                 Gammakl = squeeze( collapse( ...
-                                Subfield( voxmfd.Gamma, { ':', ':', ':', k, l, ':'} )...
+                                voxmfd.Gamma( :, :, :, k, l, : )...
                            ) );
-                Gammakl = Subfield( Gammakl, { bdry.(type)(:), ':' } );
+                Gammakl = Gammakl( bdry.(type)(:), : );
 
                 % Add the integral part belonging to type-face integrals
                 integrand = ( ( Uk.^2 + Vk.^2 ) .* ( W.' *  Gammakk ) ...
-                                + Vl.^2 .* ( W.' * Gammall ) + Vk .* Vl .* ( W.' * Gammakl ) )...
-                                       .* orientation.xy(bdry.xy(:)) .* vol_xy;
-
-                L(1) = L(1) + sum( integrand.field ) * dVol;
+                                + Vl.^2 .* ( W.' * Gammall ) ...
+                                + Vk .* Vl .* ( W.' * Gammakl ) )...
+                                .* orientation.(type)(bdry.(type)(:)) .* dVol;
+                tmp(count)  = sum( integrand.field ); 
+                L(1) = L(1) + sum( integrand.field );
             end
         end
         
