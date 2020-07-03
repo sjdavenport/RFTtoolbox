@@ -37,7 +37,7 @@ mask( 1, 1 ) = false;
 vol = NaN * ones( length( resadd ), D );
 
 % voxel manifolds for two resolutions
-for r = 2:length( resadd )
+for r = 1:length( resadd )
     % high resolution mask
     mask_hr      = mask_highres( mask, resadd(r), enlarge(r) );
     % voxel manifold from high resolution mask with euclidean metric
