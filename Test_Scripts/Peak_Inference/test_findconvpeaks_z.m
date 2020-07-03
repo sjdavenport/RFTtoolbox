@@ -16,7 +16,7 @@ findconvpeaks(Y, 3, 1)
 %% 1D with different xvals_vecs
 Y = [1,1,2,2,1,1];
 xvals_vecs = 11:(length(Y)+10);
-findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), -1, xvals_vecs)
+findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), xvals_vecs)
 
 %% 1D multiple peaks
 Y = [1,2,1,1,1,1,2,1];
@@ -98,7 +98,7 @@ Dimhr = ( Dim - 1 ) * resadd + Dim + 2*enlarge';
 [maxfineval, maxfineloc ] = max(fine_field(:))
 converted_maxfineloc = convind(maxfineloc, Dimhr);
 
-% Initializes at the max of the fine lattice
+%% Initializes at the max of the fine lattice
 finelatmaxloc = zeros(D,1);
 for d = 1:D
     finelatmaxloc(d) = xvals_vecs{d}(converted_maxfineloc(d));

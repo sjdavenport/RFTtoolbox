@@ -2,10 +2,9 @@
 % Author: Samuel Davenport
 %% Section 1: Introduction to Convolution Fields
 % This practical provides an introduction to voxelwise inference using convolution 
-% random fields AKA the correct way to use random field theory. You'll need to 
-% install the <http://github.com/sjdavenport/RFTtoolbox RFTtoolbox> in order to 
-% run this correctly. See my website: <http://sjdavenport.github.io sjdavenport.github.io> 
-% for more details.
+% random fields. You'll need to install the <http://github.com/sjdavenport/RFTtoolbox 
+% RFTtoolbox> in order to run this correctly. See my website: <http://sjdavenport.github.io 
+% sjdavenport.github.io> for more details.
 
 % First you'll need to add all of the RFTtoolbox functions to your path
 % by changing the following line:
@@ -22,15 +21,13 @@ addpath(genpath(folder_where_RFTtoolbox_is_saved))
 % 1D convolution fields
 
 set(0, 'DefaultLineLineWidth', 2);
-clf; nvox = 10; xvals = 1:nvox; spacing = 0.01;
-xvals_fine = 1:spacing:nvox;
-FWHM = 2;
-lat_data = normrnd(0,1,1,nvox);
+clf; nvox = 10; xvals = 1:nvox; resadd = 10;
+FWHM = 2; lat_data = normrnd(0,1,1,nvox);
 lattice_field = fconv(lat_data, FWHM);
-convolution_field = convfield( lat_data, FWHM, spacing, 1);
+[convolution_field, xvals_fine] = convfield( lat_data, FWHM, resadd, 1);
 plot(xvals, lattice_field, 'o-')
 hold on
-plot(xvals_fine,convolution_field)
+plot(xvals_fine{1},convolution_field)
 title('Convolution field versus lattice eval')
 xlabel('Voxels'); ylabel('Field Magnitude')
 legend('Lattice Evaluation (SPM)', 'Convolution Field')
@@ -43,13 +40,13 @@ legend('Lattice Evaluation (SPM)', 'Convolution Field')
 % FWHM parameters. 
 
 clf
-Dim = [20,20]; D = length(Dim); spacing = 0.25; FWHM = 2;
+Dim = [20,20]; D = length(Dim); resadd = 4; FWHM = 2;
 lat_data = normrnd(0,1,Dim);
 lattice_eval = fconv(lat_data, FWHM);
 subplot(2,1,1)
 surf(lattice_eval)
 title('Lattice Evaluation (SPM)')
-fine_data = convfield( lat_data, FWHM, spacing, D); %Convolution eval
+fine_data = convfield( lat_data, FWHM, resadd, D); %Convolution eval
 subplot(2,1,2)
 surf(fine_data)
 title('Convolution Field')
@@ -58,17 +55,17 @@ title('Convolution Field')
 % V} \nabla K\left(l-s\right)X\left(l\right)$where $\nabla \;$denotes the multivariate 
 % derivative.
 
-clf; nvox = 10; h = 0.01; FWHM = 1.5;
+clf; nvox = 10; resadd = 100; FWHM = 1.5; dx= 1/(resadd + 1);
 lat_data = normrnd(0,1,nvox,1);
-[smoothedfield, xvals_vecs] = convfield( lat_data, FWHM, h, 1);
+[smoothedfield, xvals_vecs] = convfield( lat_data, FWHM, resadd, 1);
 xvals_fine = xvals_vecs{1};
 subplot(2,1,1)
 plot(xvals_fine, smoothedfield)
 title('Smooth field')
 subplot(2,1,2)
 derivtype = 1;
-deriv1 = convfield( lat_data, FWHM, h, 1, derivtype );
-deriv2 = diff(smoothedfield)/h;
+deriv1 = convfield( lat_data, FWHM, resadd, 1, derivtype );
+deriv2 = diff(smoothedfield)/dx;
 plot(xvals_fine, deriv1)
 hold on
 plot(xvals_fine(1:end-1), deriv2, '--')
@@ -128,20 +125,20 @@ title('Comparing SPM and fconv (lattice evals)')
 % kernel.
 
 clf
-FWHM = 2; truncation = 4*FWHM2sigma(FWHM)
-plot(-truncation:truncation, spm_smoothkern(FWHM, -truncation:truncation))
+FWHM = 2; truncation = 4*FWHM2sigma(FWHM); spacing = 0.01;
+plot(-truncation:spacing:truncation, spm_smoothkern(FWHM, -truncation:spacing:truncation))
 hold on
-plot(-truncation:truncation, GkerMV(-truncation:truncation, FWHM))
-legend('Gaussian kernel', 'spm\_smoothkern')
+plot(-truncation:spacing:truncation, GkerMV(-truncation:spacing:truncation, FWHM))
+legend('spm\_smoothkern', 'Gaussian kernel')
 title('Comparing Kernels')
 %% 
 % In order to generate multiple smooth fields and adjust for edge effects you 
 % can use noisegen.
 
-clf; FWHM = 3; nsubj = 25; subj2use = 2;
-noise = noisegen([50,50,50],nsubj, FWHM);
-surf(noise(:,:,25,subj2use)); size(noise)
-title('Example slice through a subject''s data')
+% clf; FWHM = 3; nsubj = 25; subj2use = 2;
+% noise = noisegen([50,50,50],nsubj, FWHM);
+% surf(noise(:,:,25,subj2use)); size(noise)
+% title('Example slice through a subject''s data')
 % Convolution t-fields
 % In neuroimaging we are typically interested in testing and so we need to intrdouce 
 % more complicated fields. In particular we typically assume that the data from 
@@ -155,14 +152,15 @@ title('Example slice through a subject''s data')
 % Similarly we can define a convolution F-field and more complicated examples.
 % 1D convolution t-fields
 
-clf; nvox = 10; nsubj = 20; spacing = 0.05; FWHM = 2;
+clf; nvox = 10; nsubj = 20; resadd = 15; FWHM = 2;
 lat_data = normrnd(0,1,[nvox,nsubj]);
-[tconvfield, xvals_vecs] = convfield_t(lat_data, FWHM, spacing);
+[tconvfield, xvals_vecs] = convfield_t(lat_data, FWHM, resadd);
 xvals_fine = xvals_vecs{1};
-lattice_tfield = convfield_t(lat_data, FWHM, 1);
+lattice_tfield = convfield_t(lat_data, FWHM, 0);
 plot(1:nvox, lattice_tfield, 'o-')
 hold on
 plot(xvals_fine, tconvfield)
+xlim([xvals_fine(1), xvals_fine(end)])
 title('1D convolution t fields')
 legend('Lattice Evaluation', 'Convolution t-field')
 xlabel('voxels')
@@ -193,70 +191,54 @@ ylabel('t field')
 FWHM = 10; D = 1; Gker_param = FWHM2sigma(FWHM); nvox = 100; nsubj = 100;
 Lambda_theory = Gker_param^(-2)/2
 lat_data = normrnd(0,1,nvox,nsubj);
-voxelwise_Lambda_estimates = Lambda_est( lat_data, FWHM, D );
+voxelwise_Lambda_estimates = Lambda_conv_est( lat_data, FWHM, 0 );
 Lambda_estimate = mean(voxelwise_Lambda_estimates(5:end-5))
 clf; plot(voxelwise_Lambda_estimates); hold on; plot(1:nvox, Lambda_theory*ones(1,nvox));
-legend('Voxelwise Lambda estimates', 'True Lambda')
+legend('Voxelwise Lambda estimates', 'True Lambda', 'Location', 'SE')
 title('Estimating Lambda in 1D'); xlabel('Voxels');
 %% 
 % Note that we have not accounted for edge effects in the plot (meaning that 
 % there are dicrepancies at the boundary).
 % 1D LKCs
-% In 1D (under stationarity). Note that to make things easier I haven't accounted 
-% for edge effects. Here $L_1 =T\Lambda^{1/2}$ where $T$ is the length of the 
-% line.
+% In 1D (under stationarity - just for comparison to theory - this assumption 
+% is not needed). Note that to make things easier I haven't accounted for edge 
+% effects. Here $L_1 =T\Lambda^{1/2}$ where $T$ is the length of the line.
 
 FWHM = 6; Gker_param = FWHM2sigma(FWHM); D = 1;
-resAdd = 0; nsubj = 100; nvox = 100;
-lat_data = normrnd(0,1,nvox,nsubj); mask = ones(1,nvox);
+resadd = 0; nsubj = 100; nvox = 100;
+lat_data = normrnd(0,1,nvox,nsubj); mask = true(1,nvox)';
 
 % Convolution estimate
-L = LKCestim_GaussConv( lat_data, FWHM, ones(1,nvox), resAdd )
-lkcconv_lkcs = [1,L]
-% HPE (remember need to smooth the fields before input for HPE!)
-[~,smoothed_fields] = smoothtstat(lat_data, FWHM);
-HPE  = LKCestim_HPE( smoothed_fields, 1, mask, 1);
-HPE_lkcs = [HPE.L0, HPE.hatn]
+LKCs = LKC_conv_est( lat_data, mask, FWHM, resadd ) 
+conv_lkcs = [LKCs.L0,LKCs.hatL]
+
 % Compare to Theory (for stationary fields, off due to edge effects)
 Lambda_theory = Gker_param^(-2)/2; var_est = var(smoothed_fields);
-L1 = nvox*Lambda_theory/mean(sqrt(var_est(5:end-5)));
+% L1 = nvox*Lambda_theory/mean(sqrt(var_est(5:end-5)));
 L1 = nvox*Lambda_theory^(1/2);
 theory_lkcs = [1, L1]
 %% 
 % Note that if you increase nsubj (e.g. take nsubj = 10000 above) then you can 
-% see (an estimate of) the true LKCs. Note that the HPE estimates improve with 
-% increased resolution. LKCconv also improves slightly however the resolution 
-% is not so important for it.
+% see (a close approximation to) the true LKCs. Note that LKC_conv_est estimates 
+% improve with resolution.
 
-spacing = 0.1; nevals = (nvox-1)/spacing + 1; mask = ones(1, nevals);
-resAdd = floor(1/spacing)-1;
-[~,smoothed_fields_fine] = smoothtstat(lat_data, FWHM, spacing);
-
-L = LKCestim_GaussConv( lat_data, FWHM, ones(1,nvox), resAdd )
-LKCconv_fine = [1,L]
-HPE  = LKCestim_HPE( smoothed_fields_fine, 1, mask, 1, 1, 'notC'); 
-%Note if you managed to install the C code you can change 'notC' to 'C'
-% above for faster implementation.
-LKC_HPE_fine = [HPE.L0,HPE.hatn]
+resadd = 9; nvox = 100; nevals = (nvox-1)/spacing + 1; mask = true(1, nvox)';
+LKCs = LKC_conv_est( lat_data, mask, FWHM, resadd );
+conv_lkcs_fine = [LKCs.L0,LKCs.hatL]
 %% 
-% This is because at finer resolution the HPE is more accurately able to locate 
-% critical points (which are where the Euler characteristic of the excursion set 
-% changes). 
+% This is because the integrals to be computed are better approximated.
 % 2D LKCs
 
-FWHM = 3; nsubj = 50; Gker_param = FWHM2sigma(FWHM); nvox = 100; resAdd = 0; pad = 0;
+FWHM = 3; nsubj = 50; Gker_param = FWHM2sigma(FWHM); nvox = 100; resadd = 0; pad = 0;
 xvals = 1:nvox; Dim = [xvals(end),xvals(end)]; D = length(Dim);
 xvalues_at_voxels = xvals2voxels( {xvals,xvals} )';
-resAdd = 0; pad = 0; mask = ones(Dim);
+resadd = 0; mask = true(Dim);
 lat_data = normrnd(0,1,[Dim,nsubj]);
-[~,smoothed_fields] = smoothtstat(lat_data, FWHM);
 
 % LKCconv
-L = LKCestim_GaussConv( lat_data, FWHM, ones(nvox,nvox), resAdd, pad )
-lkcconv_lkcs = [1,L]
-% HPE (If you managed to compile the HPE ccode, change 'notC' to 'C' below.
-HPE  = LKCestim_HPE( smoothed_fields, D, mask, 1, 1, 'notC');
-HPE_LKCs = [HPE.L0,HPE.hatn']
+L = LKC_conv_est( lat_data, mask, FWHM, resadd )
+conv_lkcs = [L.L0,L.hatL]
+
 % Theory(computed using SPM and the true (i.e. not estimated!) FWHM
 % Note this is off as it doesn't correctly account for non-stationary edge effects
 spm_resel_vec = spm_resels(FWHM,Dim, 'B');
@@ -274,24 +256,20 @@ spm_resel_vec = spm_resels(FWHM_discrete_est,Dim, 'B');
 spm_lkcs = spm_resel_vec.*[1,sqrt(4*log(2)),4*log(2),0]
 %% 
 % but this underestimates the LKCs i.e. compare to LKCconv estimates above. 
-% In this case it gives similar results to the HPE estimate but of course the 
-% SPM one is only valid under stationarity while the HPE estimate is valid more 
-% generally and improves under increased resolution.
+% In this case using SPM gives similar results however it is only valid under 
+% the assumption of stationarity.
 % 3D LKCs
-% In 3D the LKCs are harder to get. There are still closed forms for L_2 and 
-% L_3 which we are coding atm, computing L_1 is much trickier though. The HPE 
-% works however but can be a bit biased without fine resolution. 
+% In 3D the LKCs are a bit more tricky. There are closed forms for L_2 and L_3 
+% but L_1 is more complicated and must be estimated (luckily L_1 is the least 
+% important and doesn't contribute as much to estimating the threshold). 
 
 Dim = [5,5,5]; nsubj = 30; FWHM = 3; D = length(Dim);
-smooth_fields = noisegen( Dim, nsubj, FWHM, 0);
-mask = ones(Dim);
+lat_data = normrnd(0,1,[Dim,nsubj]); resadd = 1;
+mask = ones(Dim); 
 
-% HPE (We have taken Dim to be very small for those who of you 
-% who don't have the C code installed. If you managed to install the 
-% c code you can change Dim to [50,50,50] and 'notC' to 'C' and it will
-% still run fast! )
-HPE  = LKCestim_HPE( smooth_fields, D, mask, 1, 1, 'notC');
-HPE_LKC_estimates = [1,HPE.hatn']
+% Convolution esimate
+L = LKC_conv_est( lat_data, mask, FWHM, resadd )
+conv_lkcs = [L.L0,L.hatL]
 
 %% Note if you don't have SPM installed you'll have to comment out these lines
 % 
@@ -301,18 +279,12 @@ resel_vec = spm_resels_vol(mask, [FWHM,FWHM,FWHM]);
 theory_lkcs = resel_vec'.*[1,sqrt(4*log(2)),4*log(2),sqrt(4*log(2))^3]
 
 % SPM LKCs (with FWHM estimation)
-FWHM_discrete_est = est_smooth(smooth_fields)
+FWHM_discrete_est = est_smooth(fconv(lat_data, FWHM, 3))
 resel_vec = spm_resels_vol(mask, FWHM_discrete_est);
 spm_lkcs = resel_vec'.*[1,sqrt(4*log(2)),4*log(2),sqrt(4*log(2))^3]
 %% 
-% Note that (for this practical, we have not considered fine_HPE or the LKCconv 
-% equivalent which is what you would do in practice to estimate the LKCs). Due 
-% to the size of the example above the fields are very non-stationary so SPM gives 
-% biased estimate of the LKCs. 
-% 
-% One option which we are exploring is a hybrid HPE estimator where L_2 and 
-% L_3 are computed numerically and L_1 is computed using these estimates and the 
-% HPE. 
+% Due to the size of the example above the fields are very non-stationary so 
+% SPM gives a very biased estimate of the LKCs. 
 %% Section 3: Voxelwise FWER control
 % Calculating the expected Euler Characteristic
 % Having calculated the LKCs we are now in a position to calculate the expected 
@@ -334,17 +306,17 @@ clusters.locs{1}
 % To see how the expected Euler characteristic can be used we show how it can 
 % be used to estimate the expected number of clusters in stationary 1D examples.
 
-nvox = 100; niters = 1000; FWHM = 4; spacing = 0.05;
+nvox = 100; niters = 1000; FWHM = 4; resadd = 20;
 D = 1; numberofclusters = 0; u = 1; padding = round(4*FWHM2sigma(FWHM));
 %Note that the padding is needed so that we have a stationary convolution
 %field, since this is a stationary example. In general LKCs can be
 %calculated under non-stationarity meaning that the edge effect doesn't
 %matter.
 lat_data = normrnd(0,1,nvox + 2*padding, niters);
-field_start_loc = spacep(padding+1, spacing)
-field_end_loc = spacep(padding+nvox, spacing)
+field_start_loc = spacep(padding+1, resadd)
+field_end_loc = spacep(padding+nvox, resadd)
 
-smoothed_fields = convfield(lat_data, FWHM, spacing, 1);
+smoothed_fields = convfield(lat_data, FWHM, resadd, 1, 0, 0);
 vareverywhereest = var(smoothed_fields,0,2);
 var_est = mean(vareverywhereest(field_start_loc:field_end_loc));
 smoothed_fields = smoothed_fields/sqrt(var_est); % To ensure variance 1.
@@ -366,7 +338,7 @@ expectedEC = EEC( u, L1, D, L0, 'gaussian')
 % above.
 % 
 % In general i.e. high dimensions the cluster approximation is valid even at 
-% low thresholds! This because at lots of reasonable threhsolds number of connected 
+% low thresholds! This because at lots of reasonable thresholds number of connected 
 % components is equal to the Euler charactistic. At high thresholds there is only 
 % 0 or 1 cluster (and maximum) above the threshold and so the expected Euler characteristic 
 % becomes a very good estimate of the expected number of maxima above the threshold.
@@ -412,16 +384,15 @@ applyconvfield(tval, Y, FWHM)
 % in practice you'd never do this though if you wanted to evaluate the field on 
 % the whole lattice.
 
-clf; nvox = 10; xvals = 1:nvox; spacing = 0.01;
-FWHM = 2; xvals_fine = 1:spacing:nvox;
-lat_data = normrnd(0,1,1,nvox);
+clf; nvox = 10; resadd = 20;
+FWHM = 2; lat_data = normrnd(0,1,1,nvox);
 lattice_field = fconv(lat_data, FWHM);
-convolution_field = convfield( lat_data, FWHM, 0.01, 1);
-acfield = applyconvfield(xvals_fine, lat_data, FWHM );
-plot(xvals, lattice_field, 'o-')
+[convolution_field, xvals_fine] = convfield( lat_data, FWHM, resadd, 1);
+acfield = applyconvfield(xvals_fine{1}, lat_data, FWHM );
+plot(1:nvox, lattice_field, 'o-')
 hold on
-plot(xvals_fine,convolution_field, '-')
-plot(xvals_fine, acfield, '--')
+plot(xvals_fine{1},convolution_field, '-')
+plot(xvals_fine{1}, acfield, '--')
 title('Convolution field versus lattice eval')
 xlabel('Voxels')
 ylabel('Field Magnitude')
@@ -431,10 +402,10 @@ legend('Lattice Evaluation (SPM)', 'Convolution Field', 'Applyconvfield')
 % quite slow and is unnecessary when the support of your Kernel is small, instead 
 % you can truncate the Kernel allowing a large decrease in computational time. 
 
-lat_data = noisegen([91,109,91], 1, 6); FWHM = 3;
+FWHM = 3; lat_data = normrnd(0,1,[91,109,91]); 
 ac_notruncation = applyconvfield([50,40,60]', lat_data, FWHM) % No truncation
 sigma = FWHM2sigma(FWHM); truncation = round(4*sigma);
-ac_with_truncation = applyconvfield([50,40,60]', lat_data, FWHM, truncation)
+ac_with_truncation = applyconvfield([50,40,60]', lat_data, FWHM, ones([91,109,91]),truncation)
 ac_default = applyconvfield([50,40,60]', lat_data, FWHM) %Default
 %% 
 % Note that by default applyconvfield.m uses a truncation which is 4 times the 
@@ -443,16 +414,16 @@ ac_default = applyconvfield([50,40,60]', lat_data, FWHM) %Default
 
 % Fixed lattice values
 Y = [1,2,1,1,1,1,2,1]; FWHM = 3;
-peak_est_locs = 2;
+peak_est_locs = 2; resadd = 20;
 findconvpeaks(Y, FWHM, 2) % Top 2 peaks
-cfield = convfield(Y, FWHM, 0.01, 1);
+cfield = convfield(Y, FWHM, resadd, 1);
 clf; plot(cfield)
 %%
 % Random Lattice Values
-nvox = 20; FWHM = 4;
+nvox = 20; FWHM = 4; rng(18); resadd = 20;
 lat_data = normrnd(0,1,1,nvox);
 findconvpeaks(lat_data, FWHM, 1) % Top peak
-[cfield, xvalsvecs] = convfield(lat_data, FWHM, 0.01, 1);
+[cfield, xvalsvecs] = convfield(lat_data, FWHM, resadd, 1);
 clf; plot(xvalsvecs{1}, cfield)
 % Voxelwise FWER control
 % In this section we will present some simple examples of using convolution 
@@ -498,7 +469,7 @@ peaklocation = {[25,25]};
 % Data generation
 signal = gensig( signal_magnitude, signal_radii, smoothnessofpeaks, ...
     dimensionofsimulation, peaklocation);
-nsubj = 75; resAdd = 1;
+nsubj = 75; resadd = 1;
 noisey_data = 10*randn([dimensionofsimulation,nsubj]) + signal;
 FWHM = 3; smoothed_data = fconv(noisey_data, FWHM);
 % L = LKCestim_GaussConv( noisey_data, FWHM, ones(size(dimensionofsimulation)), resAdd);
@@ -530,7 +501,7 @@ surf(im); title('Voxelwise RFT Activation')
 
 % Note this code takes a minute or two to run!
 nvox = 20; niters = 1000; FWHM = 2; spacing = 0.1; nsubj = 10;
-D = 1; resAdd = 10; pad = 0; alpha = 0.05;
+D = 1; resadd = 10; pad = 0; alpha = 0.05;
 
 nabovethresh = 0;
 nabovethresh_lat = 0;
@@ -542,7 +513,7 @@ for iter = 1:niters
     lat_field = normrnd(0,1,nvox,nsubj);
     
     % Calculate L1 and the threshold
-    L1 = LKCestim_GaussConv( lat_field, FWHM, ones(1,nvox), resAdd);
+    L1 = LKCestim_GaussConv( lat_field, FWHM, ones(1,nvox), resadd);
     
     % calculate the "resel vec for input in SPM"
     % Note that resels are really deprecated, there was never a need

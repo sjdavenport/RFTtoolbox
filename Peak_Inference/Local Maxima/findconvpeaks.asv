@@ -264,24 +264,18 @@ for I = 1:npeaks
         subset{d} = local_xvals_vecs{d} - xvals_vecs{d}(1) + 1;
     end
     
-    local_mask = mask(subset{:});
-    
-    % For t-fields make sure to include all subjects
-    if strcmp(field_type, 'T')
-        subset{D+1} = ':';
-    end
-    
     % Define local lat_data subset
     local_lat_data = lat_data(subset{:});
+    local_mask = t
     
     % Define local convolution field (taking truncation = 0 have already
     % truncated to a small box)
     if strcmp(field_type, 'Z')
         cfield = @(tval) applyconvfield(tval, local_lat_data, FWHM, ...
-            local_mask, 0, local_xvals_vecs);
+            mask, 0, local_xvals_vecs);
     elseif strcmp(field_type, 'T')
         cfield = @(tval) applyconvfield_t( tval, local_lat_data, FWHM,...
-            local_mask, 0, local_xvals_vecs );
+            mask, 0, local_xvals_vecs );
     end
     
     [ peakloc, peakval ] = findlms_mod2( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );

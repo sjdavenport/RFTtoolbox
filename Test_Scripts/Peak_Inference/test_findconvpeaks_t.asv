@@ -164,7 +164,7 @@ tic
 toc
 
 tic
-[peaklox, peakvals] = findconvpeaks_old(lat_data, FWHM, peak_est_locs, 'T', mask)
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T', mask)
 toc
 %% Initialize on the fine lattice
 [peaklox, peakvals] = findconvpeaks(lat_data, FWHM, converted_locs(:,1), 'T', mask)

@@ -1,4 +1,4 @@
- function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, box_size )
+ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, box_size, mfield )
 % FINDLMS( fn, initial_estimates, box_size ) finds the local maxima of 
 % function by searching within boxes centred at the initial estimates
 %--------------------------------------------------------------------------
@@ -74,7 +74,7 @@ peakvals = zeros(1, npeaks);
 % Set the options for the optimization function fmincon
 options = optimoptions(@fmincon,'Display','off'); % Ensures that no output 
                                                   % is displayed.
-
+options.Algorithm = 'sqp';
 % A bizarre constant that seems to be needed in order for the algorithm to 
 % always converge if it is initialized at an integer!
 extra = 0.00001*(floor(initial_estimates) == initial_estimates);
@@ -87,7 +87,7 @@ for peakI = 1:npeaks
     b((D+1):(2*D)) = -(initial_estimates(:,peakI) - box_size{peakI}' - extra(:,peakI)); % Lower box limit
     
     % Use the optimization routine fmincon to find the peaks
-    peaklocs(:,peakI) = fmincon(@(tval) -fn(tval), initial_estimates(:,peakI), A, b, [], [], [], [], [], options);
+    peaklocs(:,peakI) = fmincon(@(tval) -fn(tval), initial_estimates(:,peakI), A, b, [], [], [], [], mfield, options);
     
     % Evaluate the fn at the peak locations
     peakvals(peakI) = fn(peaklocs(:, peakI));

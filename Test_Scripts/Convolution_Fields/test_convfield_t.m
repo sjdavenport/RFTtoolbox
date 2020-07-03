@@ -58,3 +58,14 @@ surf(tcfield.*mask_hr)
 title('2D convolution t field')
 xlabel('x'); ylabel('y'); zlabel('t field')
 
+%% 3D convolution t field
+tic
+Dim = [11,11,11]; nsubj = 50; resadd = 10; FWHM = 3;
+mask = ones(Dim);
+lat_data = normrnd(0,1,[Dim,nsubj]).*mask; 
+convfield_t( lat_data, FWHM, resadd );
+toc
+
+tic
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, 1, 'T', mask)
+toc

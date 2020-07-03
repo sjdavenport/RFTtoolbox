@@ -16,7 +16,7 @@ record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
 
 %% %% 2D examples
 %% small 2D example
-FWHM = 3; sample_size = 50; Dim = [5,5]; mask = true(Dim); resadd = 25;
+FWHM = 3; sample_size = 50; Dim = [5,5]; mask = true(Dim); resadd = 3;
 spfn = @(nsubj) normrnd(0,1,[Dim, nsubj]); niters = 1000;
 record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
 
@@ -37,3 +37,8 @@ record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
 FWHM = 3; sample_size = 50; Dim = [5,5,5]; mask = true(Dim); resadd = 1;
 spfn = @(nsubj) normrnd(0,1,[Dim, nsubj]); niters = 1000;
 record_coverage( spfn, sample_size, FWHM, resadd, mask, niters)
+
+%% Large 3D example (takes a while)
+FWHM = 3; sample_size = 50; Dim = [50,50,50]; mask = true(Dim); resadd = 1;
+spfn = @(nsubj) normrnd(0,1,[Dim, nsubj]); niters = 1000;
+record_coverage( spfn, sample_size, FWHM, resadd, mask, niters, 'conv', 0)

@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
-%%%    This script tests the findlms function
+%%%    This script tests the findlms_mod2 function
 %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% prepare workspace
@@ -13,16 +13,16 @@ close all
 FWHM = 3;
 Y = [1,2,1];
 findconvpeaks(Y, FWHM, 1)
-cfield = @(tval) applyconvfield(tval, Y, 3)
-findlms( cfield, 2.5, 1 )
+cfield = @(tval) applyconvfield(tval, Y, 3);
+findlms_mod2( cfield, 2.5, {1.5}, {2.5} )
 
 %% Multiple peaks - same height
 Y = [1,2,1,1,1,1,1,2,1]; FWMM = 3;
 findconvpeaks(Y, FWHM, 2)
-cfield = @(tval) applyconvfield(tval, Y, FWHM)
+cfield = @(tval) applyconvfield(tval, Y, FWHM);
 xvals_fine = 1:0.1:length(Y);
-plot(xvals_fine, convfield(Y, FWHM, 0.1, 1))
-findlms( cfield, [2.5,6.5])
+% plot(xvals_fine, convfield(Y, FWHM, 0.1, 1))
+findlms_mod2( cfield, [2.5,6.5], {2,5}, {4,8})
 
 %% %% 2D examples
 %% Simple 2D example
@@ -30,14 +30,14 @@ FWHM = 3; Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
 cfield = @(tval) applyconvfield(tval, Y, 3)
 surf(convfield(Y, FWHM, 0.1, 2))
 fine_eval = convfield(Y, 2, 0.01, 2);
-findlms( cfield, [2,2]', 1)
+findlms_mod2( cfield, [2,2]', 1)
 
 %% 2D multiple peaks
 Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]
 surf(convfield(Y, 2, 0.1, 2))
 findconvpeaks(Y, 2, [1,1;4,4]')
 cfield = @(tval) applyconvfield(tval, Y, 2)
-findlms( cfield, [1,1;4,4]', 4 )
+findlms_mod2( cfield, [1,1;4,4]', 4 )
 % Works with functions that take NaN values so long as the initial
 % estimate is well defined!
 mask = [0,1,1];
@@ -50,7 +50,7 @@ masked_field = @(x) -mfield(x).*cfield(x);
 xvals_fine = 1:0.1:3;
 plot(xvals_fine, masked_field(xvals_fine))
 xlim([1,3])
-findlms( masked_field, 2, 2 )
+findlms_mod2( masked_field, 2, 2 )
 
 %% NaN example
 mask = [0,1,1,0,1,1];
@@ -64,8 +64,8 @@ masked_field = @(x) -mfield(x).*cfield(x);
 xvals_fine = 1:0.1:nvox;
 plot(xvals_fine, masked_field(xvals_fine))
 xlim([1,nvox])
-findlms( masked_field, 2, 2 )
-findlms( masked_field, 5, 10 ) % Note that it fails to search beyond the NaNs!
+findlms_mod2( masked_field, 2, 2 )
+findlms_mod2( masked_field, 5, 10 ) % Note that it fails to search beyond the NaNs!
 
 %% 2D example comparing box size and search time
 Dim = [5,5]; nsubj = 50; lat_data = normrnd(0,1,[Dim,nsubj]); FWHM = 3;
@@ -77,7 +77,7 @@ store_time = zeros(1,niters);
 for I = 1:niters
     I
     tic
-    findlms(tcf, lmloc, 1)
+    findlms_mod2(tcf, lmloc, 1)
     store_time(I) = toc;
 end
 mean(store_time(I))
