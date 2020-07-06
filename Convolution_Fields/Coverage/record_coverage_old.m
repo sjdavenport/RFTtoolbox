@@ -72,6 +72,9 @@ if ~exist('do_spm', 'var')
    do_spm = 1; 
 end
 
+% Calculate the high resolution mask
+mask_hr = mask_highres(mask, resadd);
+
 % xvals = 1:Dim(1);
 
 if D == 1
@@ -101,19 +104,16 @@ for b = 1:niters
     modul(b,100)
     
     % Calculate data
-    lat_data = Field( mask );
-    lat_data.field = spfn(sample_size);
+    lat_data = spfn(sample_size);
     
     % Calculate the convolution t-field and the smooth data. Note this will
     % change later because you'll get this from LKC_est as an output there
     % too!
-    [ tfield_finelat, cfields ] = convfield_t_Field( lat_data, Kernel, resadd );
+    [ tfield_finelat, xvals_vecs, smooth_data ] = convfield_t( lat_data.*mask, Kernel, resadd );
     
-    % Calculate the derivatives of the convolution fields
-    dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
-
-    % Define the locations of the original voxels
-    voxel_locs = {(ceil(resadd/2) + 1):(resadd+1):length(cfields.xvals{1})};
+    % Define the locations of the original voxels (should remove this from
+    % the for loop for speed
+    voxel_locs = {(ceil(resadd/2) + 1):(resadd+1):length(xvals_vecs{1})};
     orig_lattice_locs = repmat(voxel_locs, 1, D);
     
     % Find the maximum on the lattice
@@ -121,26 +121,27 @@ for b = 1:niters
     max_tfield_lat = max(tfield_lat(:).*zero2nan(mask(:)));
     
     % Find the maximum on the fine lattice
-    max_tfield_finelat = max(tfield_finelat(:).*zero2nan(cfields.mask(:)));
+    max_tfield_finelat = max(tfield_finelat(:).*zero2nan(mask_hr(:)));
     
     % Calculate the LKCs
     if strcmp(lkc_est_version, 'conv')
-        [L,L0] = LKC_voxmfd_est( cfields, dcfields );
-%         LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
+        LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
     elseif strcmp(lkc_est_version, 'hpe')
         % Need to check this is still the right format for the HPE estimate!
-        error('needs updating for cfield not smooth_data')
-        LKCs  = LKC_HP_est( smooth_data, cfields.mask, 1 );
+        LKCs  = LKC_HP_est( smooth_data, mask_hr, 1 );
     end
     
     % Convert the LKCs to resels
-    resel_vec = LKC2resel(L, L0);
+    resel_vec = LKC2resel(LKCs);
     
     % Calculate the RFT threshold using SPM
     threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
     
-    % Initialize peak_est_locs and peakvals
-    [ peak_est_locs, ~, peakvals ] = lmindices(tfield_finelat, 3, cfields.mask);
+    % Find the top 3 values on the lattice for initialization
+%     [ peak_est_locs, ~, peakvals ] = lmindices(tfield_lat, 3, mask);
+    
+    % Need to work out the fine lattice evaluation!
+    [ peak_est_locs, ~, peakvals ] = lmindices(tfield_finelat, 3, mask_hr);
     
     % Ensure that peak_est_locs is D by npeaks
     if D == 1
@@ -148,10 +149,10 @@ for b = 1:niters
     end
     
     % Evaluate the peak values at the xval coordinates
-    peak_est_locs = xvaleval(peak_est_locs, cfields.xvals);
+    peak_est_locs = xvaleval(peak_est_locs, xvals_vecs);
     
     % Find the peaks that are within gap of the threshold
-    % Need to incorporate the derivative to choose this gap correctly here
+    %Need to incorporate the derivative to choose this gap correctly here
     if D == 3
         gap = 5;
     else
@@ -166,7 +167,7 @@ for b = 1:niters
     
     % Find the peaks of the convolution t-field
     if ~isempty(peaksest2use)
-        [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peaksest2use, 'T', mask);
+        [~, max_tfield_at_lms] = findconvpeaks(lat_data, Kernel, peaksest2use, 'T', mask);
     else
         max_tfield_at_lms = max_tfield_finelat;
     end
@@ -204,14 +205,13 @@ for b = 1:niters
     
     if do_spm
         orig_lattice_locs{D+1} = ':';
-        smooth_data_lat = cfields.field(orig_lattice_locs{:});
+        smooth_data_lat = smooth_data(orig_lattice_locs{:});
         
         % Calculate the resels under the assumption of stationarity
         if D == 3
             lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
             spm_resel_vec = spm_resels_vol(double(mask),lat_FWHM_est);
         elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
-            warning('This only works for a box!')
             lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
             spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
         end

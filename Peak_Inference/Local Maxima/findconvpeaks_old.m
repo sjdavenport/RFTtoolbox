@@ -250,7 +250,7 @@ npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 % end
 
 % Find local maxima
-[ peaklocs, peakvals ] = findlms_mod2( cfield, peak_est_locs, lowerbounds, upperbounds );
+[ peaklocs, peakvals ] = findlms( cfield, peak_est_locs, lowerbounds, upperbounds );
 
 % [ peaklocs, peakvals ] = findlms_mod( cfield, peak_est_locs, lbs, ubs, mfield );
 

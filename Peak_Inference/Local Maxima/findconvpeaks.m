@@ -1,4 +1,4 @@
-function [peaklocs, peakvals] = findconvpeaks_new(lat_data, FWHM, ...
+function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
         peak_est_locs, field_type, mask, xvals_vecs )
 % FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
 %                                                  truncation, xvals_vecs )
@@ -224,7 +224,6 @@ end
 % Obtain the number of peaks
 npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 
-
 % Set field that defines the mask
 mfield = @(x) mask_field( x, mask, 0, xvals_vecs );
 [ lowerbounds, upperbounds ] = assign_bounds( peak_est_locs, mfield );
@@ -284,7 +283,7 @@ for I = 1:npeaks
             local_mask, 0, local_xvals_vecs );
     end
     
-    [ peakloc, peakval ] = findlms_mod2( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
+    [ peakloc, peakval ] = findlms( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
     peakvals(I) = peakval;
     peaklocs(:,I) = peakloc;
     

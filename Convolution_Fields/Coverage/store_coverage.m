@@ -1,4 +1,4 @@
-function rc = store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters, dirsave )
+function rc = store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters, filename, dirsave )
 % store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters,dirsave ) 
 % records and saves the coverage
 %--------------------------------------------------------------------------
@@ -66,6 +66,7 @@ end
 if ~exist( 'use_spm', 'var')
     use_spm = 1;
 end
+
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 rc.FWHM_vec = FWHM_vec;
@@ -97,7 +98,10 @@ if use_spm
     rc.finelatspm = zeros(lFWHM_vec,lnsubj_vec);
 end
 
-filesave = [dirsave, num2str(rc.D), 'D_niters_', num2str(niters), '_resadd_',num2str(resadd),'.mat'];
+if ~exist( 'filename', 'var')
+    filename = [num2str(rc.D), 'D_niters_', num2str(niters), '_resadd_',num2str(resadd),'.mat'];
+end
+filesave = [dirsave, filename];
 
 for I = 1:lFWHM_vec
     I

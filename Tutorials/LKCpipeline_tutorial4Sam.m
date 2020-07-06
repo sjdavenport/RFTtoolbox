@@ -44,7 +44,7 @@ imagesc( lat_data )
 
 % Different slice and subj
 figure(4), clf
-imagesc( lat_data, [ NaN, NaN ], 3 )
+imagesc( lat_data, [ NaN, NaN ], 3 ) % @Fabian, this line doesn't work
 
 % Want to change voxelsize?
 lat_data.xvals = xvals;
@@ -64,7 +64,7 @@ lat_data_obs = Field( observed_data, mask, xvals );
 %--------------------------------------------------------------------------
 % logical indicating whether the lat_data gets masked before smoothing or
 % not,
-lat_masked = false;
+lat_masked = true;
 
 % Generate convolution fields from lattice data
 cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
@@ -73,7 +73,7 @@ dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
 figure, clf
 imagesc( cfield )
 
-figure, clf
+figure, clf  
 imagesc( Mask( cfield) )
 
 % Mask lat_data manually for the old convfield
