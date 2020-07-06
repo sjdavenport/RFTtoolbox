@@ -41,7 +41,6 @@ function obj = wnfield( varmask, fibersize, xvals )
 % figure, clf,
 % imagesc( lat_data )
 % title( 'masked field' )
-%
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow
 %--------------------------------------------------------------------------

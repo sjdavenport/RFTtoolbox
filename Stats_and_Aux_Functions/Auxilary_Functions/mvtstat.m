@@ -2,7 +2,7 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % MVTSTAT( data, threeD, nansaszeros ) computes the multivariate t-statistic.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data          A D by nsubj array with the data.
+% data          a Dim by nsubj array with the data.
 % Dim           the dimension to return.
 % nansaszeros   0/1 whether to return NaN entries as zeros. Default is 0.
 %--------------------------------------------------------------------------

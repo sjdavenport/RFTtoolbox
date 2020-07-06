@@ -1,4 +1,4 @@
-function [threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, niters, include_original, subject_mask, alpha )
+function [threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, mask, demean, niters, include_original, alpha )
 % PERM_THRESH( data, stat, niters, include_original, subject_mask, alpha ) 
 % implements the permutation test voxelwise on a dataset in order to 
 % estimate a one-sample threshold with which to perform multiple 
@@ -39,18 +39,30 @@ if ~exist('FWHM', 'var')
     FWHM = NaN;
 end
 if ~exist('subject_mask', 'var')
-    subject_mask = NaN;
+    mask = NaN;
+end
+if ~exist('demean', 'var')
+    demean = 0;
 end
 if ~exist('alpha', 'var')
     alpha = 0.05;
 end
 
+% Obtain the size of the data input
 sD = size(data);
+
+% Calculate the number of subjects
 nsubj = sD(end);
+
+% Calculate the number of dimensions
 D = length(sD) - 1;
 
 if ~isnan(FWHM)
     data = fconv(data, FWHM, D);
+end
+
+if demean
+   data = data - mean(data, D+1); 
 end
 
 if include_original
@@ -64,10 +76,10 @@ if include_original
     end
     
     vec_of_maxima = zeros(1, niters );
-    if isnan(subject_mask)
+    if isnan(mask)
         vec_of_maxima(1) = max(combined(:));
     else
-        vec_of_maxima(1) = combined(lmindices(combined, 1, subject_mask));
+        vec_of_maxima(1) = combined(lmindices(combined, 1, mask));
     end
 else
     vec_of_maxima = zeros(1, niters);
@@ -76,11 +88,7 @@ end
 
 random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
 for iter = start:niters
-    %     iter
-    iter
-    if mod(iter, 100) == 0
-        iter
-    end
+%     modul(iter,1000);
     random_berns_for_iter = random_berns(:, iter);
     random_sample = find(random_berns_for_iter < 0);
     data2 = data;
@@ -92,10 +100,11 @@ for iter = start:niters
         combined = mvtstat( data2 );
     end
     
-    if isnan(subject_mask)
+    if isnan(mask)
         vec_of_maxima(iter) = max(combined(:));
     else
-        vec_of_maxima(iter) = combined(lmindices(combined, 1, subject_mask));
+%         vec_of_maxima(iter) = max(combined(:).*mask(:));
+        vec_of_maxima(iter) = combined(lmindices(combined, 1, mask));
     end
 end
 

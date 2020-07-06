@@ -1,12 +1,11 @@
-function resel_vec = LKC2resel( LKCs )
+function resel_vec = LKC2resel( L, L0 )
 % LKC2RESEL( LKCs ) takes in a vector of LKCs and returns the 
 % corresponding vector of resels for use in SPM.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  LKCs   a structure containing
-%      LKCs.Lhat = L1,..., L_D
-%      LKCs.L0 = L0 (the zeroth LKC)
+%  L = [L1,..., L_D]
+%  L0 (the zeroth LKC)
 %--------------------------------------------------------------------------
 % OUTPUT
 %  resel_vec     the vector of resels
@@ -26,15 +25,15 @@ function resel_vec = LKC2resel( LKCs )
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 % Get rid of zero (high LKCs)
-LKCs.hatL = LKCs.hatL(LKCs.hatL > 0);
+L = L(L > 0);
 
 % Ensure that the vector of LKCs is a row vector
-if size(LKCs.hatL,1) > 1
-    LKCs.hatL = LKCs.hatL';
+if size(L,1) > 1
+    L = L';
 end
 
 % Compute the number of dimensions
-D = length(LKCs.hatL);
+D = length(L);
 
 %%  Main function
 %--------------------------------------------------------------------------
@@ -46,7 +45,7 @@ scaling_vec = repmat(sqrt(4*log(2)), 1, D).^(1:D);
 resel_vec = zeros(1,4);
 
 % Set the non-zero LKCs
-resel_vec(2:(D+1)) = LKCs.hatL./scaling_vec;
-resel_vec(1) = LKCs.L0;
+resel_vec(2:(D+1)) = L./scaling_vec;
+resel_vec(1) = L0;
 end
 

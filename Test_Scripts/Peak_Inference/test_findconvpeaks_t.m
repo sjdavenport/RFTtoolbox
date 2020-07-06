@@ -151,6 +151,22 @@ mask_hr = mask_highres(mask, sresadd);
 [ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_superfinelat, 3, mask_hr)
 converted_locs = xvaleval(finemaxlocs, xvals_super);
 
+%% 3D - Small example - with mask
+FWHM = 3; nsubj = 50; Dim = [5,5,5]; mask = true(Dim); mask(2:4,2:4,2:4) = 0;
+lat_data = normrnd(0,1,[Dim, nsubj]); niters = 1000; resadd = 1; sresadd = 1;
+[ tfield_lat, xvals_lat ] = convfield_t( lat_data.*mask, FWHM, 1 );
+% [ tfield_finelat, xvals ] = convfield_t( lat_data, FWHM, resadd );
+[ tfield_superfinelat, xvals_super ] = convfield_t( lat_data.*mask, FWHM, sresadd );
+
+[ peak_est_locs, ~, peakvals ] = lmindices(tfield_lat, 3, mask_highres(mask, 1));
+peak_est_locs = xvaleval(peak_est_locs, xvals_lat);
+[peaklox, peakvals] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T', mask)
+
+max(tfield_superfinelat(:))
+mask_hr = mask_highres(mask, sresadd);
+[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_superfinelat, 3, mask_hr);
+converted_locs = xvaleval(finemaxlocs, xvals_super)
+
 %% 3D - Large example
 FWHM = 3; nsubj = 50; Dim = [91,109,91]; mask = true(Dim); 
 lat_data = normrnd(0,1,[Dim, nsubj]); niters = 1000; resadd = 1;
@@ -205,7 +221,27 @@ mask_hr = mask_highres(mask, 5);
 %%
 [peaklox, peakvals] = findconvpeaks_new(lat_data, FWHM, peak_est_locs, 'T', mask)
 % xvaleval(peak_est_locs(:,1), 
-%%
+
 %%
 [peaklox, peakvals] = findconvpeaks_new(lat_data, FWHM, [4,1.5,2.5]', 'T', mask)
 
+%% Simple 3D example with mask (implement to ensure it finds the peaks correctly)
+nsubj_vec = 25; Dim = [5,5,5]; nsubj = 25; FWHM = 3;
+mask = true(Dim); mask(2:4,2:4,2:4) = 0;
+lat_data = wnfield(mask, nsubj); resadd = 3;
+[ tfield_finelat, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
+
+mask_hr = mask_highres(mask, resadd);
+[peak_est_locs, ~,peakvals] = lmindices(tfield_finelat, 3, mask_hr);
+peak_est_locs = xvaleval(peak_est_locs, cfields.xvals);
+[peaklox, peakvals] = findconvpeaks(lat_data.field, FWHM, peak_est_locs, 'T', mask)
+
+super_resadd = 11;
+[cfield_fine, xvals_super] = convfield_t( lat_data.field.*mask, FWHM, super_resadd );
+mask_superhr = mask_highres(mask, super_resadd);
+[ finemaxlocs, ~, finemaxvals ] = lmindices(cfield_fine, 3, mask_superhr);
+finemaxvals(1)
+converted_locs = xvaleval(finemaxlocs, xvals_super);
+
+
+%% Figure out the differences between convfield_t and applyconvfield!!

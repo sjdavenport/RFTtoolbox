@@ -32,7 +32,8 @@ function x_estimate = NewtonRaphson( f, initial_guess, fprime, tol, max_iters )
 % Multidimensinal output and input:
 % NewtonRaphson(@(x) [x(1)^2 - 1; x(1)^2 + x(2)^2], [10,5], @(x)[2*x(1),0; 2*x(1), 2*x(2)])
 %--------------------------------------------------------------------------
-% AUTHOR: Sam Davenport
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 3
     fprime = NaN;
 end

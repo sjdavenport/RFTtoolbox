@@ -34,8 +34,8 @@ du = 1e-6;
 %--------------------------------------------------------------------------
 d  = 1;
 while abs(d) > 1e-6
-    [P, P, p] = spm_P_RF(1,0,u,df,STAT,R,n);
-    [P, P, q] = spm_P_RF(1,0,u + du,df,STAT,R,n);
+    [~, ~, p] = spm_P_RF(1,0,u,df,STAT,R,n); % Calculates the EEC
+    [~, ~, q] = spm_P_RF(1,0,u + du,df,STAT,R,n);
     d         = (a - p)/((q - p)/du);
     u         = u + d;
     if isinf(u), u=+Inf; return; end

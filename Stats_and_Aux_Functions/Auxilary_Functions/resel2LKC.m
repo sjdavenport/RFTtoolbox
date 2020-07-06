@@ -1,4 +1,4 @@
-function LKCs = resel2LKC( resels )
+function [ L, L0 ] = resel2LKC( resels )
 % resel2LKC converts SPM resels to Lipshitz Killing curvatures
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -6,9 +6,8 @@ function LKCs = resel2LKC( resels )
 %  resels  a D + 1 length vector of resels
 %--------------------------------------------------------------------------
 % OUTPUT
-% LKCs   a structure containing
-%      LKCs.Lhat = L1,..., L_D
-%      LKCs.L0 = L0 (the zeroth LKC)
+%  L = [L1,..., L_D]
+%  L0 (the zeroth LKC)
 %--------------------------------------------------------------------------
 % EXAMPLES
 % FWHM = 3; Dim = [5,5];
@@ -29,7 +28,7 @@ scaling_vec = repmat(sqrt(4*log(2)), 1, D+1).^(0:D);
 
 % Set the non-zero LKCs
 scaled_resels = resels.*scaling_vec;
-LKCs.hatL = scaled_resels(2:end);
-LKCs.L0 = scaled_resels(1);
+L = scaled_resels(2:end);
+L0 = scaled_resels(1);
 end
 
