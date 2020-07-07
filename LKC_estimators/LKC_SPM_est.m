@@ -42,7 +42,7 @@ end
 if D == 3
     spm_resel_vec = spm_resels_vol(mask,FWHM);
 elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
-    warning('This only works for a box!')
+    warning('2D SPM LKC esimation only works for a box atm!')
     spm_resel_vec = spm_resels(FWHM,size(mask), 'B');
 else
     error('This setting has not been coded')

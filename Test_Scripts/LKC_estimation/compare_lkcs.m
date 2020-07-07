@@ -50,12 +50,12 @@ L_oldconv = LKC_GaussConv( lat_data.field, Gker_param, D, resadd )
 
 % HPE seems to match the LKC_GaussConv answer here
 HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
-newHPE = HPE.hatL
+newHPE = HPE.hatL'
 
 % In this case old HPE matches new HPE
 D = length(Dim);
 HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
-oldHPE = HPE.hatn
+oldHPE = HPE.hatn'
 
 % SPM (off of course because of non-stationarity but certainly more similar
 % to the HPE and LKCGaussconv estimators)
