@@ -8,12 +8,12 @@ nsubj = 25;
 dim   = T * ones( [ 1 D ] );
 
 % Kernel
-FWHM1  = [ 10 2 3 ];%sigma2FWHM( sigma );
-FWHM2  = [ 2 10 3 ];
-pad   = 0;
+FWHM1  = [ 5 5 5 ];%sigma2FWHM( sigma );
+FWHM2  = [ 2 1 3 ];
+pad   = ceil( 4 * FWHM2sigma( FWHM1 ) );
 
 % Theory LKCs
-%theoryL = LKC_isogauss_theory( FWHM, dim )
+theoryL = LKC_isogauss_theory( FWHM1(1), dim )
 
 % Construction
 resadd  = 1;
@@ -23,27 +23,43 @@ enlarge = ceil( resadd / 2 );
 mask = logical( pad_vals( true( [ dim, 1] ), pad) );
 
 
+
+
 %% LKC computation
 %--------------------------------------------------------------------------
 
 % Generate lattice data
 lat_data = squeeze( wnfield( mask, nsubj ) );
+lat_data = convfield_Field( lat_data, FWHM1, 0, resadd, false, enlarge );
+%M = lat_data.masksize;
+%lat_data.field = lat_data.field( randsample( M(1), M(1) )', :, randsample( M(3), M(3) )', : );
 
 % logical indicating whether the lat_data gets masked before smoothing or
 % not,
-lat_masked = true;
+lat_masked = false;
 
 field   = Mask( convfield_Field( lat_data, FWHM1, 0, resadd, lat_masked, enlarge ) );
 dfield  = Mask( convfield_Field( lat_data, FWHM1, 1, resadd, lat_masked, enlarge ) );
-d2field = Mask( convfield_Field( lat_data, FWHM1, 2, resadd, lat_masked, enlarge ) );
+%d2field = Mask( convfield_Field( lat_data, FWHM1, 2, resadd, lat_masked, enlarge ) );
+L1 = LKC_voxmfd_est( field, dfield )
+theoryL
 
+%%
+% Stationary estimator
+voxmfd = Field2VoxManifold( field, dfield, d2field );
+LKC_est_stationary( voxmfd )
 
-lat_data.field = permute( lat_data.field, [2 1 3 4] );
+%lat_data.field = permute( lat_data.field, [2 1 3 4] );
 field2   = Mask( convfield_Field( lat_data, FWHM2, 0, resadd, lat_masked, enlarge ) );
 dfield2  = Mask( convfield_Field( lat_data, FWHM2, 1, resadd, lat_masked, enlarge ) );
 d2field2 = Mask( convfield_Field( lat_data, FWHM2, 2, resadd, lat_masked, enlarge ) );
 
 L1 = LKC_voxmfd_est( field, dfield, d2field, [ 1 1 1 ] )
+theoryL
+Lint1 = LKC_voxmfd_est( field, dfield, d2field, [ 1 0 1 ] )
+
+
+%%
 L2 = LKC_voxmfd_est( field2, dfield2, d2field2, [ 1 1 1 ] )
 
 L3 = LKC_voxmfd_est( field, dfield, d2field, [ 1 0 1 ] )
