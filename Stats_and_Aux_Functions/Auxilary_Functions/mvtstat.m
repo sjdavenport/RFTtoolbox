@@ -33,14 +33,15 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
+sD = size(data);
+
 if nargin < 2
-    Dim = NaN;
+    Dim = sD(1:(end-1));
 end
 if nargin < 3
     nansaszeros = 0;
 end
 
-sD = size(data);
 D = length(sD) - 1;
 nsubj = sD(end);
 

@@ -16,8 +16,8 @@ function resel_vec = LKC2resel( L, L0 )
 % EXAMPLES
 % FWHM = 3; Dim = [5,5];
 % resels = spm_resels(FWHM,Dim, 'B')
-% LKCs = resel2LKC(resels)
-% resel_vec = LKC2resel(LKCs)
+% [L,L0] = resel2LKC(resels)
+% resel_vec = LKC2resel(L,L0)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
