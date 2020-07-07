@@ -114,7 +114,7 @@ sm = size(mask_sphere);
 lambda   = 1 / ( 2 * FWHM2sigma( FWHM )^2 );
 volmask  = 2*T^2 + 2*(T-2)*T + 2* (T-2)^2;
 surfmask = 6 * ( T^2 + (T-2)^2 );
-linemask = 12 * T / 4 + 12 * ( T - 2 ) * 3 / 4
+linemask = 12 * T / 4 - 12 * ( T - 2 ) * 1 / 4;
 
 sphere = VoxManifold( mask_highres( mask_sphere, 1 ), ...
                       xvals_highres( {1:sm(1),1:sm(2),1:sm(3)}, 1 ) );
@@ -135,10 +135,11 @@ for m = 1:Msim
     lat_masked = false;
 
     % Generate convolution fields from lattice data
-    cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
-    dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
+    cfield   = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
+    dcfield  = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
+    d2cfield = convfield_Field( lat_data, FWHM, 2, resadd, lat_masked, enlarge );
     
-    Lests(m,:) = LKC_voxmfd_est( cfield, dcfield );
+    Lests(m,:) = LKC_voxmfd_est( cfield, dcfield, d2cfield );
 end
 toc
 
@@ -173,7 +174,7 @@ toc
 % Note the main part in L1 is ignored. Hence L1 should be close to zero
 [ mean( Lests, 1 );...
   cubeL;...
-  1.96*std( Lests, 0, 1 )/sqrt(Msim)
+  1.96 * std( Lests, 0, 1 ) / sqrt( Msim )
  ]
 
 %% 3D LKC estimation sphere manifold all integrals
@@ -190,15 +191,16 @@ for m = 1:Msim
     lat_masked = false;
 
     % Generate convolution fields from lattice data
-    cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
-    dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
+    cfield   = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
+    dcfield  = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
+    d2cfield = convfield_Field( lat_data, FWHM, 2, resadd, lat_masked, enlarge );
     
-    Lests(m,:) = LKC_voxmfd_est( cfield, dcfield );
+    Lests(m,:) = LKC_voxmfd_est( cfield, dcfield, d2cfield, [1 1 1] );
 end
 toc
 
 % 
 [ mean(Lests, 1);...
   sphereL;...
-  1.96*std( Lests, 0, 1 )/sqrt(Msim)
+  1.96 * std( Lests, 0, 1 ) / sqrt( Msim )
   ]
