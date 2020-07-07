@@ -66,7 +66,7 @@ for type = ["x", "y", "z"]
     end
 
     % adjust for large angles
-    angle.field( greater_pi ) = 2*pi - angle.field( greater_pi );
+    angle.field( greater_pi ) = -angle.field( greater_pi );
 
     angles.(type) = angle.field;
 end
