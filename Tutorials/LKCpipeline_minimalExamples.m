@@ -19,16 +19,14 @@ xvals   = { (1:dimp(1)), (1:dimp(2)) };
 % Cube manifold
 mask  = true( dim );
 mask  = logical( pad_vals( mask, pad) );
-cubeL = LKC_isogauss_theory( FWHM, [ T T ] );
+cubeL = LKC_isogauss_theory( FWHM, [ T T ] )
 
 % Sphere manifold
 mask_sphere = true( dim );
 mask_sphere = bndry_voxels( logical( pad_vals( mask_sphere, pad) ), 'full' );
 
 lambda  = 1 / ( 2 * FWHM2sigma( FWHM )^2 );
-sphereL = [ sqrt( lambda ), lambda ] .* [ 4*(T-1) 4*(T-1) ];
-
-
+sphereL = [ sqrt( lambda ), lambda ] .* [ 4*(T-1) 4*(T-1) ]
 
 %% 2D LKC simulation cube
 %--------------------------------------------------------------------------
@@ -128,6 +126,7 @@ Msim = 50;
 Lests = NaN * ones( [ Msim D ] );
 tic % ~60 seconds
 for m = 1:Msim
+    m
     lat_data = wnfield( mask, nsubj );
 
     % logical indicating whether the lat_data gets masked before smoothing or
@@ -155,6 +154,7 @@ Msim = 50;
 Lests = NaN * ones( [ Msim D ] );
 tic % ~2min
 for m = 1:Msim
+    m
     lat_data = wnfield( mask, nsubj );
 
     % logical indicating whether the lat_data gets masked before smoothing or
@@ -183,6 +183,7 @@ Msim = 50;
 Lests = NaN * ones( [ Msim D ] );
 tic % ~60 seconds
 for m = 1:Msim
+    m
     lat_data = wnfield( mask_sphere, nsubj );
 
     % logical indicating whether the lat_data gets masked before smoothing or

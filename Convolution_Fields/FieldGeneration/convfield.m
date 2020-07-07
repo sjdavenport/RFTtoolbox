@@ -379,7 +379,7 @@ end
 
 %%% enlarge input
 if ~exist( 'enlarge', 'var' )
-    enlarge = 0;
+    enlarge = ceil(resadd/2);
 end
 
 %% Check and prepare the Kernel input structure
