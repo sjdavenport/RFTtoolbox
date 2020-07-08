@@ -90,7 +90,7 @@ switch D
 
         % Estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
-        L(1) = diff( xvec ) * ( vol_form(1:end-1) + vol_form(2:end) ) / 2;
+        L(1) = diff( xvec ) * ( vol_form( 1:end-1 ) + vol_form( 2:end ) ) / 2;
         
     case 2
         % Get the voxel grid dimensions after resolution increase
@@ -257,7 +257,7 @@ switch D
                 Vl = V( :, l );
                 clear V
                 % Make W outward pointing normal
-                W = W .* orientation.(type)(bdry.(type)(:));
+                W = W .* orientation.(type)( bdry.(type)(:) );
 
                 % Get the vectors derived from the Christoffel symbols
                 Gammakk = squeeze( collapse( ...
