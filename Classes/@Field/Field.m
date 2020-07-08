@@ -63,8 +63,9 @@ classdef Field
            elseif ~isempty( obj.field )
                sF = size( obj.field );
                sM = size( val );
-               l = length( sM );
-               if ~all( sM == sF( 1:l ) )
+               sM = sM( 1:obj.D );
+               
+               if ~all( sM == sF( 1:obj.D ) )
                   error('mask needs to have a compatible dimension with field.')
                end
                % Assign the value
@@ -409,9 +410,10 @@ classdef Field
             else
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
             end
-        end
+       end
+        
        % Function for masking data
-       obj = Mask( obj, mask )
+       obj = Mask( obj, val, mask )
        
        % Function for obtaining the private complete field
        function val = iscomplete( obj )
@@ -435,12 +437,12 @@ classdef Field
             
             % Create an empty ConvField object
             out = ConvField();
-            out.Kernel = Kernel;
-            out.resadd = resadd;
+            out.Kernel  = Kernel;
+            out.resadd  = resadd;
             out.enlarge = enlarge;
-            out.field = obj.field;
-            out.mask = obj.mask;
-            out.xvals = obj.xvals;            
+            out.field   = obj.field;
+            out.mask    = obj.mask;
+            out.xvals   = obj.xvals;            
        end
 
        % Function for checking whether two Field objects are compatible
