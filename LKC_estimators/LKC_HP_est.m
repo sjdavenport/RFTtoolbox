@@ -1,4 +1,4 @@
-function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
+function LKC = LKC_HP_est( field, Mboot, normalize, version )
 % LKC_HPE_EST( Y, mask, Mboot, normalize, version ) computes the Lipschitz
 % Killing curvature using the Hermite projection estimator proposed in
 % Telschow et al (2020+).
@@ -8,9 +8,7 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory:
-%  Y      an array of dimension T_1 x...x T_D x N of N random
-%         fields over an T_1 x...x T_D rectangle.
-%  mask   a logical array of dimension T_1 x...x T_D.
+%  field  an object of class field containing observation of a random field.
 %
 % Optional:
 %  Mboot     an integer specifying the number of bootstraps used for
@@ -128,45 +126,24 @@ function LKC = LKC_HP_est( Y, mask, Mboot, normalize, version )
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
 
-
-%% %-----------------------------------------------------------------------
-%  check mandatory input and get important constants
+%% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-%%% get constants from the input
-% size of the domain
-sM = size( mask );
-sY = size( Y );
 
-% dimension of the domain, since matlab is not consistent for D<1, we need
-% to catch this case 
-if sM( 2 ) == 1 && length( sM ) == 2
-    D = 1;
-else
-    D = length(sM);
-end
+% Get constants from the input
+sY = size( field.fieldsize );
+D  = field.D;
+N  = field.fibersize;
 
-% modify the size array of Y to keep track of N.
-if length( sY ) == D
-    sY = [ sY 1 ];
-end
-% get number of subjects/samples
-N      = sY( D + 1 );
+mask = field.mask;
 
-% check validity of mask input
-if ~all( sM == sY( 1:end-1 ) ) && ~all( sM == sY ) && ...
-   ~( D == 1 && sM( 1 ) == sY( 1 ) )
-   error( 'The mask needs to have the same size as Y. Note that realisations are stored as columns.' )
-end
-
-% check that method is implemented for dimension D
+% Check that method is implemented for dimension D
 if D > 3
     error( 'D must be < 4. Higher dimensional domains have not been implemented')
 end
 
-
-%% %-----------------------------------------------------------------------
-%  add and check optional values
+%% Add and check optional values
 %--------------------------------------------------------------------------
+
 if ~exist( 'Mboot', 'var' )
    % default number of bootstrap replicates
    Mboot = 1;
@@ -177,7 +154,7 @@ if N == 1 && Mboot > 1
 end
 
 if ~exist( 'normalize', 'var' )
-    % default value of "normalize"
+    % Default value of "normalize"
     if N == 1
        normalize = 0;
     else
@@ -186,79 +163,80 @@ if ~exist( 'normalize', 'var' )
 end
 
 if ~exist( 'version', 'var' )
-    % default value of "version"
+    % Default value of "version"
     version = "C";
 end
 
 
-%% %-----------------------------------------------------------------------
-%  main function
+%% Main function
 %--------------------------------------------------------------------------
-% initialize the LKC output
+
+% Initialize the LKC output
 if Mboot > 1
-    L_hat = NaN*zeros( [ D, Mboot ] );
+    L_hat = NaN * zeros( [ D, Mboot ] );
 else
-    L_hat = NaN*zeros( [ D, N ] );    
+    L_hat = NaN * zeros( [ D, N ] );    
 end
 
-% apply the mask to the data, i.e., set values outside the mask to -oo
-if ~all( mask(:) )
-    mask( mask == 0 ) = -Inf;
-    Y = repmat( mask, [ ones( [ 1 D ] ), N ] ).* Y;
-end
+% Apply the mask to the data, i.e., set values outside the mask to -oo
+field = Mask( field, -Inf, field.mask );
+field = field.field;
 
-% scaling vector for integral
+% Scaling vector for integral
 p = [ sqrt( 2 * pi ); pi; ( 2 * pi )^( 3 / 2 ) / factorial( 3 ); ...
       ( 2 * pi )^( 4 / 2 ) / factorial( 4 ) ];
 
-% compute LKCs depending on method
+% Compute LKCs depending on method
 if( Mboot > 1 )    
-    % get weights for the multiplier bootstrap
+    % Get weights for the multiplier bootstrap
     multiplier = normrnd( 0, 1, [ N, Mboot ] );
 
-    % reshape and and standardize the field, such that it has unit variance
-    Y = reshape( Y, prod( sY(1:end-1) ), N );
-    % normalize the residuals
-    Y = Y - mean( Y, 2 );
-    Y = Y ./ sqrt( sum( Y.^2, 2 ) );
+    % Reshape and and standardize the field, such that it has unit variance
+    field = reshape( field, prod( sY( 1:end-1 ) ), N );
+    % Normalize the residuals
+    field = field - mean( field, 2 );
+    field = field ./ sqrt( sum( field.^2, 2 ) );
 
     for i = 1:Mboot
-        % get the bootstrapped process
-        if D~=1
-            mY = reshape( Y * multiplier( :, i ), sY(1:end-1) );
+        % Get the bootstrapped process
+        if D ~= 1
+            mfield = reshape( field * multiplier( :, i ), sY( 1:end-1 ) );
         else
-            mY = Y * multiplier( :, i );
+            mfield = field * multiplier( :, i );
         end
 
-        % get the EC stepfunctions
-        EC = EulerCharCrit( mY, D, mask, version );
+        % Get the EC stepfunctions
+        EC = EulerCharCrit( mfield, D, mask, version );
         EC = EC{ 1 };
 
-        % get LKC by integrating the EC curves against the Hermite
+        % Get LKC by integrating the EC curves against the Hermite
         % polynomials
         v =  EC( 2:end-1, 1 )';
-        % differences of EC between consecutive critical values
+        % Differences of EC between consecutive critical values
         b = -diff( EC( 2:end, 2 ) );
         % Hermite polynomials evaluated at critical values
         H =  [ v; ( v.^2 - 1 ); ( v.^3 - 3*v ); ( v.^4 - 6*v.^2 + 3 ) ];
 
         L_hat( :, i ) = p( 1:D ) .* ( H( 1:D, : ) * b );
-    end
-    L0 = EC( 1, 2 );
-else
-    % normalize the field to have mean zero and unit variance
-    if normalize
-        Y = ( Y - mean( Y, D+1 ) ) ./ std( Y, 0, D+1 );
+        
     end
     
-    % get the EC stepfunctions
-    ECall = EulerCharCrit( Y, D, mask, version );
+    L0 = EC( 1, 2 );
+    
+else
+    % Normalize the field to have mean zero and unit variance
+    if normalize
+        field = ( field - mean( field, D+1 ) ) ./ std( field, 0, D+1 );
+    end
+    
+    % Get the EC stepfunctions
+    ECall = EulerCharCrit( field, D, mask, version );
 
     for i = 1:N
-        % get LKC by integrating the Euler Char curves against the Hermite
+        % Get LKC by integrating the Euler Char curves against the Hermite
         % polynomials
         v =  ECall{ i }( 2:end-1, 1 )';
-        % differences of EC between consecutive critical values
+        % Differences of EC between consecutive critical values
         b = -diff( ECall{ i }( 2:end, 2 ) );
         % Hermite polynomials evaluated at critical values
         H =  [ v; ( v.^2 - 1 ); ( v.^3 - 3 * v );...
