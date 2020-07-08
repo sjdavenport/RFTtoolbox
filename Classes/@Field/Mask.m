@@ -1,4 +1,4 @@
-function obj = Mask( obj, mask )
+function obj = Mask( obj, val, mask )
 % Mask( obj, mask ) constructs a Field object having white
 % noise in the fiber.
 %--------------------------------------------------------------------------
@@ -6,6 +6,7 @@ function obj = Mask( obj, mask )
 % Mandatory
 %  obj   of type Field
 % Optional
+%  val   a numeric used to fill the ~mask voxels
 %  mask  a logical of size obj.sizeDomain.
 %
 %--------------------------------------------------------------------------
@@ -33,27 +34,32 @@ function obj = Mask( obj, mask )
 %% Check optional input
 %--------------------------------------------------------------------------
 
+if ~exist( 'val', 'var' )
+    val = 0;
+end
+
 if ~exist( 'mask', 'var' )
     mask = obj.mask;
 end
 
 % Check whether the mask and the field fit together
 sMask  = size( mask );
-sField = size( obj.field );
-if ~all( sMask == sField( 1:length( sMask ) ) )
+sField = obj.fieldsize;
+
+if ~all( sMask == obj.masksize )
      error( "'mask' must be a logical array of size of the first length mask coordinates." )
 end
 
 %% Main function
 %--------------------------------------------------------------------------
 % Get dimension of the Domain
-D = length( sMask );
-if any( sMask == 1) && D == 2
-    D = 1;
-end
+D = obj.D;
 
 % Mask the field
-obj.field = repmat( mask, [ ones( [ 1 D ] ), sField( D+1:end ) ] ) .* obj.field;
+if val ~= 0
+    mask( ~mask ) = val;
+end
+obj.field = repmat( mask, [ ones( [ 1 D ] ), obj.fibersize ] ) .* obj.field;
 
 % Put the mask into the object
 obj.mask = mask;
