@@ -176,7 +176,7 @@ end
 % return logical array of size s_hr, if mask is always 1
 if all( mask(:) )
     mask_hr = true( s_hr );
-    weights = mask_hr;
+    weights = getweights( mask_hr );
     return
 end
 
