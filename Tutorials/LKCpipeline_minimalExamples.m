@@ -94,7 +94,7 @@ nsubj = 10;
 pad   = ceil( 4 * FWHM2sigma( FWHM ) );
 dim   = T * ones( [ 1 D ] );
 dimp  = dim + 2 * pad;
-resadd  = 1;
+resadd  = 3;
 enlarge = ceil( resadd / 2 );
 xvals   = { (1:dimp(1)), (1:dimp(2)) };
 
@@ -179,7 +179,7 @@ toc
 
 %% 3D LKC estimation sphere manifold all integrals
 %--------------------------------------------------------------------------
-Msim = 50;
+Msim = 20;
 
 Lests = NaN * ones( [ Msim D ] );
 tic % ~60 seconds
