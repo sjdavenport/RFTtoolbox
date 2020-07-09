@@ -1,4 +1,4 @@
-function [ peaklocs, peakvals ] = findlms_mod2( fn, initial_estimates, lowerbounds, upperbounds )
+function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, upperbounds )
 % FINDLMS( fn, initial_estimates, box_size ) finds the local maxima of
 % function by searching within boxes centred at the initial estimates
 %--------------------------------------------------------------------------

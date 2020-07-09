@@ -146,7 +146,7 @@ else
     error('Not coded for D > 3')
 end
 
-[T,mu,sigma,d] = mvtstat(Xcfields_at_tval);
+[T,mu,sigma,d] = mvtstat(Xcfields_at_tval, 0);
 
 % if D == 1
 %     T = T';

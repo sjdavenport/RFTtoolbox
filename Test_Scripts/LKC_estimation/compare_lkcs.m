@@ -26,9 +26,12 @@ HPE  = LKC_HP_est( cfield, 1, 1 );
 % Theory
 L_theory = LKC_isogauss_theory( FWHM, nvox );
 
+% SPM
+L_spm = LKC_SPM_est( FWHM, lat_data.mask );
+
 % Compare results
 struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'conv_est', LKCs.hatL,...
-        'HPE', HPE.hatL )
+        'HPE', HPE.hatL, 'SPM', L_spm )
     
 % FT: Works perfectly well, now.
 
@@ -277,8 +280,8 @@ L_conv_2_average/niters
 L_HPE_average/niters
 
 % When I run the average loop I got
-% L_conv_average/niters = 21.3467   23.8655    6.7526    and 
-% L_conv_2_average/niters =  21.4748   23.8655    6.7526 and 
+% L_conv_average/niters = 21.3467   23.8655    6.7526  and 
+% L_conv_2_average/niters =  21.4748   23.8655    6.7526  and 
 % L_HPE_average/niters = 2.0199   22.2506    5.5273
 
 % This indicates that L_2 and L_3 are likely computed correctly while L_1 is off

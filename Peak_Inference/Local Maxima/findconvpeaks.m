@@ -126,15 +126,6 @@ else
     end
 end
 
-% Obtain the boundary of the mask (if this is not supplied)
-if ~exist('boundary', 'var') || isnan(boundary)
-    boundary = bndry_voxels( logical(mask), 'full' );
-end
-
-if ~exist('truncation', 'var')
-    truncation = -1;
-end
-
 % Setting up xvals_vecs
 if ~exist('xvals_vecs', 'var')
     xvals_vecs = {1:Ldim(1)};  %The other dimensions are taken case of below.
@@ -330,4 +321,14 @@ end
 % for peakI = 1:npeaks
 %     peak_locs(:, peakI) = fmincon(@(tval) -tcf(tval), peak_est_locs(:, peakI), A, b);
 %     peak_vals(peakI) = tcf(peak_locs(:, peakI));
+% end
+
+
+% Obtain the boundary of the mask (if this is not supplied)
+% if ~exist('boundary', 'var') || isnan(boundary)
+%     boundary = bndry_voxels( logical(mask), 'full' );
+% end
+% 
+% if ~exist('truncation', 'var')
+%     truncation = -1;
 % end

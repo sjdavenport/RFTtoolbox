@@ -26,12 +26,15 @@ function [ out, array_diff ] = same_array( array1, array2, tol )
 %--------------------------------------------------------------------------
 if ~exist( 'tol', 'var' )
    % default option of opt1
-   tol = 10^(-10);
+   tol = 10^(-7);
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-array_diff = sum(abs(array1(:) - array2(:)));
+notnan1 = ~isnan(array1);
+notnan2 = ~isnan(array2);
+
+array_diff = sum(abs(array1(notnan1) - array2(notnan2)));
 if array_diff < tol
     out = 1;
 else
