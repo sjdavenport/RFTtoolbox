@@ -1,4 +1,4 @@
-function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters, filename, dirsave )
+function rc = store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, filename, dirsave, use_spm )
 % store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters,dirsave )
 % records and saves the coverage
 %--------------------------------------------------------------------------
@@ -66,7 +66,7 @@ if ~exist( 'dirsave', 'var' )
 end
 
 if ~exist( 'use_spm', 'var')
-    use_spm = 1;
+    use_spm = 0;
 end
 
 %%  Main Function Loop

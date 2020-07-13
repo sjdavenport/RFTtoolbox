@@ -12,8 +12,6 @@ function coverage = record_coverage( spfn, sample_size, Kernel, resadd, niters, 
 % Optional
 %  resadd       a non-negative integer giving the resolution increase.
 %               Default is 1.
-%  mask          a 0/1 array of size Dim which provides a mask of the data
-%               the default to use is no mask i.e. 1
 %  niters        the number of resamples of the data to do
 %  lkc_est_version      either 'conv' or 'hpe'. Default is 'conv'
 %  do_spm       additionally calculate the lkcs using SPM (i.e. under
@@ -79,7 +77,7 @@ nabovethresh_finelat_spm = 0;
 % Main
 for b = 1:niters
     %Display b if mod(b,100) = 0
-    modul(b,100)
+    modul(b,1)
     
     % Calculate data
     lat_data = spfn(sample_size);
@@ -138,7 +136,7 @@ for b = 1:niters
     if D == 3
         gap = 5;
     else
-        gap = 0.5;
+        gap = 1;
     end
     peaksest2use = peak_est_locs(:, peakvals > (threshold - gap));
     

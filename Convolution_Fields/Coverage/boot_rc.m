@@ -1,4 +1,4 @@
-function coverage = boot_rc( data, sample_size, Kernel, resadd, mask, niters, lkc_est_version, do_spm, with_rep )
+function coverage = boot_rc( data, sample_size, Kernel, mask, resadd, niters, lkc_est_version, do_spm, with_rep )
 % BOOT_RC( data, sample_size, Kernel, resadd, mask, niters, lkc_est_version, do_spm, with_rep )
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -9,11 +9,11 @@ function coverage = boot_rc( data, sample_size, Kernel, resadd, mask, niters, lk
 %  sample_size   the size of each sample to be sampled from the data
 %  FWHM          the applied FWHM of the Gaussian Kernel in each direction
 %         (we smooth with an istropic Kernel as is commonly done in practice)
+%  mask          a 0/1 array of size Dim which provides a mask of the data
+%               the default to use is no mask i.e. 1
 % Optional
 %  resadd       a non-negative integer giving the resolution increase.
 %               Default is 1.
-%  mask          a 0/1 array of size Dim which provides a mask of the data
-%               the default to use is no mask i.e. 1
 %  niters        the number of resamples of the data to do
 %  lkc_est_version      either 'conv' or 'hpe'. Default is 'conv'
 %  do_spm       additionally calculate the lkcs using SPM (i.e. under
@@ -38,6 +38,9 @@ function coverage = boot_rc( data, sample_size, Kernel, resadd, mask, niters, lk
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
+% Ensure the mask is logical
+mask = logical(mask);
+
 %%  Add/check optional values
 %--------------------------------------------------------------------------
 if ~exist( 'niters', 'var' )
@@ -52,7 +55,7 @@ end
 
 % Set the default do_spm value
 if ~exist('do_spm', 'var')
-   do_spm = 1; 
+   do_spm = 0; 
 end
 
 if ~exist('lkc_est_version', 'var')
@@ -63,7 +66,7 @@ end
 
 % Set the default with_rep value
 if ~exist('with_rep', 'var')
-   with_rep = o; 
+   with_rep = 0; 
 end
 
 
@@ -111,19 +114,20 @@ elseif ischar(data)
     use_nif = mean(nifti_type(nifti_file_locs)) - 1;
     
     % Ensure that all of the .nii/.nii.gz files are all one or the other
-    if use_nif ~= 0 || use_nif ~= 1
+    if (use_nif ~= 0) && (use_nif ~= 1)
        error('All the files in the directory must be of the same type') 
     end
     
     % Obtain the sample function
-    spfn = @(nsubj) get_sample_fields_nifti(directory, nifti_file_locs, ...
-                    use_nif, mask, nsubj, with_rep, total_nsubj, D, index);
+    spfn = @(nsubj) get_sample_fields_nifti(data, nifti_file_locs,...
+                              use_nif, mask, nsubj, with_rep, total_nsubj);
 else
     error('Other situations have not been coded yet')
 end
 
 % Obtain the coverage
-coverage = record_coverage( spfn, sample_size, Kernel, resadd, niters, lkc_est_version, do_spm );
+coverage = record_coverage( spfn, sample_size, Kernel, resadd, niters,...
+                                                 lkc_est_version, do_spm );
 
 end
 
@@ -138,6 +142,6 @@ end
 % Function to obtain a subset field form nifti file locations
 function lat_data = get_sample_fields_nifti(directory, nifti_file_locs, use_nif, mask, nsubj, with_rep, total_nsubj)
     subset = randsample(total_nsubj,nsubj,with_rep);
-    lat_data = Field(mask);
-    lat_data.field = loadsubs( subset, directory, use_nif, nifti_file_locs, 1 );
+    lat_data = Field(mask); as_3D = 1;
+    lat_data.field = loadsubs( subset, directory, use_nif, as_3D, nifti_file_locs );
 end
