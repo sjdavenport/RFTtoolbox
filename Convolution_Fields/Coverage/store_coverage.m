@@ -5,7 +5,7 @@ function rc = store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, filenam
 % ARGUMENTS
 % Mandatory
 %  Dim        the desired dimension of the data. If D = 1, take
-%             Dim = number ofvoxels
+%             Dim = number of voxels
 %  mask       the mask to use. If D = 1, need size(mask) = [Dim,1]
 %  FWHM_vec   a vector specifiying the FWHM to iter over
 %  nsubj_vec  a vector with numbers of subjects to iter over

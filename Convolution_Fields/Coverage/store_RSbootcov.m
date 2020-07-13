@@ -20,19 +20,15 @@ function rc = store_RSbootcov( FWHM_vec, nsubj_vec, nifti_file_dir, filename, re
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% filename = ['RSfirsttry_',num2str(run)];
+% filename = 'testingruns';
 % FWHM = 3; sample_size = 25;
-% nifti_file_dir = '';
+% global feat_runs
+% nifti_file_dir = [featruns,'RS_2Block_warped'];
 % resadd = 1; niters = 1;
 % store_RSbootcov( FWHM, sample_size, nifti_file_dir, filename, 1, niters )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-
-%%  Check mandatory input and get important constants
-%--------------------------------------------------------------------------
-% Obtain the dimensions of the data from the mask
-[ rc.Dim, rc.D ] = getdim( mask );
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
