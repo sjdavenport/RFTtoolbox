@@ -44,8 +44,6 @@ function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-% Obtain the dimensions of the data from the mask
-[ rc.Dim, rc.D ] = getdim( mask );
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
@@ -73,6 +71,9 @@ end
 %--------------------------------------------------------------------------
 rc.FWHM_vec = FWHM_vec;
 rc.nsubj_vec = nsubj_vec;
+
+% Obtain 
+[ rc.Dim, rc.D ] = getdim( mask );
 
 if rc.D == 1
     rc.spfn = @(nsubj) temp_1D_gen(mask, rc.Dim, nsubj);

@@ -226,7 +226,7 @@ mask_hr = mask_highres(mask, 5);
 [peaklox, peakvals] = findconvpeaks_new(lat_data, FWHM, [4,1.5,2.5]', 'T', mask)
 
 %% Simple 3D example with mask (implement to ensure it finds the peaks correctly)
-nsubj_vec = 25; Dim = [5,5,5]; nsubj = 25; FWHM = 3;
+Dim = [5,5,5]; nsubj = 25; FWHM = 3;
 mask = true(Dim); mask(2:4,2:4,2:4) = 0;
 lat_data = wnfield(mask, nsubj); resadd = 3;
 [ tfield_finelat, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
@@ -243,5 +243,16 @@ mask_superhr = mask_highres(mask, super_resadd);
 finemaxvals(1)
 converted_locs = xvaleval(finemaxlocs, xvals_super);
 
+%% Peak finding on the MNI mask
+% Note you will need to have the MBS toolbox installed for this section to
+% work
+MNImask = logical(imgload('MNImask'));
+nsubj = 25; FWHM = 3;
+lat_data = wnfield(MNImask, nsubj); resadd = 1;
+[ tfield_finelat, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
 
-%% Figure out the differences between convfield_t and applyconvfield!!
+mask_hr = mask_highres(MNImask, resadd);
+[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_finelat, 1, mask_hr);
+finemaxvals(1)
+converted_locs = xvaleval(finemaxlocs, cfields.xvals);
+[peaklox, peakvals] = findconvpeaks(lat_data.field, FWHM, converted_locs, 'T', MNImask)

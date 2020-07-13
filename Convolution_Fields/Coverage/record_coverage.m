@@ -1,4 +1,4 @@
-function coverage = record_coverage( spfn, sample_size, Kernel, resadd, mask, niters, lkc_est_version, do_spm )
+function coverage = record_coverage( spfn, sample_size, Kernel, resadd, niters, lkc_est_version, do_spm )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -20,29 +20,27 @@ function coverage = record_coverage( spfn, sample_size, Kernel, resadd, mask, ni
 %               stationarity
 %--------------------------------------------------------------------------
 % OUTPUT
-%
+%  coverage    a structural array with entries:
+%     .conv    the average coverage obtained over the number of niters
+%               using the convolution approach
+%     .lat     coverage obtained via evaluation on a lattice (this is
+%              conservative)
+%     .finelat   the coverage obtained with evaluation on the fine lattice
+%              given by resadd, this is conservative but not as bad as 
+%             coverage.lat. On small domains or for very smooth fields this
+%             will be similar to coverage.conv, especially for high resadd.
 %--------------------------------------------------------------------------
 % EXAMPLES
-%
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
-
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-sample_image_size = size(spfn(1));
-% Dim = sample_image_size(1:end-1); %This returns the image dimension by construction.
-if sample_image_size(1) == 1
-    D = 1;
-    Dim = sample_image_size(2);
-elseif sample_image_size(2) == 1
-    D = 1;
-    Dim = sample_image_size(1);
-else
-    Dim = sample_image_size;
-    D = length(Dim);
-end
+single_sample_field = spfn(1);
+Dim = single_sample_field.fieldsize;
+D = single_sample_field.D;
+mask = single_sample_field.mask;
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
@@ -50,17 +48,6 @@ if ~exist( 'niters', 'var' )
     % default option of niters
     niters = 1000;
 end
-
-% Set the default mask value
-if ~exist( 'mask', 'var' )
-    if D == 1
-        mask = ones(Dim,1);
-    else
-        mask = ones(Dim);
-    end
-end
-
-boundary = bndry_voxels( logical(mask), 'full' );
 
 % Set the default resadd value
 if ~exist('resadd', 'var')
@@ -70,12 +57,6 @@ end
 % Set the default do_spm value
 if ~exist('do_spm', 'var')
    do_spm = 1; 
-end
-
-% xvals = 1:Dim(1);
-
-if D == 1
-    Dim = [Dim, 1];
 end
 
 if ~exist('lkc_est_version', 'var')
@@ -101,8 +82,7 @@ for b = 1:niters
     modul(b,100)
     
     % Calculate data
-    lat_data = Field( mask );
-    lat_data.field = spfn(sample_size);
+    lat_data = spfn(sample_size);
     
     % Calculate the convolution t-field and the smooth data. Note this will
     % change later because you'll get this from LKC_est as an output there
@@ -113,8 +93,10 @@ for b = 1:niters
     dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
 
     % Define the locations of the original voxels
-    voxel_locs = {(ceil(resadd/2) + 1):(resadd+1):length(cfields.xvals{1})};
-    orig_lattice_locs = repmat(voxel_locs, 1, D);
+    orig_lattice_locs = cell(1,D);
+    for d = 1:D
+        orig_lattice_locs{d} = (ceil(resadd/2) + 1):(resadd+1):length(cfields.xvals{d});
+    end
     
     % Find the maximum on the lattice
     tfield_lat = tfield_finelat(orig_lattice_locs{:});
@@ -125,12 +107,13 @@ for b = 1:niters
     
     % Calculate the LKCs
     if strcmp(lkc_est_version, 'conv')
+        % Obtain the LKCs using the convolution estimate
         [L,L0] = LKC_voxmfd_est( cfields, dcfields );
 %         LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
     elseif strcmp(lkc_est_version, 'hpe')
-        % Need to check this is still the right format for the HPE estimate!
-        error('needs updating for cfield not smooth_data')
-        LKCs  = LKC_HP_est( smooth_data, cfields.mask, 1 );
+        % Obtain the LKCs using the HPE
+        LKCs  = LKC_HP_est( cfields, 1, 1 );
+        L = LKCs.hatL; L0 = LKCs.L0;
     end
     
     % Convert the LKCs to resels
@@ -220,7 +203,7 @@ for b = 1:niters
         
         % Since the threshold 
         if isempty(peaksest2use) && (peakvals(1) > (threshold_spm - gap))
-            [~, max_tfield_at_lms] = findconvpeaks(lat_data, Kernel, peak_est_locs(:,1), 'T', mask, boundary);
+            [~, max_tfield_at_lms] = findconvpeaks(lat_data, Kernel, peak_est_locs(:,1), 'T', mask);
         else
             max_tfield_at_lms = max_tfield_finelat;
         end

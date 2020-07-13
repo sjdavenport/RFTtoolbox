@@ -23,7 +23,7 @@ LKCs = LKC_conv_est( lat_data.field, lat_data.mask, FWHM, resadd );
 LKCs.hatL
 
 % HPE L_1
-HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
+HPE  = LKC_HP_est( cfield, 1, 1 );
 HPE.hatL
 
 % Theory
@@ -31,7 +31,7 @@ LKC_isogauss_theory( FWHM, nvox )
 
 %% 2D (no padding) big mismatch between the estimators here
 % Note: can reduce resadd for fast implementation of course)
-FWHM = 6; nsubj = 20; Dim = [10,10];
+FWHM = 6; nsubj = 20; Dim = [50,50];
 resadd = 9; lat_data = wnfield(Dim, nsubj);
 
 % Convolution L_1 (voxmndest)
@@ -49,13 +49,13 @@ Gker_param = FWHM2sigma(FWHM); D = length(Dim);
 L_oldconv = LKC_GaussConv( lat_data.field, Gker_param, D, resadd )
 
 % HPE seems to match the LKC_GaussConv answer here
-HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
-newHPE = HPE.hatL
+HPE  = LKC_HP_est( cfield, 1, 1);
+newHPE = HPE.hatL'
 
 % In this case old HPE matches new HPE
 D = length(Dim);
 HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
-oldHPE = HPE.hatn
+oldHPE = HPE.hatn'
 
 % SPM (off of course because of non-stationarity but certainly more similar
 % to the HPE and LKCGaussconv estimators)
@@ -106,7 +106,7 @@ dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
 L_conv
 
 % HPE (Worryingly L_3 can be negative here sometimes)
-HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
+HPE  = LKC_HP_est( cfield, 1, 1);
 newHPEestimate = HPE.hatL'
 
 % isogauss theory (Off of course due to the edge correction)
@@ -177,12 +177,17 @@ dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
 L_conv
 
+% Estimate using christoffel symbols
+dcfield2 = convfield_Field( lat_data, FWHM, 2, resadd );
+[L_conv_2,L0_conv] = LKC_voxmfd_est( cfield, dcfield, dcfield2 );
+L_conv_2
+
 % HPE old (and correct) version
 HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
 oldHPEestimate = HPE.hatn'
 
 % HPE (I'm assuming this is off based on previous examples, but have included for completeness)
-HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
+HPE  = LKC_HP_est( cfield, 1, 1);
 newHPEestimate = HPE.hatL'
 
 %% Calculate average estimates
@@ -220,39 +225,9 @@ L_conv_2_average/niters
 L_HPE_average/niters
 
 % When I run the average loop I got
-% L_conv_average/niters = 21.3420   24.0189    6.8882    and 
-% L_HPE_average/niters = 2.0581   22.7483    6.2383
+% L_conv_average/niters = 21.3467   23.8655    6.7526    and 
+% L_conv_2_average/niters =  21.4748   23.8655    6.7526 and 
+% L_HPE_average/niters = 2.0199   22.2506    5.5273
 
 % This indicates that L_2 and L_3 are likely computed correctly while L_1 is off
 % in the convolution estimator.
-
-%% 3D boundary sphere example using the 2nd estimate (just Conv, HPE) (L1 is seems very off here, but L2 and L3 match)
-Dim = [5,5,5]; FWHM = 3; resadd = 9;
-mask_sphere = true( Dim );
-mask_sphere = bndry_voxels( mask_sphere, 'full');
-lat_data = wnfield(mask_sphere, nsubj);
-
-% Convolution L_1 (voxmndest)
-cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
-dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
-dcfield2 = convfield_Field( lat_data, FWHM, 2, resadd );
-
-[L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield, dcfield2 );
-L_conv
-
-% HPE old (and correct) version
-HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
-oldHPEestimate = HPE.hatn'
-
-% HPE (I'm assuming this is off based on previous examples, but have included for completeness)
-HPE  = LKC_HP_est( cfield.field, cfield.mask, 1, 1);
-newHPEestimate = HPE.hatL'
-
-
-% When I run the average loop I got
-% L_conv_average/niters = 21.3420   24.0189    6.8882    and 
-% L_HPE_average/niters = 2.0581   22.7483    6.2383
-
-% This indicates that L_2 and L_3 are likely computed correctly while L_1 is off
-% in the convolution estimator.
-

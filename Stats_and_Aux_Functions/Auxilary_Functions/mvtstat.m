@@ -55,7 +55,7 @@ if Dim == 1
     stdsize = [91,109,91];
     xbar = reshape(xbar, stdsize);
     std_dev = reshape(std_dev, stdsize);
-elseif isequal(prod(Dim),  prod(sD(1:end-1)))
+elseif isequal(prod(Dim),  prod(sD(1:end-1))) && (length(Dim) > 1)
     xbar = reshape(xbar, Dim);
     std_dev = reshape(std_dev, Dim);
 else
