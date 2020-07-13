@@ -224,7 +224,7 @@ switch D
                 L(1) = 0;
             end
             
-            tmp = NaN*zeros( [ 1 3 ] );
+            tmp = NaN * zeros( [ 1 3 ] );
             count = 0;
             
             for type = ["xy", "xz", "yz"]
