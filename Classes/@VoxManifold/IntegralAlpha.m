@@ -37,7 +37,7 @@ for type = ["x", "y", "z"]
     end
 
     % Create an orthonormal frame containing the chosen direction as one vector
-    [ ~, b2, b3 ] = OrthNormFrame( voxmfd, direc, mask.(type), 1 );
+    [ b1, b2, b3 ] = OrthNormFrame( voxmfd, direc, mask.(type), 1 );
 
     % Get the euclidean opening angles greater than pi/2
     greater_pi = eucangle.(type)( mask.(type)(:) ) > pi;
@@ -55,17 +55,17 @@ for type = ["x", "y", "z"]
     % voxelmanifold
     switch type
         case 'x'
-            angle = acos( n2 .* n3 ./ sqrt( n1.^2 + n2.^2 ) ...
+            angle = pi - acos( n2 .* n3 ./ sqrt( n1.^2 + n2.^2 ) ...
                                    ./ sqrt( n1.^2 + n3.^2 ) );
         case 'y'
-            angle = acos( n1 .* n3 ./ sqrt( n1.^2 + n2.^2 ) ...
+            angle = pi - acos( n1 .* n3 ./ sqrt( n1.^2 + n2.^2 ) ...
                                    ./ sqrt( n2.^2 + n3.^2 ) );
         case 'z'
-            angle = acos( n2 .* n1 ./ sqrt( n1.^2 + n3.^2 ) ...
+            angle = pi - acos( n2 .* n1 ./ sqrt( n1.^2 + n3.^2 ) ...
                                    ./ sqrt( n2.^2 + n3.^2 ) );
     end
 
-    % adjust for large angles
+    % Concave edges have a negative sign
     angle.field( greater_pi ) = -angle.field( greater_pi );
 
     angles.(type) = angle.field;
