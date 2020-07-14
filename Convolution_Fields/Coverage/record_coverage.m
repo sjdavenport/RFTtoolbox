@@ -77,7 +77,7 @@ nabovethresh_finelat_spm = 0;
 % Main
 for b = 1:niters
     %Display b if mod(b,100) = 0
-    modul(b,1)
+    modul(b,100)
     
     % Calculate data
     lat_data = spfn(sample_size);

@@ -48,7 +48,7 @@ spfn = @(nsubj) wnfield(Dim, nsubj); niters = 1000;
 record_coverage( spfn, sample_size, FWHM, resadd, niters, 'conv', 0)
 
 %% MNImask example
-mask = logical(imgload('MNImask'));FWHM = 3; sample_size = 10; 
+mask = logical(imgload('MNImask')); FWHM = 3; sample_size = 10; 
 Dim = [91,109,91]; resadd = 1; spfn = @(nsubj) wnfield(Dim, nsubj); 
-niters = 1;
+niters = 1000;
 record_coverage( spfn, sample_size, FWHM, resadd, niters, 'conv', 0)

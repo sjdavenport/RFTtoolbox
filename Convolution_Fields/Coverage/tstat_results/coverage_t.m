@@ -35,10 +35,10 @@ resadd = 3; niters = 1000;
 store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_small_mask')
 
 %% 3D - MNImask example
-FWHM_vec = 3; nsubj_vec = 25; Dim = [91,109,91];
+FWHM_vec = 3; nsubj_vec = 10; Dim = [91,109,91];
 mask = logical(imgload('MNImask'));
-resadd = 1; niters = 1;
+resadd = 1; niters = 500;
 
 tic
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_MNImask_example')
+store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_MNImask_secondhalf')
 toc

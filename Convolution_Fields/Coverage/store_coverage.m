@@ -23,11 +23,20 @@ function rc = store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, filenam
 % %% 1D coverage
 % FWHM_vec = 1:0.5:6;
 % nsubj_vec = 10:10:100;
-%
+% 
 % Dim = 100;
 % mask = true([100,1]);
+% 
+% store_coverage( mask, FWHM_vec, nsubj_vec, 1)
 %
-% store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 1)
+% %% Test
+% FWHM_vec = 2;
+% nsubj_vec = 10;
+% 
+% Dim = 100;
+% mask = true([100,1]);
+% store_coverage(  mask, FWHM_vec, nsubj_vec, 1, 1, 'testingjala')
+% 
 % %% 3D coverage
 % FWHM_vec = 3:6;
 % nsubj_vec = 25;
