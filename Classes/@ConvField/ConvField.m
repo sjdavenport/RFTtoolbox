@@ -52,25 +52,57 @@ classdef ConvField < Field
        %% Functions for class ConvField
        %-------------------------------------------------------------------
        function varargout = subsref(obj, s)
-            if strcmp(s(1).type, '()')
-                 ss = s;
-                 ss.subs = s.subs(1:obj.D);
-                 newf = ConvField();
-                 newf.mask = builtin( 'subsref', obj.mask, ss );
-                 newf.resadd = obj.resadd;
-                 xvals = obj.xvals;
-                 for d = 1:obj.D
-                     xvals{d} = xvals{d}( ss.subs{d} );
-                     if strcmp( ss.subs{d}, ':' )
-                         xvals{d} = xvals{d}';
+            if strcmp( s(1).type, '()' )
+                 % Catch insufficient bracket information
+                 if length( s.subs ) ~= obj.D && ...
+                         length( s.subs ) ~= obj.D + obj.fiberD
+                     error( "You need to index either only the mask or the whole field." )
+                 end
+
+                 % Fill the fiber subs with ':', if only the mask is
+                 % subsetted
+                 if length( s.subs ) == obj.D
+                     for k = 1:obj.fiberD
+                        s.subs{ obj.D + k } = ':';
                      end
                  end
-                 newf.xvals = xvals;
+                     
+                 ss = s;
+                 ss.subs = s.subs( 1:obj.D );
+                 newf = ConvField();
+                 
+                 % Make sure that the new mask is squeezed and a column in
+                 % case of 1D slice
+                 mask = squeeze( builtin( 'subsref', obj.mask, ss ) );
+                 if length(size(mask)) == 2
+                     if size(mask,1) == 1
+                         mask = mask';
+                     end
+                 end
+                 newf.mask = mask;
+                 
+                 % Get new xvals structure
+                 xvals = obj.xvals;
+                 l = NaN * ones( [ 1 obj.D ] );
+                 for d = 1:obj.D
+                     xvals{d} = xvals{d}( ss.subs{d} );
+                     l(d) = length( xvals{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         xvals{d} = xvals{d}';
+                         l(d) = 666;
+                     end
+                 end
+                 
+                 % Remove dimensions with a single point
+                 xvals        = xvals( l ~= 1 );
+                 newf.xvals   = xvals;
+                 newf.resadd  = obj.resadd;
                  newf.enlarge = obj.enlarge;
-                 newf.field = builtin( 'subsref', obj.field, s );
+                 newf.derivtype = obj.derivtype;
+                 newf.field   = squeeze( builtin( 'subsref', obj.field, s ) );
                  varargout{1} = newf;
             else
-                 [varargout{1:nargout}] = builtin('subsref', obj, s);
+                 [ varargout{ 1:nargout } ] = builtin( 'subsref', obj, s );
             end
        end
         
