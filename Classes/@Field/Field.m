@@ -406,6 +406,14 @@ classdef Field
                  ss.subs = s.subs(1:obj.D);
                  newf = Field( builtin( 'subsref', obj.mask, ss ) );
                  newf.field = builtin( 'subsref', obj.field, s );
+                 xval = obj.xvals;
+                 for d = 1:obj.D
+                     xval{d} = xval{d}( ss.subs{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         xval{d} = xval{d}';
+                     end
+                 end
+                 newf.xvals   = xval;
                  varargout{1} = newf;
             else
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
