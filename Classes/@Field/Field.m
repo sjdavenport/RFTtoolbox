@@ -402,18 +402,50 @@ classdef Field
        %-------------------------------------------------------------------
        function varargout = subsref(obj, s)
             if strcmp(s(1).type, '()')
-                 ss = s;
-                 ss.subs = s.subs(1:obj.D);
-                 newf = Field( builtin( 'subsref', obj.mask, ss ) );
-                 newf.field = builtin( 'subsref', obj.field, s );
-                 xval = obj.xvals;
-                 for d = 1:obj.D
-                     xval{d} = xval{d}( ss.subs{d} );
-                     if strcmp( ss.subs{d}, ':' )
-                         xval{d} = xval{d}';
+                 % Catch insufficient bracket information
+                 if length( s.subs ) ~= obj.D && ...
+                         length( s.subs ) ~= obj.D + obj.fiberD
+                     error( "You need to index either only the mask or the whole field." )
+                 end
+
+                 % Fill the fiber subs with ':', if only the mask is
+                 % subsetted
+                 if length( s.subs ) == obj.D
+                     for k = 1:obj.fiberD
+                        s.subs{ obj.D + k } = ':';
                      end
                  end
-                 newf.xvals   = xval;
+                     
+                 ss = s;
+                 ss.subs = s.subs( 1:obj.D );
+                 newf = Field();
+                 
+                 % Make sure that the new mask is squeezed and a column in
+                 % case of 1D slice
+                 newmask = squeeze( builtin( 'subsref', obj.mask, ss ) );
+                 if length( size( newmask ) ) == 2
+                     if size( newmask, 1 ) == 1
+                         newmask = newmask';
+                     end
+                 end
+                 newf.mask = newmask;
+                 
+                 % Get new xvals structure
+                 newxvals = obj.xvals;
+                 l = NaN * ones( [ 1 obj.D ] );
+                 for d = 1:obj.D
+                     newxvals{d} = newxvals{d}( ss.subs{d} );
+                     l(d) = length( newxvals{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         newxvals{d} = newxvals{d}';
+                         l(d) = 666;
+                     end
+                 end
+                 
+                 % Remove dimensions with a single point
+                 newxvals = newxvals( l ~= 1 );
+                 newf.xvals   = newxvals;
+                 newf.field   = squeeze( builtin( 'subsref', obj.field, s ));
                  varargout{1} = newf;
             else
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
