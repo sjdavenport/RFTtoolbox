@@ -4,7 +4,7 @@ nsubj_vec = 10:10:100;
 
 mask = true([100,1]);
 
-store_coverage( mask, FWHM_vec, nsubj_vec, 0)
+store_coverage( mask, FWHM_vec, nsubj_vec)
 
 %% 1D with mask
 
@@ -17,14 +17,14 @@ mask = true(Dim);
 
 resadd = 3;
 
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 0, resadd)
+store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd)
 
 %% 3D - test
 FWHM_vec = 1:6; nsubj_vec = 25; Dim = [5,5,5];
 mask = true(Dim); mask(2:4,2:4,2:4) = 0;
 resadd = 3; niters = 1000;
 
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 0, resadd, niters, '3D_small_mask')
+store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_small_mask')
 
 
 %% 3D - small - with mask
@@ -32,13 +32,13 @@ FWHM_vec = 1:6; nsubj_vec = 25; Dim = [5,5,5];
 mask = true(Dim); mask(2:4,2:4,2:4) = 0;
 resadd = 3; niters = 1000;
 
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 0, resadd, niters, '3D_small_mask')
+store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_small_mask')
 
 %% 3D - MNImask example
-FWHM_vec = 3; nsubj_vec = 25; Dim = [91,109,91];
+FWHM_vec = 3; nsubj_vec = 10; Dim = [91,109,91];
 mask = logical(imgload('MNImask'));
-resadd = 1; niters = 1;
+resadd = 1; niters = 500;
 
 tic
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 0, resadd, niters, '3D_MNImask_example')
+store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_MNImask_secondhalf')
 toc

@@ -50,12 +50,12 @@ function obj = wnfield( varmask, fibersize, xvals )
 
 % Check input argument and make it a vector
 if  ~isnumeric( varmask ) && ~islogical( varmask ) 
-    error( "varmask must be a 1xD or Dx1 numerical vector or a logical array." )
+    error( 'varmask must be a 1xD or Dx1 numerical vector or a logical array.' )
 else
     svarmask = size( varmask );
     if isnumeric( varmask ) && ~( length( svarmask ) == 2 ...
                                                 && any( svarmask == 1 ) )
-        error( "The masksize must be a 1xD or Dx1 numerical vector." )
+        error( 'The masksize must be a 1xD or Dx1 numerical vector.' )
     elseif isnumeric( varmask ) && svarmask( 2 ) == 1
         varmask = varmask';
     end
@@ -71,11 +71,11 @@ end
 
 % Check the optional inputs
 if  ~isnumeric( fibersize )
-    error( "The fibersize must be a 1xK or Kx1 numerical vector." )
+    error( 'The fibersize must be a 1xK or Kx1 numerical vector.' )
 else
     tmp = size( fibersize );
     if ~( length( tmp ) == 2 && any( tmp == 1 ) )
-        error( "The fibersize must be a 1xK or Kx1 numerical vector." )
+        error( 'The fibersize must be a 1xK or Kx1 numerical vector.' )
     elseif tmp( 2 ) == 1
         fibersize = fibersize';
     end

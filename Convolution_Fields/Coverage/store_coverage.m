@@ -1,11 +1,11 @@
-function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters, filename, dirsave )
+function rc = store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, filename, dirsave, use_spm )
 % store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters,dirsave )
 % records and saves the coverage
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
 %  Dim        the desired dimension of the data. If D = 1, take
-%             Dim = number ofvoxels
+%             Dim = number of voxels
 %  mask       the mask to use. If D = 1, need size(mask) = [Dim,1]
 %  FWHM_vec   a vector specifiying the FWHM to iter over
 %  nsubj_vec  a vector with numbers of subjects to iter over
@@ -23,11 +23,20 @@ function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters
 % %% 1D coverage
 % FWHM_vec = 1:0.5:6;
 % nsubj_vec = 10:10:100;
-%
+% 
 % Dim = 100;
 % mask = true([100,1]);
+% 
+% store_coverage( mask, FWHM_vec, nsubj_vec, 1)
 %
-% store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 1)
+% %% Test
+% FWHM_vec = 2;
+% nsubj_vec = 10;
+% 
+% Dim = 100;
+% mask = true([100,1]);
+% store_coverage(  mask, FWHM_vec, nsubj_vec, 1, 1, 'testingjala')
+% 
 % %% 3D coverage
 % FWHM_vec = 3:6;
 % nsubj_vec = 25;
@@ -66,7 +75,7 @@ if ~exist( 'dirsave', 'var' )
 end
 
 if ~exist( 'use_spm', 'var')
-    use_spm = 1;
+    use_spm = 0;
 end
 
 %%  Main Function Loop

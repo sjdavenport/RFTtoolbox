@@ -1,4 +1,4 @@
-function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters, filename, dirsave )
+function rc = store_RSbootcov( FWHM_vec, nsubj_vec, nifti_file_dir, filename, resadd, niters, dirsave, use_spm )
 % store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters,dirsave )
 % records and saves the coverage
 %--------------------------------------------------------------------------
@@ -20,29 +20,14 @@ function rc = store_coverage( mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %% 1D coverage
-% FWHM_vec = 1:0.5:6;
-% nsubj_vec = 10:10:100;
-%
-% Dim = 100;
-% mask = true([100,1]);
-%
-% store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 1)
-% %% 3D coverage
-% FWHM_vec = 3:6;
-% nsubj_vec = 25;
-%
-% Dim = [5,5,5];
-% mask = true(Dim);
-%
-% resadd = 3; niters = 1000;
-%
-% store_coverage( Dim, mask, FWHM_vec, nsubj_vec, 0, resadd)
+% filename = 'testingruns';
+% FWHM = 3; sample_size = 25;
+% global feat_runs
+% nifti_file_dir = [featruns,'RS_2Block_warped'];
+% resadd = 1; niters = 1;
+% store_RSbootcov( FWHM, sample_size, nifti_file_dir, filename, 1, niters )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
-%--------------------------------------------------------------------------
-
-%%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
 %%  Add/check optional values
@@ -60,26 +45,24 @@ end
 if ~exist( 'dirsave', 'var' )
     % default option of dirsave
     global RFTboxloc
-    dirsave = [RFTboxloc, 'Convolution_Fields/Coverage/tstat_results/'];
+    if isempty(RFTboxloc)
+        error('You need to supply dirsave')
+    else
+        dirsave = [RFTboxloc, 'Convolution_Fields/Coverage/RS_results/'];
+    end
 end
 
 if ~exist( 'use_spm', 'var')
-    use_spm = 1;
+    use_spm = 0;
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
+mask = imgload('MNImask'); %load MNI mask (requires the BrainSTAT toolbox)
+
 rc.FWHM_vec = FWHM_vec;
 rc.nsubj_vec = nsubj_vec;
 
-% Obtain 
-[ rc.Dim, rc.D ] = getdim( mask );
-
-if rc.D == 1
-    rc.spfn = @(nsubj) temp_1D_gen(mask, rc.Dim, nsubj);
-else
-    rc.spfn = @(nsubj) wnfield(mask,nsubj);
-end
 rc.resadd = resadd;
 rc.niters = niters;
 
@@ -94,9 +77,6 @@ if use_spm
     rc.finelatspm = zeros(lFWHM_vec,lnsubj_vec);
 end
 
-if ~exist( 'filename', 'var')
-    filename = [num2str(rc.D), 'D_niters_', num2str(niters), '_resadd_',num2str(resadd),'.mat'];
-end
 filesave = [dirsave, filename];
 
 for I = 1:lFWHM_vec
@@ -106,9 +86,9 @@ for I = 1:lFWHM_vec
         J
         sample_size = rc.nsubj_vec(J);
         if use_spm
-            coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters );
+            coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 1 );
         else
-            coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 0 );
+            coverage = boot_rc( nifti_file_dir, sample_size, FWHM, mask, rc.resadd, rc.niters );
         end
         rc.conv(I,J) = coverage.conv;
         rc.lat(I,J) =  coverage.lat;
@@ -122,9 +102,4 @@ for I = 1:lFWHM_vec
     end
 end
 
-end
-
-function out = temp_1D_gen(mask, Dim, nsubj)
-out = wnfield(Dim, nsubj);
-out.mask = mask;
 end
