@@ -58,7 +58,14 @@ classdef ConvField < Field
                  newf = ConvField();
                  newf.mask = builtin( 'subsref', obj.mask, ss );
                  newf.resadd = obj.resadd;
-                 newf.xvals = obj.xvals;
+                 xvals = obj.xvals;
+                 for d = 1:obj.D
+                     xvals{d} = xvals{d}( ss.subs{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         xvals{d} = xvals{d}';
+                     end
+                 end
+                 newf.xvals = xvals;
                  newf.enlarge = obj.enlarge;
                  newf.field = builtin( 'subsref', obj.field, s );
                  varargout{1} = newf;
