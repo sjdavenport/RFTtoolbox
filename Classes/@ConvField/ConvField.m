@@ -10,8 +10,8 @@ classdef ConvField < Field
    %   - enlarge    an integer denoting by how many voxels in high resolution
    %                the mask is dilated. Note that this allows for different
    %                interpretations of the domains of the convolution field.
-   %                We recommend to use enlarge = ceil( resadd
-   %                / 2 ), which means that each voxel of the original mask
+   %                We recommend to use enlarge = ceil( resadd / 2 ), which
+   %                means that each voxel of the original mask
    %                is considered to be in the center of a cube, which defines
    %                the underlying manifold. In this case resadd needs to be
    %                odd in order to ensure that the boundary voxels of the 
@@ -37,18 +37,15 @@ classdef ConvField < Field
    methods
        %% Fill the dependent properties
        %-------------------------------------------------------------------
-       % Fill the fieldsize field
-       function origsize = get.origsize( obj )
+       % Fill the origsize field
+       function value = get.origsize( obj )
            enl = obj.enlarge;
            res = obj.resadd;
            sm  = obj.masksize;
            % Compute low resolution size
-           origsize = sm - ( sm - 1 ) * res;
-           % Correct for the enlargement
-           if obj.D ==1
-               origsize = origsize - [ 2 * enl, 0 ];
-           else
-               origsize = origsize - 2 * enl;
+           value = ( sm + res - 2 * enl ) / ( 1 + res );
+           if obj.D == 1
+               value(2) = 1;
            end
        end
        
