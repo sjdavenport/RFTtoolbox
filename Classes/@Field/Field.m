@@ -445,7 +445,13 @@ classdef Field
                  % Remove dimensions with a single point
                  newxvals = newxvals( l ~= 1 );
                  newf.xvals   = newxvals;
-                 newf.field   = squeeze( builtin( 'subsref', obj.field, s ));
+                 
+                 ff = squeeze( builtin( 'subsref', obj.field, s ) );
+                 if size( ff, 1 ) == 1 && length( size( ff ) ) == 2
+                     ff = ff';
+                 end
+                 newf.field   = ff;
+
                  varargout{1} = newf;
             else
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
@@ -525,7 +531,7 @@ classdef Field
        out = plot( field, slice )
            
        % Redefine imagesc
-       out = imagesc( field, slice, subj )
+       out = imagesc( field, ntics )
 
        %% Stats Functions for class Field
        %-------------------------------------------------------------------            

@@ -96,10 +96,18 @@ classdef ConvField < Field
                  % Remove dimensions with a single point
                  xvals        = xvals( l ~= 1 );
                  newf.xvals   = xvals;
+
+                 ff = squeeze( builtin( 'subsref', obj.field, s ) );
+                 if size( ff, 1 ) == 1 && length( size( ff ) ) == 2
+                     ff = ff';
+                 end
+                 newf.field   = ff;
+                 
+                 % fill the conv field specific values
                  newf.resadd  = obj.resadd;
                  newf.enlarge = obj.enlarge;
                  newf.derivtype = obj.derivtype;
-                 newf.field   = squeeze( builtin( 'subsref', obj.field, s ) );
+                 
                  varargout{1} = newf;
             else
                  [ varargout{ 1:nargout } ] = builtin( 'subsref', obj, s );
