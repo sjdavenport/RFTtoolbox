@@ -1,7 +1,7 @@
 classdef Field
    % Field is a class making the use of multidimensional arrays, which are
    % considered to represent a field (or for mathematicians a fiber bundle)
-   % over a domain easy.
+   % over a domain.
    %   The class is an object keeping track of the field and important
    %   properties thereof, for example, the dimensions of the domain
    %   and the fiber as well as their sizes. Moreover, it ensures that all
@@ -38,7 +38,7 @@ classdef Field
       masksize   % the size of the domain of the field, i.e., [ T_1, ..., T_D ].
       fiberD     % the dimension of the fiber above a point, i.e., K.
       fibersize  % the size of the fiber above a point, i.e., [ F_1, ..., F_K ].
-      masked     % 1 if the field is masked, else 0.
+      masked     % 1, if the field is masked, else 0.
    end
    properties ( Dependent, Access = private ) 
       dim_xvals  % dimension obtained from the provided xvals vector
