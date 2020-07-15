@@ -528,7 +528,7 @@ classdef Field
        %% Plot functions for class Field
        %-------------------------------------------------------------------
        % Redefine plot
-       out = plot( field, slice )
+       out = plot( field )
            
        % Redefine imagesc
        out = imagesc( field, ntics )
