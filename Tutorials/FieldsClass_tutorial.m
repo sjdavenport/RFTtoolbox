@@ -184,3 +184,7 @@ enlarge = ceil( resadd / 2 );
 % Construct ConvField object.
 cfield = convfield_Field( wn, kernel, derivtype, resadd, lat_masked, enlarge )
 imagesc( cfield(:,:,3) )
+
+% Note that a ConvField basically tracks the Kernel, resadd and enlarge
+% addtionally to the other field properties
+%
