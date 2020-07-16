@@ -147,6 +147,7 @@ padded_mask = logical( pad_vals( mask, pad) ); lat_data = wnfield(padded_mask, n
 % Convolution L_1 (voxmndest) seems to work in this case
 lat_masked = 0;
 enlarge = ceil(resadd/2);
+% enlarge = 0;
 cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
 dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
@@ -180,7 +181,7 @@ LKC_isogauss_theory( FWHM, Dim-1 )
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, ones(Dim) );
 L_spm
 
-%% SPM matches for large domains (as we would expect)
+%% SPM almost matches for large domains (as we would expect)
 Dim = [100,100,100];
 
 % isogauss theory
@@ -190,7 +191,7 @@ LKC_isogauss_theory( FWHM, Dim )
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, ones(Dim) );
 L_spm
 
-%% 3D boundary sphere example (just Conv, HPE) (L1 is seems very off here, but L2 and L3 match)
+%% 3D boundary sphere example (just Conv, HPE)
 % FT: I fixed L1, but I think it is still not completely correct
 T = 5;
 D = 3;
@@ -286,3 +287,53 @@ L_HPE_average/niters
 
 % This indicates that L_2 and L_3 are likely computed correctly while L_1 is off
 % in the convolution estimator.
+
+%% 3D MNImask LKCs
+FWHM = 3; nsubj = 20; Dim = [91,109,91];
+mask = logical(imgload('MNImask'));
+resadd = 1; lat_data = wnfield(mask, nsubj);
+
+% Convolution L_1 (voxmndest)
+cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
+dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
+[L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield )
+
+% HPE (Worryingly L_3 can be negative here sometimes)
+HPE  = LKC_HP_est( cfield, 1, 1);
+newHPEestimate = HPE.hatL'
+
+% SPM (Off of course due to the edge correction)
+[ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
+
+%% 3D MNImask LKCs with padding 
+FWHM = 3; nsubj = 20; Dim = [91,109,91];
+mask = logical(imgload('MNImask')); padded_mask = logical( pad_vals( mask, pad) );
+resadd = 1; lat_data = wnfield(padded_mask, nsubj);
+
+% Convolution L_1 (voxmndest)
+cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
+dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
+[L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield )
+
+% HPE (Worryingly L_3 can be negative here sometimes)
+HPE  = LKC_HP_est( cfield, 1, 1);
+newHPEestimate = HPE.hatL'
+
+% SPM (Off of course due to the edge correction)
+[ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
+
+%%
+Lambda = Lambda_theory( FWHM, 3 );
+sum(MNImask(:))*prod(diag(Lambda))^(1/2)
+
+%% MNI SPM highres
+mask = logical(imgload('MNImask')); resadd = 3;
+MNIhr = mask_highres(mask, resadd);
+
+[ L_spm, L0 ] = LKC_SPM_est( FWHM, MNIhr)
+
+%% MNI SPM highres
+mask = logical(imgload('MNImask')); resadd = 1;
+MNIhr = mask_highres(mask, resadd);
+
+[ L_spm, L0 ] = LKC_SPM_est( FWHM, MNIhr )
