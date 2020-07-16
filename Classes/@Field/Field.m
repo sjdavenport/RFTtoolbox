@@ -1,7 +1,7 @@
 classdef Field
    % Field is a class making the use of multidimensional arrays, which are
    % considered to represent a field (or for mathematicians a fiber bundle)
-   % over a domain easy.
+   % over a domain.
    %   The class is an object keeping track of the field and important
    %   properties thereof, for example, the dimensions of the domain
    %   and the fiber as well as their sizes. Moreover, it ensures that all
@@ -38,7 +38,7 @@ classdef Field
       masksize   % the size of the domain of the field, i.e., [ T_1, ..., T_D ].
       fiberD     % the dimension of the fiber above a point, i.e., K.
       fibersize  % the size of the fiber above a point, i.e., [ F_1, ..., F_K ].
-      masked     % 1 if the field is masked, else 0.
+      masked     % 1, if the field is masked, else 0.
    end
    properties ( Dependent, Access = private ) 
       dim_xvals  % dimension obtained from the provided xvals vector
@@ -402,10 +402,56 @@ classdef Field
        %-------------------------------------------------------------------
        function varargout = subsref(obj, s)
             if strcmp(s(1).type, '()')
+                 % Catch insufficient bracket information
+                 if length( s.subs ) ~= obj.D && ...
+                         length( s.subs ) ~= obj.D + obj.fiberD
+                     error( "You need to index either only the mask or the whole field." )
+                 end
+
+                 % Fill the fiber subs with ':', if only the mask is
+                 % subsetted
+                 if length( s.subs ) == obj.D
+                     for k = 1:obj.fiberD
+                        s.subs{ obj.D + k } = ':';
+                     end
+                 end
+                     
                  ss = s;
-                 ss.subs = s.subs(1:obj.D);
-                 newf = Field( builtin( 'subsref', obj.mask, ss ) );
-                 newf.field = builtin( 'subsref', obj.field, s );
+                 ss.subs = s.subs( 1:obj.D );
+                 newf = Field();
+                 
+                 % Make sure that the new mask is squeezed and a column in
+                 % case of 1D slice
+                 newmask = squeeze( builtin( 'subsref', obj.mask, ss ) );
+                 if length( size( newmask ) ) == 2
+                     if size( newmask, 1 ) == 1
+                         newmask = newmask';
+                     end
+                 end
+                 newf.mask = newmask;
+                 
+                 % Get new xvals structure
+                 newxvals = obj.xvals;
+                 l = NaN * ones( [ 1 obj.D ] );
+                 for d = 1:obj.D
+                     newxvals{d} = newxvals{d}( ss.subs{d} );
+                     l(d) = length( newxvals{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         newxvals{d} = newxvals{d}';
+                         l(d) = 666;
+                     end
+                 end
+                 
+                 % Remove dimensions with a single point
+                 newxvals = newxvals( l ~= 1 );
+                 newf.xvals   = newxvals;
+                 
+                 ff = squeeze( builtin( 'subsref', obj.field, s ) );
+                 if size( ff, 1 ) == 1 && length( size( ff ) ) == 2
+                     ff = ff';
+                 end
+                 newf.field   = ff;
+
                  varargout{1} = newf;
             else
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
@@ -482,10 +528,10 @@ classdef Field
        %% Plot functions for class Field
        %-------------------------------------------------------------------
        % Redefine plot
-       out = plot( field, slice )
+       out = plot( field )
            
        % Redefine imagesc
-       out = imagesc( field, slice, subj )
+       out = imagesc( field, ntics )
 
        %% Stats Functions for class Field
        %-------------------------------------------------------------------            

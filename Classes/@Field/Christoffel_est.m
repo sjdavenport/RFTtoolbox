@@ -32,11 +32,6 @@ if ~iscompatible( field, dfield )
     error( "field and dfield need to be compatible." )
 end
 
-% Check whether the fields have compatible dimensions
-if ~iscompatible( field, d2field )
-    error( "field and d2field need to be compatible." )
-end
-
 % Dimension of the domain
 D = field.D;
 
@@ -59,8 +54,7 @@ index  = repmat( {':'}, 1, D );
 
 %%%%%% BEGIN compute Christoffel symbols
 switch D
-    case 1
-        
+    case 1     
         % Rename the partial derivatives of the convolution field
         Yx  = squeeze( dfield( index{:}, :, 1 ) );
         Yxx = squeeze( d2field( index{:}, :, 1, 1 ) );

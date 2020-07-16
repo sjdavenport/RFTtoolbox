@@ -130,7 +130,7 @@ function LKC = LKC_HP_est( field, Mboot, normalize, version )
 %--------------------------------------------------------------------------
 
 % Get constants from the input
-sY = size( field.fieldsize );
+sY = field.fieldsize;
 D  = field.D;
 N  = field.fibersize;
 

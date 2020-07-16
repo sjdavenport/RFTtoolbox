@@ -117,7 +117,7 @@ struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'newHP', newHPEestimate,...
 % FT again seems to work well for convoltuiton estimator and large FHWM things seem to converge.
 
 %% 3D (no padding) box
-FWHM = 3; nsubj = 20; Dim = [5,5,5];
+FWHM = 10; nsubj = 20; Dim = [5,5,5];
 resadd = 1; mask = true(Dim); lat_data = wnfield(mask, nsubj);
 
 % Convolution L_1 (voxmndest)

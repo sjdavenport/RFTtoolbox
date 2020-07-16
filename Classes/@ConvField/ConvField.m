@@ -10,8 +10,8 @@ classdef ConvField < Field
    %   - enlarge    an integer denoting by how many voxels in high resolution
    %                the mask is dilated. Note that this allows for different
    %                interpretations of the domains of the convolution field.
-   %                We recommend to use enlarge = ceil( resadd
-   %                / 2 ), which means that each voxel of the original mask
+   %                We recommend to use enlarge = ceil( resadd / 2 ), which
+   %                means that each voxel of the original mask
    %                is considered to be in the center of a cube, which defines
    %                the underlying manifold. In this case resadd needs to be
    %                odd in order to ensure that the boundary voxels of the 
@@ -37,36 +37,80 @@ classdef ConvField < Field
    methods
        %% Fill the dependent properties
        %-------------------------------------------------------------------
-       % Fill the fieldsize field
-       function origsize = get.origsize( obj )
+       % Fill the origsize field
+       function value = get.origsize( obj )
            enl = obj.enlarge;
            res = obj.resadd;
            sm  = obj.masksize;
            % Compute low resolution size
-           origsize = sm - ( sm - 1 ) * res;
-           % Correct for the enlargement
-           if obj.D ==1
-               origsize = origsize - [ 2 * enl, 0 ];
-           else
-               origsize = origsize - 2 * enl;
+           value = ( sm + res - 2 * enl ) / ( 1 + res );
+           if obj.D == 1
+               value(2) = 1;
            end
        end
        
        %% Functions for class ConvField
        %-------------------------------------------------------------------
        function varargout = subsref(obj, s)
-            if strcmp(s(1).type, '()')
+            if strcmp( s(1).type, '()' )
+                 % Catch insufficient bracket information
+                 if length( s.subs ) ~= obj.D && ...
+                         length( s.subs ) ~= obj.D + obj.fiberD
+                     error( "You need to index either only the mask or the whole field." )
+                 end
+
+                 % Fill the fiber subs with ':', if only the mask is
+                 % subsetted
+                 if length( s.subs ) == obj.D
+                     for k = 1:obj.fiberD
+                        s.subs{ obj.D + k } = ':';
+                     end
+                 end
+                     
                  ss = s;
-                 ss.subs = s.subs(1:obj.D);
+                 ss.subs = s.subs( 1:obj.D );
                  newf = ConvField();
-                 newf.mask = builtin( 'subsref', obj.mask, ss );
-                 newf.resadd = obj.resadd;
-                 newf.xvals = obj.xvals;
+                 
+                 % Make sure that the new mask is squeezed and a column in
+                 % case of 1D slice
+                 mask = squeeze( builtin( 'subsref', obj.mask, ss ) );
+                 if length(size(mask)) == 2
+                     if size(mask,1) == 1
+                         mask = mask';
+                     end
+                 end
+                 newf.mask = mask;
+                 
+                 % Get new xvals structure
+                 xvals = obj.xvals;
+                 l = NaN * ones( [ 1 obj.D ] );
+                 for d = 1:obj.D
+                     xvals{d} = xvals{d}( ss.subs{d} );
+                     l(d) = length( xvals{d} );
+                     if strcmp( ss.subs{d}, ':' )
+                         xvals{d} = xvals{d}';
+                         l(d) = 666;
+                     end
+                 end
+                 
+                 % Remove dimensions with a single point
+                 xvals        = xvals( l ~= 1 );
+                 newf.xvals   = xvals;
+
+                 ff = squeeze( builtin( 'subsref', obj.field, s ) );
+                 if size( ff, 1 ) == 1 && length( size( ff ) ) == 2
+                     ff = ff';
+                 end
+                 newf.field   = ff;
+                 
+                 % fill the conv field specific values
+                 newf.resadd  = obj.resadd;
                  newf.enlarge = obj.enlarge;
-                 newf.field = builtin( 'subsref', obj.field, s );
+                 newf.derivtype = obj.derivtype;
+                 
                  varargout{1} = newf;
             else
-                 [varargout{1:nargout}] = builtin('subsref', obj, s);
+                 [ varargout{ 1:nargout } ] = builtin( 'subsref', obj, s );
             end
        end
         

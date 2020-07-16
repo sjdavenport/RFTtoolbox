@@ -200,6 +200,9 @@ switch D
         %%% Calculate LKC 1
         % Get the opening angles with respect to the metric g
         angle = IntegralAlpha( voxmfd, bdry, eucangle );
+%         angle.x = pi/2;
+%         angle.y = pi/2;
+%         angle.z = pi/2;
         clear eucangle
 
         % Integrate volume form of edges against the internal cutting
@@ -224,7 +227,7 @@ switch D
                 L(1) = 0;
             end
             
-            tmp = NaN*zeros( [ 1 3 ] );
+            tmp = NaN * zeros( [ 1 3 ] );
             count = 0;
             
             for type = ["xy", "xz", "yz"]
