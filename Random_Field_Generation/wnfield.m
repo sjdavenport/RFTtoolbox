@@ -86,10 +86,10 @@ end
 
 if islogical( varmask)
     obj = Field( varmask );
-    obj.field = randn( [ size( varmask ) fibersize ] );    
+    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );    
 else
     obj = Field( varmask );
-    obj.field = randn( [ varmask fibersize ] );
+    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );
 end
 
 if exist( 'xvals', 'var' )
