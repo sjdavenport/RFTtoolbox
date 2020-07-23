@@ -1,5 +1,5 @@
  function [ output_image, threshold, max_finelat, xvals ] = vRFT( lat_data, ...
-                                                    Kernel, resadd, alpha )
+                                              Kernel, mask, resadd, alpha )
 % vRFT( lat_data, Kernel, mask, resadd, alpha ) runs voxelwise RFT 
 % inference on a set of images to detect areas of activation using a 
 % one-sample t-statistic.
@@ -26,14 +26,80 @@
 % DEVELOPERS TODOS: get rid of the SPM dependence :)
 %--------------------------------------------------------------------------
 % EXAMPLES
-% nvox = 100; nsubj = 50; lat_data = wnfield(nvox, nsubj);
-% FWHM = 2;
+% %% Simple 1D example (already with resadd = 1 RFT does better!)
+% signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
+% nvox = length(signal); nsubj = 75; FWHM = 2;
+% noisey_data = 10*randn([nvox,nsubj]) + signal;
+% 
+% % RFT thresholding
+% [im, threshold, ~, xvals] = vRFT_dep( noisey_data, FWHM );
+% 
+% % Permutation thresholidng
+% threshold_perm = perm_thresh(noisey_data, 'T', FWHM, NaN, 1);
+% im_perm = mvtstat( noisey_data ) > threshold_perm;
+% 
+% % Plot results
+% subplot(3,1,1)
+% plot(xvals{1}, im); title('RFT Discoveries')
+% xlim(vec2lim(xvals{1}))
+% subplot(3,1,2)
+% plot(fconv(signal, FWHM)); title('Smoothed Signal');
+% xlim(vec2lim(xvals{1}))
+% subplot(3,1,3)
+% plot(im_perm); title('Permutation Discoveries')
+%
+% %% Test Power (1D)
+% niters = 1000;
+% signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
+% nvox = length(signal); nsubj = 75; FWHM = 2;
+% store_thresh_rft = zeros(1, niters);
+% store_thresh_perm = zeros(1, niters);
+% 
+% rft_finds = 0;
+% perm_finds = 0;
+% for I = 1:niters
+%     modul(I,100);
+%     noisey_data = 10*randn([nvox,nsubj]) + signal;
+%     
+%     % RFT thresholding
+%     [im, store_thresh_rft(I)] = vRFT( noisey_data, FWHM );
+%     rft_finds = rft_finds + (sum(im(:)) > 0);
+%     
+%     % Permutation thresholidng
+%     store_thresh_perm(I) = perm_thresh(noisey_data, 'T', FWHM, NaN, 0);
+%     im_perm = mvtstat( noisey_data ) > store_thresh_perm(I);
+%     perm_finds = perm_finds + (sum(im_perm(:)) > 0);
+% end
+% 
+% rft_finds
+% perm_finds
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
+% Obtain the size of the lattice input
+s_lat = size(lat_data);
+
+% Obtain the dimensions of the data
+Dim = s_lat(1:end-1);
+
+% Obtain the number of dimensions
+D = length(Dim);
+
+% Obtain the number of subjects
+nsubj = size(lat_data,D+1);
+
 %%  Add/check optional values
 %--------------------------------------------------------------------------
+if ~exist('mask', 'var')
+    if D == 1
+        mask = true(Dim,1);
+    else
+        mask = true(Dim);
+    end
+end
 if ~exist( 'resadd', 'var' )
     resadd = 1;
 end
@@ -43,27 +109,21 @@ end
 
 %%  Main function
 %--------------------------------------------------------------------------
-% calculate the convolution t field and the convolution fields
-[ tfield_fine, cfields ] = convfield_t_Field( lat_data, Kernel, resadd );
-
-% Assign xvals
-xvals = cfields.xvals;
-
-% Calculate the maximum on the lattice
+% calculate the convolution t field (uses the default enlarge of
+% ceil(resadd/2)) % Need to change so that convY in obtained from
+% LKC_conv_est
+[tfield_fine, xvals] = convfield_t(lat_data.*mask,Kernel,resadd);
 max_finelat = max(tfield_fine(:));
 
-% Calculate the derivatives of the convolution fields
-dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
-
 % Calculate L and the threshold
-L = LKC_voxmfd_est( cfields, dcfields );
-L0 = EulerChar(lat_data.mask, 0.5, lat_data.D);
+LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
+L0 = EulerChar(mask, 0.5, D);
 
 % Compute the resels from the LKCs (essentially a scaling factor)
-resel_vec = LKC2resel(L,L0);
+resel_vec = LKC2resel(LKCs.hatL, L0);
 
 % Calculate the threshold using SPM (for now) 
-threshold = spm_uc_RF(alpha,[1,lat_data.fibersize-1],'T',resel_vec,1);
+threshold = spm_uc_RF(alpha,[1,nsubj-1],'T',resel_vec,1);
 
 % Determine the areas of the image where the t-field exceeds the threshold
 output_image = tfield_fine > threshold;

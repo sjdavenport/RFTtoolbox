@@ -1,4 +1,4 @@
-function [threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, mask, demean, niters, include_original, alpha )
+function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, mask, demean, niters, include_original, alpha )
 % PERM_THRESH( data, stat, niters, include_original, subject_mask, alpha ) 
 % implements the permutation test voxelwise on a dataset in order to 
 % estimate a one-sample threshold with which to perform multiple 
@@ -56,11 +56,18 @@ nsubj = sD(end);
 
 % Calculate the number of dimensions
 D = length(sD) - 1;
-
+    
 if ~isnan(FWHM)
     data = fconv(data, FWHM, D);
 end
 
+% Obtain the original tstat
+if strcmp(stat, 'Z')
+    stat_image = mean(data, D+1);
+elseif strcmp(stat, 'T')
+    stat_image = mvtstat(data);
+end
+% 
 if demean
    data = data - mean(data, D+1); 
 end
@@ -70,29 +77,35 @@ if include_original
     start = 2;
     
     if strcmp(stat, 'Z')
-        combined = mean(data, (D+1));
+        combined_orig = mean(data, (D+1));
     elseif strcmp(stat, 'T')
-        combined = mvtstat(data);
+        combined_orig = mvtstat(data);
     end
     
     vec_of_maxima = zeros(1, niters );
     if isnan(mask)
-        vec_of_maxima(1) = max(combined(:));
+        vec_of_maxima(1) = max(combined_orig(:));
     else
-        vec_of_maxima(1) = combined(lmindices(combined, 1, mask));
+        vec_of_maxima(1) = combined_orig(lmindices(combined_orig, 1, mask));
     end
 else
     vec_of_maxima = zeros(1, niters);
     start = 1;
 end
 
+% Index for multidimensional subsetting
+indexD = repmat( {':'}, 1, D );
+
+% Bernoulli random variables for sign flipping
 random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
+
+% Main loop
 for iter = start:niters
 %     modul(iter,1000);
     random_berns_for_iter = random_berns(:, iter);
     random_sample = find(random_berns_for_iter < 0);
     data2 = data;
-    data2(:, random_sample) = -data(:, random_sample); %This doesn't subtract the mean though it probably should!
+    data2(indexD{:}, random_sample) = -data(indexD{:}, random_sample); %This doesn't subtract the mean though it probably should!
     
     if strcmp(stat, 'Z')
         combined = mean(data2, (D+1));
@@ -109,5 +122,6 @@ for iter = start:niters
 end
 
 threshold = prctile(vec_of_maxima, 100*(1-alpha) );
+im_perm = stat_image > threshold;
 
 end

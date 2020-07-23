@@ -40,6 +40,9 @@ Dim = single_sample_field.fieldsize;
 D = single_sample_field.D;
 mask = single_sample_field.mask;
 
+% Calculate the Euler characteristic
+L0 = EulerChar(mask, 0.5, D);
+
 %%  Add/check optional values
 %--------------------------------------------------------------------------
 if ~exist( 'niters', 'var' )
@@ -106,7 +109,7 @@ for b = 1:niters
     % Calculate the LKCs
     if strcmp(lkc_est_version, 'conv')
         % Obtain the LKCs using the convolution estimate
-        [L,L0] = LKC_voxmfd_est( cfields, dcfields );
+        L = LKC_voxmfd_est( cfields, dcfields ); %L0 in LKC_voxmfd_est calculated wrong: using the highres mask
 %         LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
     elseif strcmp(lkc_est_version, 'hpe')
         % Obtain the LKCs using the HPE

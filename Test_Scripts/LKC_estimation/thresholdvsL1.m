@@ -35,3 +35,15 @@ for I = 1:length(L_1_vec)
 end
 
 plot(L_1_vec, threshold)
+
+%% Threshold vs L0
+mask = imgload('MNImask'); nsubj = 20; FWHM = 3;
+[ L_spm, L0 ] = LKC_SPM_est( FWHM, mask );
+
+L = L_spm; sample_size = nsubj;
+
+resel_vec = LKC2resel(L, L0);
+threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1)
+
+resel_vec = LKC2resel(L, L0+1);
+threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1)
