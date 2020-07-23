@@ -5,16 +5,15 @@ function vals = eval( obj, xvals, derivtype )
 % ARGUMENTS
 % Mandatory
 %  obj   an SepKernel object
-%  xvals an 1 by D cell array containing on which grid values to
+%  xvals an 1 x D cell array containing on which grid values to
 %        evaluate the d-th kernel
 % Optional
 %  derivtype possible values 0/1/2, 0 evaluates the seperable kernel, 1 its
 %            derivatives and 2 its second derivatives. Default is 0.
 %--------------------------------------------------------------------------
 % OUTPUT
-% vals  a obj.D by obj.D cell array containing an SepKernel object
-%       for each element of the Hessian matrix of the inputed
-%       SepKernel.
+% vals  a obj.D by obj.D cell array containing an SepKernel object for each 
+%       element of the Hessian matrix of the inputed SepKernel.
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
@@ -64,6 +63,7 @@ function vals = eval( obj, xvals, derivtype )
 %% Check mandatory input
 %--------------------------------------------------------------------------
 
+% Check xvals input and standardize it
 if iscell( xvals )
   if length( xvals ) == 1
       tmp = xvals{1};
