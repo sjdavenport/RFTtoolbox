@@ -18,6 +18,12 @@ function resel_vec = LKC2resel( L, L0 )
 % resels = spm_resels(FWHM,Dim, 'B')
 % [L,L0] = resel2LKC(resels)
 % resel_vec = LKC2resel(L,L0)
+% 
+% FWHM = 3; Dim = [5,5];
+% resels = spm_resels(FWHM,Dim, 'B'); resels(
+% [L,L0] = resel2LKC(resels)
+% resel_vec = LKC2resel(L,L0)
+% 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -45,7 +51,7 @@ D = length(L);
 scaling_vec = repmat(sqrt(4*log(2)), 1, D).^(1:D);
 
 % Initialise the resel vector
-resel_vec = zeros(1,D+1);
+resel_vec = zeros(1,4);
 
 % Set the non-zero LKCs
 resel_vec(2:(D+1)) = L./scaling_vec;

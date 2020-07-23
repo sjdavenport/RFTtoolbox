@@ -33,6 +33,7 @@ if strcmp(field_type, 'Z')
     if ~isequal(nsubj, 1)
         error('For Gaussian fields need df = 1')
     end
+    df = 1;
 elseif strcmp(field_type, 'T')
     df = [nsubj,1];
 else

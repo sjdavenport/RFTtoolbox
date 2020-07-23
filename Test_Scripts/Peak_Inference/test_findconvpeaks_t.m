@@ -247,12 +247,22 @@ converted_locs = xvaleval(finemaxlocs, xvals_super);
 % Note you will need to have the MBS toolbox installed for this section to
 % work
 MNImask = logical(imgload('MNImask'));
-nsubj = 25; FWHM = 3;
+nsubj = 20; FWHM = 1;
 lat_data = wnfield(MNImask, nsubj); resadd = 1;
-[ tfield_finelat, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
+[ tfield_finelat, finecfields] = convfield_t_Field( lat_data, FWHM, resadd );
 
 mask_hr = mask_highres(MNImask, resadd);
-[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_finelat, 1, mask_hr);
-finemaxvals(1)
-converted_locs = xvaleval(finemaxlocs, cfields.xvals);
-[peaklox, peakvals] = findconvpeaks(lat_data.field, FWHM, converted_locs, 'T', MNImask)
+[ finemaxlocs, ~, finemaxvals ] = lmindices(tfield_finelat, 3, mask_hr);
+finemaxvals
+fconverted_locs = xvaleval(finemaxlocs, finecfields.xvals);
+[fpeaklox, fpeakvals] = findconvpeaks(lat_data.field, FWHM, converted_locs, 'T', MNImask)
+
+sresadd = 3;
+[ tfield_superfinelat, scfields] = convfield_t_Field( lat_data, FWHM, sresadd );
+mask_shr = mask_highres(MNImask, sresadd);
+[ superfinemaxlocs, ~, superfinemaxvals ] = lmindices(tfield_superfinelat, 3, mask_shr);
+superfinemaxvals(1)
+sconverted_locs = xvaleval(superfinemaxlocs, scfields.xvals);
+[speaklox, speakvals] = findconvpeaks(  lat_data.field, FWHM, converted_locs, 'T', MNImask)
+
+tcf = @(tval) applyconvfield_t( tval, lat_data.field, FWHM, MNImask );

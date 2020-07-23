@@ -9,22 +9,18 @@ store_coverage( mask, FWHM_vec, nsubj_vec)
 %% 1D with mask
 
 %% 3D coverage (small scale)
-FWHM_vec = 3:6;
-nsubj_vec = 25;
+FWHM_vec = 1:6; nsubj_vec = 25;
+Dim = [5,5,5]; mask = true(Dim);
+resadd = 3; niters = 1000;
 
-Dim = [5,5,5];
-mask = true(Dim);
-
-resadd = 3;
-
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd)
+store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_small_mask')
 
 %% 3D - test
 FWHM_vec = 1:6; nsubj_vec = 25; Dim = [5,5,5];
 mask = true(Dim); mask(2:4,2:4,2:4) = 0;
 resadd = 3; niters = 1000;
 
-store_coverage( Dim, mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_small_mask')
+store_coverage( mask, FWHM_vec, nsubj_vec, resadd, niters, '3D_sphere_mask')
 
 
 %% 3D - small - with mask
