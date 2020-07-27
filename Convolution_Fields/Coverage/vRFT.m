@@ -34,24 +34,24 @@
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 % Obtain the size of the lattice input
-s_lat = size(lat_data);
+s_lat = size( lat_data );
 
 % Obtain the dimensions of the data
-Dim = s_lat(1:end-1);
+Dim = s_lat( 1:end-1 );
 
 % Obtain the number of dimensions
-D = length(Dim);
+D = length( Dim );
 
 % Obtain the number of subjects
-nsubj = size(lat_data,D+1);
+nsubj = size( lat_data, D + 1 );
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
 if ~exist('mask', 'var')
     if D == 1
-        mask = true(Dim,1);
+        mask = true( Dim, 1 );
     else
-        mask = true(Dim);
+        mask = true( Dim );
     end
 end
 if ~exist( 'resadd', 'var' )
@@ -66,14 +66,14 @@ end
 % calculate the convolution t field (uses the default enlarge of
 % ceil(resadd/2)) % Need to change so that convY in obtained from
 % LKC_conv_est
-[tfield_fine, xvals] = convfield_t(lat_data.*mask,Kernel,resadd);
+[ tfield_fine, xvals ] = convfield_t(lat_data.*mask,Kernel,resadd);
 max_finelat = max(tfield_fine(:));
 
 % Calculate L and the threshold
 LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
 
 % Compute the resels from the LKCs (essentially a scaling factor)
-resel_vec = LKC2resel(LKCs);
+resel_vec = LKC2resel(LKCs.hatL);
 
 % Calculate the threshold using SPM (for now) 
 threshold = spm_uc_RF(alpha,[1,nsubj-1],'T',resel_vec,1);
