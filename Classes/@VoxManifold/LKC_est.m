@@ -6,8 +6,7 @@ function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 % Mandatory
 %  voxmfd  an object of class VoxManifold. voxmfd.D < 4.
 %
-% Optional
-%  version a logical/ logical vector. Length depends on voxmfd.D
+% Optional%  version a logical/ logical vector. Length depends on voxmfd.D
 %          - D = 1, always true.
 %          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else.
 %          - D = 3, logical of length 3. version(1), indicates whether L2
@@ -230,7 +229,6 @@ switch D
                 L(1) = 0;
             end
             
-            tmp = NaN * zeros( [ 1 3 ] );
             count = 0;
             
             for type = ["xy", "xz", "yz"]
