@@ -85,9 +85,9 @@ cfields  = convfield_Field( lat_data, Kernel, 0, resadd, 1, enlarge );
 
 % Calculate the t-statistic
 if D > 1
-    tcfield = mvtstat(cfields.field, spacep(Dim,resadd)+2*enlarge);
+    tcfield = mvtstat( cfields.field, spacep( Dim, resadd ) + 2*enlarge );
 else
-    tcfield = mvtstat(cfields.field);
+    tcfield = mvtstat( cfields.field );
 end
 
 end
