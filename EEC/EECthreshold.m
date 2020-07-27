@@ -1,4 +1,4 @@
-function u_FWER = EECthreshold( FWER, LKC, LKC0, type )
+function u_FWER = EECthreshold( FWER, LKC, LKC0, type, df )
 % EECthreshold( FWER, LKC, D, LKC0, type )
 %
 %--------------------------------------------------------------------------

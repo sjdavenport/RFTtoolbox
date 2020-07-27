@@ -49,7 +49,7 @@ if strcmp( type, "gaussian" )
         case 0
             rho_d = 1 - normcdf( uvals );
         case 1
-            rho_d = ones( 1, length(uvals) ) .* ...
+            rho_d = ones( 1, length( uvals ) ) .* ...
                     exp( -uvals.^2/2 ) / (2*pi)^(2/2);
         case 2
             rho_d = uvals .* exp( -uvals.^2/2 ) / (2*pi)^(3/2);
@@ -70,14 +70,14 @@ elseif strcmp( type, "t" )
         case 0
             rho_d = tcdf( uvals, df, 'upper' );
         case 1
-            rho_d = ones( 1, length(uvals) ) .* ...
-                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(2/2);
+            rho_d = ones( 1, length( uvals ) ) .* ...
+                    ( 1 + uvals.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(2/2);
         case 2
             rho_d = fac * uvals .*...
-                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(3/2);
+                    ( 1 + uvals.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(3/2);
         case 3
             rho_d = ( (df-1) / df * uvals.^2 - 1 ) .*...
-                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(4/2);
+                    ( 1 + uvals.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(4/2);
     end
 end
 
