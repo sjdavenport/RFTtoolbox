@@ -135,7 +135,8 @@ results = struct( 'simtime', simtime, 'nsubj', nsubj );
 
 if isfield( methods, "convE" )
     results.convE = L_conv_ests;
-    results.convE_nonstatInt = L_conv_ests_nonstatInt;
+    results.convE;
+    nonstatInt = L_conv_ests_nonstatInt;
 end
 
 if isfield( methods, "HPE" )
