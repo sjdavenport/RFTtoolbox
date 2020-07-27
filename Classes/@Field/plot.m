@@ -1,4 +1,4 @@
-function out = plot( field )
+function out = plot( varargin )
 % PLOT( field ) redefines the basic plot routine for scalar fields.
 %
 %--------------------------------------------------------------------------
@@ -20,7 +20,7 @@ function out = plot( field )
 %--------------------------------------------------------------------------
 
 % Dimension of the domain
-D = field.D;
+D = varargin{1}.D;
 
 
 %% Check mandatory input
@@ -32,7 +32,7 @@ if( D ~= 1 )
 end
 
 % Check the field input
-if( field.fiberD ~= 1 )
+if( varargin{1}.fiberD ~= 1 )
     error( "The field input must be a scalar field, i.e. fiberD = 1." )
 end
 
@@ -41,6 +41,7 @@ end
 
 %% Main function
 %--------------------------------------------------------------------------
-out = plot( field.xvals{1}, squeeze( field.field ) );
+out = plot( varargin{1}.xvals{1}, squeeze( varargin{1}.field ),...
+            varargin{2:end} );
 
 return
