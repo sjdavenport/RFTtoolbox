@@ -1,4 +1,4 @@
-function [ L, L0 ] = LKC_est( voxmfd, version )
+function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 % LKC_est( voxmfd, version ) computes the Lipschitz Killing curvatures for 
 % a voxel manifold for an arbitrary metric g.
 %--------------------------------------------------------------------------
@@ -73,6 +73,9 @@ weights = weights( mask(:) );
 %%%%%% BEGIN estimate the LKCs in different dimensions
 %%% Compute 0th LKC
 L0 = EulerChar( mask, 0.5, D );
+
+%%% Preallocate output for the nonstationary part of L1
+nonstatInt = NaN;
 
 %%% Compute LKCs for 0 < d < D
 switch D
@@ -281,8 +284,8 @@ switch D
                                 + Vl.^2 .* ( W.' * Gammall ) ...
                                 + Vk .* Vl .* ( W.' * Gammakl ) )...
                                 .* dVol;
-                tmp(count)  = sum( integrand.field ); 
-                L(1) = L(1) + sum( integrand.field );
+                nonstatInt = sum( integrand.field );
+                L(1)       = L(1) +  nonstatInt;
             end
         end
         
