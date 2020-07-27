@@ -67,6 +67,8 @@ mask(:,50) = 0;
 imagesc( mask )
 clear Sig
 
+show_plot = 1;
+
 % enlarged domain
 mask_hr = mask_highres( mask, resAdd, 1, show_plot );
 % non enlarged domain
