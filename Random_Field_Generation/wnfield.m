@@ -1,5 +1,5 @@
 function obj = wnfield( varmask, fibersize, xvals )
-% wnfield( masksize, fibersize, mask ) constructs a Fields object having
+% wnfield( varmask, fibersize, xvals ) constructs a Fields object having
 % white noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
