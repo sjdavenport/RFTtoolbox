@@ -529,7 +529,7 @@ classdef Field
        %% Plot functions for class Field
        %-------------------------------------------------------------------
        % Redefine plot
-       out = plot( field )
+       out = plot( varargin )
            
        % Redefine imagesc
        out = imagesc( field, ntics )
