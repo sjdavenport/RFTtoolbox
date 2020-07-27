@@ -2,7 +2,8 @@ function EC = EulerChar(f, u, D, dir)
 % EulerChar(f, D, mask, version)
 % Computes the Euler characteristic of excursion sets from the vector u.
 % Note that this implementation is extremely slow compared to
-% EulerCharCrit.m so please use the latter, if there is no other reason. 
+% EulerCharCrit.m so please use the latter, if there is no other reason.
+% However this function is used to 
 %--------------------------------------------------------------------------
 % ARGUMENTS
 %   f    an array K_1, x ... x K_D x N xnsim of random fields for which the
