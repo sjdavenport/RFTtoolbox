@@ -73,7 +73,8 @@ end
 % Preallocate values for the estimates and set default values, if not
 % provided
 if isfield(methods, "convE")
-    L_conv_ests = NaN * ones( [ Msim D ] );
+    L_conv_ests            = NaN * ones( [ Msim D ] );
+    L_conv_ests_nonstatInt = NaN * ones( [ Msim 1 ] );
     version = methods.convE;
 end
 
@@ -110,9 +111,11 @@ for m = 1:Msim
         else
             d2cfield = Field();
         end
-
-        L_conv_ests(m,:) = LKC_voxmfd_est( cfield, dcfield, d2cfield,...
-                                           version );
+        [ L_conv, ~, nonstatInt ] = LKC_voxmfd_est( cfield, dcfield,...
+                                                     d2cfield,...
+                                                     version );
+        L_conv_ests( m, : ) = L_conv;
+        L_conv_ests_nonstatInt( m ) = nonstatInt;
     end
 
     if isfield( methods, "HPE" )
@@ -132,6 +135,7 @@ results = struct( 'simtime', simtime, 'nsubj', nsubj );
 
 if isfield( methods, "convE" )
     results.convE = L_conv_ests;
+    results.convE_nonstatInt = L_conv_ests_nonstatInt;
 end
 
 if isfield( methods, "HPE" )
