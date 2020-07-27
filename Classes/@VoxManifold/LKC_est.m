@@ -203,11 +203,15 @@ switch D
         % Get the opening angles with respect to the metric g
         angle = IntegralAlpha( voxmfd, bdry, eucangle );
 %          angle.x = eucangle.x( eucangle.x ~= 0 );
-%          angle.x( angle.x > pi ) = - pi/2;         
+%          angle.x( angle.x > pi ) = - pi/2;
 %          angle.y = eucangle.y( eucangle.y ~= 0 );
 %          angle.y( angle.y > pi ) =  - pi/2;      
 %          angle.z = eucangle.z( eucangle.z ~= 0 );
 %          angle.z( angle.z > pi ) = - pi/2;
+%          
+%          angle.x = 1;
+%          angle.y = 1;
+%          angle.z = 1;
         clear eucangle
 
         % Integrate volume form of edges against the internal cutting
