@@ -13,7 +13,7 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 %            - HPE filled with a logical for normalize from LKC_HP_est()    
 %            - bHPE filled with a 1 x 2 cell containing Mboot, normalize 
 %              from LKC_HP_est()
-%   params   an object of class ConvFieldParams.
+%   params   an object of type ConvFieldParams
 %
 % Optional
 %   data_gen  a function handle for the lattice data or a logical mask. If
@@ -35,29 +35,24 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-
-resadd     = params.resadd;
-kernel     = params.kernel;
-D          = length( kernel.adjust );
-lat_masked = params.lat_masked;
-enlarge    = params.enlarge;
-
-%% Add/check optional values
-%--------------------------------------------------------------------------
-
-% This kind of code with exists is better than using nargin < xy, since
-% Parameter can be easily permuted
-if ~exist( 'data_gen', 'var' )
-   error( "Please, enter a function handle or a mask for data_gen." )
-end
+D = length( params.kernel.adjust );
 
 if islogical( data_gen )
     data_gen = @(n) wnfield( data_gen, n );
 end
 
-tmp = data_gen(1);
-if tmp.D ~= D
-    error( "The smoothing Kernel and the domain need to have the same dimension.")
+if isa( data_gen, 'function_handle' )
+    tmp = data_gen(1);
+    if tmp.D ~= D
+        error( "The smoothing Kernel and the domain need to have the same dimension.")
+    end
+elseif isa( data_gen, 'Field' )
+    index = repmat( {':'}, [ 1 D ] );
+    if ~( data_gen.fiberD + data_gen.D ) == D + 1
+        error( "data_gen must be an array with D+1" )
+    end
+else
+    error( "data_gen must be either a Field, a function handle or a mask." )
 end
 
 
@@ -66,18 +61,18 @@ end
 
 % Preallocate values for the estimates and set default values, if not
 % provided
-if isfield(methods, "convE")
+if isfield( methods, "convE" )
     L_conv_ests            = NaN * ones( [ Msim D ] );
     L_conv_ests_nonstatInt = NaN * ones( [ Msim 1 ] );
     version = methods.convE;
 end
 
-if isfield(methods, "HPE")
+if isfield( methods, "HPE" )
     L_HP_ests    = NaN * ones( [ Msim D ] );
     normalizeHPE = methods.HPE(1);
 end
 
-if isfield(methods, "bHPE")
+if isfield( methods, "bHPE" )
     L_bHP_ests    = NaN * ones( [ Msim D ] );
     normalizebHPE = methods.bHPE(2);
     Mboot         = methods.bHPE(1);
@@ -85,17 +80,23 @@ end
 
 tic
 for m = 1:Msim
-    lat_data = data_gen( nsubj );
+    if isa( data_gen, 'function_handle' )
+        lat_data = data_gen( nsubj );
+    elseif isa( data_gen, 'Field' )
+        lat_data = Field( data_gen.mask );
+        lat_data.field = data_gen.field( index{:},...
+                        randsample( data_gen.fibersize, nsubj ) );
+    end
 
     % Generate convolution fields from lattice data
     cfield   = convfield( lat_data, params, 0 );
 
     % Compute derivatives if convE is used in this simulation
     if isfield( methods, "convE" )
-        dcfield  = convfield( lat_data, kernel, params, 1 );
+        dcfield  = convfield( lat_data, params, 1 );
         if dcfield.D == 3
             if version(3) == 1
-                d2cfield = convfield_Field( lat_data, params, 2 );
+                d2cfield = convfield( lat_data, params, 2 );
             else
                 d2cfield = Field();
             end
