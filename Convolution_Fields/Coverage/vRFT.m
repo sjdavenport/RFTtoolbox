@@ -63,7 +63,7 @@ end
 
 if ~exist( 'type', 'var' )
    % Default option of type
-   type = "t";
+   type = "T";
 end
 
 if ~exist( 'df', 'var' )
