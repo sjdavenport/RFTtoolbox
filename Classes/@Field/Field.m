@@ -523,12 +523,13 @@ classdef Field
        
        % Function to compute the LKC from a voxel manifold obtained from
        % a convolution field
-       [ L, L0 ] = LKC_voxmfd_est( field, dfield, d2field, version )
+       [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field,...
+                                               version )
        
        %% Plot functions for class Field
        %-------------------------------------------------------------------
        % Redefine plot
-       out = plot( field )
+       out = plot( varargin )
            
        % Redefine imagesc
        out = imagesc( field, ntics )

@@ -75,36 +75,12 @@ end
 EEC_vals = Field( { uvals } );
 
 % Compute the EC curves
-if strcmp( type, "gaussian" )
-    % matrix containing the Hermite polynomials evaluated on uvals
-    H      = [ ones( 1, length(uvals) ); uvals; ( uvals.^2 - 1 ) ]';
-    % matrix containing the  EC densities evaluated on uvals
-    rho    = H .* [ exp( -uvals.^2/2 ) / (2*pi)^(2/2);...
-                    exp( -uvals.^2/2 ) / (2*pi)^(3/2);...
-                    exp( -uvals.^2/2 ) / (2*pi)^(4/2) ]';
-    % marginal part of GKF
-    EEC_vals.field = ( 1 - normcdf( uvals ) )' * LKC0;
-    
-elseif strcmp( type, "t" )
-    if df > 250
-        fac = 1;
-    else
-        fac = gamma( (df + 1) / 2 ) / gamma( df / 2 ) / sqrt(df/2);
-    end
-    
-    % matrix containing the Hermite polynomials evaluated on uvals
-    H      = [ ones( 1, length(uvals) );
-               fac * uvals;
-               ( (df-1) / df * uvals.^2 - 1 ) ]';
-    % matrix containing the  EC densities evaluated on uvals
-    rho    = H .* [ ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(2/2);...
-                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(3/2);...
-                    ( 1 + t^2 / df )^( - ( df - 1 ) / 2 ) / (2*pi)^(4/2) ]';
-    % marginal part of GKF
-    EEC_vals.field = tcdf( uvals, df, 'upper' )' * LKC0;
-end
+rho = [ ECdensity( uvals, 0, type, df );
+        ECdensity( uvals, 1, type, df );...
+        ECdensity( uvals, 2, type, df );...
+        ECdensity( uvals, 3, type, df ) ]';
 
-EEC_vals.field = EEC_vals.field + rho(:, 1:D) * LKC';
+EEC_vals.field = rho(:, 1:(D+1)) * [ LKC0 * ones(N,1), LKC]';
 
 % compute estimated se of EEC estimator and standard error
 if N > 1

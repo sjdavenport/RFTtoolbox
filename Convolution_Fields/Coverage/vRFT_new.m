@@ -34,6 +34,30 @@
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
+
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
+% Obtain the size of the lattice input
+s_lat = size( lat_data );
+
+% Obtain the dimensions of the data
+Dim = s_lat( 1:end-1 );
+
+% Obtain the number of dimensions
+D = length( Dim );
+
+% Obtain the number of subjects
+nsubj = size( lat_data, D + 1 );
+
+%%  Add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('mask', 'var')
+    if D == 1
+        mask = true( Dim, 1 );
+    else
+        mask = true( Dim );
+    end
+end
 if ~exist( 'resadd', 'var' )
     resadd = 1;
 end
@@ -49,7 +73,7 @@ end
 % Assign xvals
 xvals = cfields.xvals;
 
-% Calculate the maximum on the lattice
+% Calcuate the maximum on the lattice
 max_finelat = max(tfield_fine(:));
 
 % Calculate the derivatives of the convolution fields

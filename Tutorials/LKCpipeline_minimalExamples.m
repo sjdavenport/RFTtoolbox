@@ -13,7 +13,7 @@ dim   = [ T T ];
 dimp  = dim + 2 * pad;
 resadd  = 1;
 enlarge = ceil( resadd / 2 );
-Mboot   = 500;
+Mboot   = 200;
 
 %%% Two different voxelmanifolds
 % Cube manifold
@@ -252,7 +252,7 @@ for m = 1:Msim
     L_conv_ests(m,:) = LKC_voxmfd_est( cfield, dcfield, d2cfield );
     tmp = LKC_HP_est( cfield, 1, 1 );
     L_HP_ests(m,:)   = tmp.hatL;
-    tmp = LKC_HP_est( cfield, Mboot, 1 );
+    tmp = LKC_HP_est( cfield, 200, 1 );
     L_bHP_ests(m,:)  = tmp.hatL;
 end
 toc

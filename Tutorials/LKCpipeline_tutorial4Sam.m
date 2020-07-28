@@ -33,9 +33,9 @@ lat_data = wnfield( mask, nsubj);
 % Plot a slice at a point of a Field object with default
 % (:, ceil( smask(2)/2 ), ..., ceil( smask(end)/2 ) )
 figure(1), clf,
-plot(lat_data)
+plot(lat_data(:,1,2))
 figure(2), clf,
-plot( lat_data, [ 12, NaN ] )
+plot( lat_data(:,2,1) )
 
 % Plot an image slice at a point of a Field object with default
 % (:, :, ceil( smask(2)/2 ), ..., ceil( smask(end)/2 ) )
@@ -64,17 +64,17 @@ lat_data_obs = Field( observed_data, mask, xvals );
 %--------------------------------------------------------------------------
 % logical indicating whether the lat_data gets masked before smoothing or
 % not,
-lat_masked = true;
+lat_masked = false;
 
 % Generate convolution fields from lattice data
 cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked, enlarge );
 dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked, enlarge );
 
 figure, clf
-imagesc( cfield )
+imagesc( cfield(:,:,1) )
 
 figure, clf  
-imagesc( Mask( cfield) )
+imagesc( Mask( cfield(:,:,1)) )
 
 % Mask lat_data manually for the old convfield
 if lat_masked
@@ -99,10 +99,10 @@ LKC_voxmfd_est( cfield, dcfield )
 %%% The above function basically calls the following. You see the results
 %%% are identical
 % Estimate Riemannian metric induced by a convolution field.
-Lambda = Lambda_est( cfield, dcfield );
+Lambda = Riemmetric_est( cfield, dcfield );
 
 % Obtain Voxmanifold object from the convfields.
 % The property voxmfd.g = Lambda_est( cfield, dcfield ).
-voxmfd = ConvField2VoxManifold( cfield, dcfield );
+voxmfd = Field2VoxManifold( cfield, dcfield );
 
 LKC_est( voxmfd ) 

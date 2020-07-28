@@ -1,4 +1,4 @@
-function [ L, L0 ] = LKC_voxmfd_est( field, dfield, d2field, version )
+function [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field, version )
 % LKC_voxmfd_est( field, dfield ) estimates the LKCs of the voxel
 % manifold defined by the domain (aka its mask) of a convolution field and
 % its induced Riemannian metric.
@@ -57,6 +57,6 @@ if exist( 'd2field', 'var' )
 end
 
 % Obtain the LKCs
-[ L, L0 ] = LKC_est( voxmfd, version );
+[ L, L0, nonstatInt ] = LKC_est( voxmfd, version );
 
 return

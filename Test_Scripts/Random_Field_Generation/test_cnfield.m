@@ -22,11 +22,17 @@ plot( lat_data(:,5) );
 dim    = [ 50 50 ];
 nsubj  = 10
 voxmap = 1:prod( dim )
-tmp2   = mod( voxmap, 9);
-voxmap = [ voxmap( tmp2 < 3 ), voxmap( tmp2 >= 3 & tmp2 < 6 ),...
-           voxmap( tmp2 >= 6) ]
+% tmp2   = mod( voxmap, 12);
+% voxmap = [ voxmap( tmp2 < 3 ), voxmap( tmp2 >= 3 & tmp2 < 6 ),...
+%            voxmap( tmp2 >= 6 & tmp2 < 9 ),...
+%            voxmap( tmp2 >= 9) ]
+%    
+cut   = 6;
+shift = 4;
+tmp2   = mod( voxmap, cut);
+voxmap2 = [ voxmap( tmp2 <= cut-shift ), voxmap( tmp2 > cut-shift ) ]
 
-lat_data = cnfield( dim, 10, voxmap, 2, nsubj )
+lat_data = cnfield( dim, 10, voxmap2, 3, nsubj )
 figure(1);
 subplot(1,3,1)
 imagesc( lat_data( :, :, 1 ) );
