@@ -216,9 +216,9 @@ plot( adjust_field );
 hold on
 plot( adjust_field.xvals{1} + 0.1, adjust_field.field );
 
-% @Sam: they do not math. I do not unerstand why.
+% @Fabian: you need to use spaecp to get the right point
 acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
-adjust_field.field(3)
+adjust_field.field(spacep(3,resadd))
 acfield(3.1)
 
 
