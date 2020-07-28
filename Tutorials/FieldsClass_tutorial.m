@@ -1,4 +1,4 @@
-%% Introduction to Fields classes
+%% Introduction to Fields class
 % Author: Fabian Telschow
 %% Section 1: Introduction to Fields
 % This tutorial provides a short introduction to the Fields class from the.
@@ -157,3 +157,34 @@ imagesc( tmp(:,1,:,1,1) ), colorbar
 A = wnfield( mask, [3 3] )
 collapse( A )
 collapse(A, 'fiber')
+%% ConvField Class
+% This package also includes a ConvField class, which is a subclass of the
+% Fields class. A subclass contains all properties of the parent class and
+% all methods implemented for the parent class can be used on the subclass
+% object. However, special methods and properties can be introduced for the
+% subclass. In this toolbox the ConvField class describes a field contained
+% from smoothing with a kernel. It is generated as follows:
+
+% Get lattice data
+wn = wnfield( mask, 1 );
+% Input data
+% Kernel: SepKernel object. Numeric creates a seperable isotropic Gaussian
+% kernel with FWHM kernel
+kernel = 3;
+% Derivative type: 0/1/2 supported giving the actual field or its first or
+% second derivative
+derivtype = 0; 
+% resolution increase of the field, i.e. number of voxels added inbetween
+% each voxel
+resadd = 3;
+% lat_mask: mask the lat_data before smoothing or not
+lat_masked = true;
+% enlarge the mask by voxres in high resolution. 
+enlarge = ceil( resadd / 2 );
+% Construct ConvField object.
+cfield = convfield_Field( wn, kernel, derivtype, resadd, lat_masked, enlarge )
+imagesc( cfield(:,:,3) )
+
+% Note that a ConvField basically tracks the Kernel, resadd and enlarge
+% addtionally to the other field properties
+%

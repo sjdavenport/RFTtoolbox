@@ -1,4 +1,4 @@
-function [tcfield, cfields] = convfield_t_Field( lat_data, Kernel, resadd, enlarge )
+function [tcfield, cfields, olds] = convfield_t_Field( lat_data, Kernel, resadd, enlarge )
 % CONVFIELD_T( lat_data, FWHM, resadd ) computes a convolution t field
 % with specified FWHM with resadd additional voxels added between the
 % original points of the lattice.
@@ -83,12 +83,19 @@ end
 % Obtain the convolution fields for each subject
 cfields  = convfield_Field( lat_data, Kernel, 0, resadd, 1, enlarge );
 
+% Generate an empty Field with the given mask
+tcfield = Field(cfields.mask);
+
 % Calculate the t-statistic
 if D > 1
-    tcfield = mvtstat(cfields.field, spacep(Dim,resadd)+2*enlarge);
+    old = mvtstat(cfields.field, spacep(Dim,resadd)+2*enlarge);
+    tcfield.field = mvtstat(cfields.field, spacep(Dim,resadd)+2*enlarge);
 else
-    tcfield = mvtstat(cfields.field);
+    old = mvtstat(cfields.field);
+    tcfield.field = mvtstat(cfields.field);
 end
+
+
 
 end
 

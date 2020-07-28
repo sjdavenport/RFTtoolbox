@@ -305,22 +305,41 @@ newHPEestimate = HPE.hatL'
 % SPM (Off of course due to the edge correction)
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
 
-%% 3D MNImask LKCs with padding 
-FWHM = 3; nsubj = 20; Dim = [91,109,91];
+%% 3D MNImask LKCs with padding
+FWHM = 3; nsubj = 20; Dim = [91,109,91]; pad = ceil( 4 * FWHM2sigma( FWHM ) );
 mask = logical(imgload('MNImask')); padded_mask = logical( pad_vals( mask, pad) );
 resadd = 1; lat_data = wnfield(padded_mask, nsubj);
 
 % Convolution L_1 (voxmndest)
-cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
+[tcfield, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
 dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
-[L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield )
+[L_conv,L0_conv] = LKC_voxmfd_est( cfields, dcfield )
 
 % HPE (Worryingly L_3 can be negative here sometimes)
-HPE  = LKC_HP_est( cfield, 1, 1);
+HPE  = LKC_HP_est( cfields, 1, 1);
 newHPEestimate = HPE.hatL'
 
 % SPM (Off of course due to the edge correction)
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
+
+%% Comapre EC curves
+[ curve, thresholds ] = ECcurve( tcfield, [-5,5]);
+
+EEC_spm = EEC_calc( thresholds, L_spm, L0, 'T', nsubj )
+EEC_hpe = EEC_calc( thresholds, newHPEestimate, L0, 'T', nsubj )
+EEC_conv = EEC_calc( thresholds, L_conv, L0, 'T', nsubj )
+EEC_mix = EEC_calc( thresholds, [newHPEestimate(1), L_conv(2), L_conv(3)], L0, 'T', nsubj )
+
+
+EEC = EEC_calc( thresholds, L, L0, 'T', nsubj )
+plot(thresholds, curve)
+hold on
+plot(thresholds, EEC_spm)
+hold on 
+plot(thresholds, EEC_hpe)
+plot(thresholds, EEC_conv)
+plot(thresholds, EEC_mix)
+legend('Observed', 'SPM', 'HPE', 'Conv')
 
 %%
 Lambda = Lambda_theory( FWHM, 3 );

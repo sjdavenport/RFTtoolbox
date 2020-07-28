@@ -88,7 +88,7 @@ for b = 1:niters
     % Calculate the convolution t-field and the smooth data. Note this will
     % change later because you'll get this from LKC_est as an output there
     % too!
-    [ tfield_finelat, cfields ] = convfield_t_Field( lat_data, Kernel, resadd );
+    [ tcfield, cfields ] = convfield_t_Field( lat_data, Kernel, resadd );
     
     % Calculate the derivatives of the convolution fields
     dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
@@ -100,11 +100,11 @@ for b = 1:niters
     end
     
     % Find the maximum on the lattice
-    tfield_lat = tfield_finelat(orig_lattice_locs{:});
+    tfield_lat = tcfield.field(orig_lattice_locs{:});
     max_tfield_lat = max(tfield_lat(:).*zero2nan(mask(:)));
     
     % Find the maximum on the fine lattice
-    max_tfield_finelat = max(tfield_finelat(:).*zero2nan(cfields.mask(:)));
+    max_tfield_finelat = max(tcfield.field(:).*zero2nan(cfields.mask(:)));
     
     % Calculate the LKCs
     if strcmp(lkc_est_version, 'conv')
@@ -124,7 +124,7 @@ for b = 1:niters
     threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
     
     % Initialize peak_est_locs and peakvals
-    [ peak_est_locs, ~, peakvals ] = lmindices(tfield_finelat, 3, cfields.mask);
+    [ peak_est_locs, ~, peakvals ] = lmindices(tcfield.field, 3, cfields.mask);
     
     % Ensure that peak_est_locs is D by npeaks
     if D == 1

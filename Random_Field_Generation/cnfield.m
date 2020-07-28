@@ -1,4 +1,4 @@
-function obj = wnfield( varmask, fibersize, xvals )
+function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
 % wnfield( masksize, fibersize, mask ) constructs a Fields object having
 % white noise in the fiber.
 %--------------------------------------------------------------------------
@@ -8,8 +8,13 @@ function obj = wnfield( varmask, fibersize, xvals )
 %              - a 1 x D vector containing the size of the mask. The field
 %                'mask' is then set to true( varmask ). 
 %              - a T_1 x ... x T_D logical array containing the mask.
+%  FWHMcor     a 1 x D vector containing the FWHM applied to correlate the
+%              white noise
+%  voxmap      a size varmask array representing a bijection of the domain
 %
 % Optional
+%  FWHM        a 1 x D vector containing the FWHM applied after applying
+%              the voxelmap
 %  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
 %  xvals       a 1 x D cell array containing the xvals.
@@ -65,6 +70,11 @@ end
 %--------------------------------------------------------------------------
 
 % Fill the defaults of the optional parameters if necessary
+if ~exist( 'FWHM', 'var')
+    FWHM = 0;
+end
+
+% Fill the defaults of the optional parameters if necessary
 if ~exist( 'fibersize', 'var')
     fibersize = 1;
 end
@@ -84,16 +94,29 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-if islogical( varmask)
-    obj = Field( varmask );
-    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );    
-else
-    obj = Field( varmask );
-    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );
-end
-
+% Get a white noise field
+obj = wnfield( varmask, fibersize );
 if exist( 'xvals', 'var' )
     obj.xvals = xvals;
+end
+
+% Smooth the white noise field to introduce correlation
+obj  = convfield_Field( obj, FWHMcor, 0, 0, false, 0 );
+
+% Generate voxelmap for subjects
+N = prod( obj.masksize );
+voxmap = voxmap(:)';
+voxmap1 = voxmap;
+for n = 2:prod( obj.fibersize )
+    voxmap = [ voxmap, ( (n-1) * N ) + voxmap1 ];
+end
+
+% Subref the field
+obj.field = reshape( obj.field( voxmap ),...
+                     obj.fieldsize );
+   
+if FWHM ~= 0
+    obj  = convfield_Field( obj, FWHM, 0, 0, false, 0 );
 end
 
 return

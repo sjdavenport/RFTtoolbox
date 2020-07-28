@@ -51,7 +51,9 @@ end
 voxmfd = VoxManifold( Riemmetric_est( field, dfield ) );
 
 if exist( 'd2field', 'var' )
-    voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
+    if ~isempty( d2field.field )
+        voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
+    end
 end
 
 % Obtain the LKCs
