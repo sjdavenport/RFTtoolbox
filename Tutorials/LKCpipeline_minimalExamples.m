@@ -37,7 +37,7 @@ version = true;
 [ L, L0, nonstatInt, cfields ] = LKC_latconv_est( lat_data, params, version );
                                                         
 % Full FWER analysis
-[ output_image, threshold, L ] = vRFT( lat_data, params, 0.05, true );
+[ output_image, threshold, max_finelat, L ] = vRFT( lat_data, params, 0.05, true );
 imagesc(output_image)
 
 %% 2D LKC simulation cube

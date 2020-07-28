@@ -103,6 +103,9 @@ output_image = tfield_fine;
 % Convert the output to double (can't remember why I do this!)
 output_image.field = double( tfield_fine.field > threshold );
 
+% add output of maximum, if you think we need it
+max_finelat = 1;
+
 end
 
 % DEPRECATED
