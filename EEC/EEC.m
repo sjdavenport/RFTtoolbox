@@ -13,8 +13,9 @@ function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, LKC0,...
 %   LKC0    Euler characteristic of the domain
 %
 % Optional
-%   type	string specifying the type of random field the EEC is computed from.
-%           Default option is "gaussian". (later "t","F","") will follow.
+%   type	string specifying the type of random field the EEC is computed
+%           from. Options are "Z" and "T".
+%           Default option is "Z".
 %   df      value depends on type
 %           - "t" an numeric the degrees of freedom.
 %--------------------------------------------------------------------------
@@ -54,7 +55,7 @@ function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, LKC0,...
 %--------------------------------------------------------------------------
 
 if ~exist( 'type', 'var' )
-    type = "gaussian";
+    type = "Z";
 end
 
 sLKC = size(LKC);
