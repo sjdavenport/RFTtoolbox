@@ -36,14 +36,11 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
-resadd     = cfield_props.resadd;
-kernel     = cfield_props.kernel;
-if isnumeric( kernel )
-    kernel = SepKernel( cfield_props.D, kernel );
-end
+resadd     = params.resadd;
+kernel     = params.kernel;
 D          = length( kernel.adjust );
-lat_masked = cfield_props.lat_masked;
-enlarge    = cfield_props.enlarge;
+lat_masked = params.lat_masked;
+enlarge    = params.enlarge;
 
 %% Add/check optional values
 %--------------------------------------------------------------------------
