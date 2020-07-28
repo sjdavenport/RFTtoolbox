@@ -50,9 +50,11 @@ end
 % Construct VoxManifold object by providing Riemannian metric
 voxmfd = VoxManifold( Riemmetric_est( field, dfield ) );
 
-if exist( 'd2field', 'var' )
-    if ~isempty( d2field.field )
-        voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
+if field.D == 3
+    if exist( 'd2field', 'var' )
+        if ~isempty( d2field.field )
+            voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
+        end
     end
 end
 
