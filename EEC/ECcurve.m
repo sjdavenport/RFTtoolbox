@@ -45,7 +45,7 @@ if ~exist( 'limits', 'var' )
     limits = [-2,2];
 end
 
-if ~exist( 'ninter', 'var' )
+if ~exist( 'increm', 'var' )
     % default option of ninter
     increm = 0.1;
 end

@@ -289,9 +289,8 @@ L_HPE_average/niters
 % in the convolution estimator.
 
 %% 3D MNImask LKCs
-FWHM = 3; nsubj = 20; Dim = [91,109,91];
-mask = logical(imgload('MNImask'));
-resadd = 1; lat_data = wnfield(mask, nsubj);
+FWHM = 3; nsubj = 20; resadd = 1; 
+mask = getMNImask; lat_data = wnfield(mask, nsubj);
 
 % Convolution L_1 (voxmndest)
 cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
@@ -305,20 +304,21 @@ newHPEestimate = HPE.hatL'
 % SPM (Off of course due to the edge correction)
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
 
-%% 3D MNImask LKCs with padding
-FWHM = 3; nsubj = 20; Dim = [91,109,91]; pad = ceil( 4 * FWHM2sigma( FWHM ) );
-mask = logical(imgload('MNImask')); padded_mask = logical( pad_vals( mask, pad) );
+%% 3D MNImask LKCs with padding to ensure stationarity
+FWHM = 3; nsubj = 20; mask = getMNImask;
+pad = ceil( 4 * FWHM2sigma( FWHM ) ); padded_mask = logical( pad_vals( mask, pad) );
 resadd = 1; lat_data = wnfield(padded_mask, nsubj);
+lat_masked = 0;
 
 % Convolution L_1 (voxmndest)
-[tcfield, cfields] = convfield_t_Field( lat_data, FWHM, resadd );
-dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
+[tcfield, cfields] = convfield_t_Field( lat_data, FWHM, resadd, lat_masked );
+dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfields, dcfield )
 
 % HPE (Worryingly L_3 can be negative here sometimes)
 HPE  = LKC_HP_est( cfields, 1, 1);
 newHPEestimate = HPE.hatL'
-
+ 
 % SPM (Off of course due to the edge correction)
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
 
@@ -330,8 +330,6 @@ EEC_hpe = EEC_calc( thresholds, newHPEestimate, L0, 'T', nsubj )
 EEC_conv = EEC_calc( thresholds, L_conv, L0, 'T', nsubj )
 EEC_mix = EEC_calc( thresholds, [newHPEestimate(1), L_conv(2), L_conv(3)], L0, 'T', nsubj )
 
-
-EEC = EEC_calc( thresholds, L, L0, 'T', nsubj )
 plot(thresholds, curve)
 hold on
 plot(thresholds, EEC_spm)

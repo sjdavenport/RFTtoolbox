@@ -200,7 +200,7 @@ lat_data = normrnd(0,1,Dim); resadd = 9;
 [smoothfield, xvals_vecs] = convfield( lat_data, FWHM, resadd, D );
 
 kernel = SepKernel( D, FWHM ); kernel.adjust = [0.1,0,0];
-[adjust_field, xvals_vecs_adjust] = convfield( lat_data, kernel, 0, D );
+[adjust_field, xvals_vecs_adjust] = convfield_field( lat_data, kernel, 0, D );
 
 point = [1.1,1,1]'; spaced_point = spacep(point, resadd);
 plot(xvals_vecs{1}, smoothfield(:,spaced_point(2), spaced_point(3)))
