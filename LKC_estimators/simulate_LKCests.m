@@ -94,17 +94,14 @@ for m = 1:Msim
     lat_data = data_gen( nsubj );
 
     % Generate convolution fields from lattice data
-    cfield   = convfield_Field( lat_data, kernel, 0, resadd, lat_masked,...
-                                enlarge );
+    cfield   = convfield( lat_data, params, 0 );
 
     % Compute derivatives if convE is used in this simulation
     if isfield( methods, "convE" )
-        dcfield  = convfield_Field( lat_data, kernel, 1, resadd, lat_masked,...
-                                    enlarge );
+        dcfield  = convfield( lat_data, kernel, params, 1 );
         if dcfield.D == 3
             if version(3) == 1
-                d2cfield = convfield_Field( lat_data, kernel, 2, resadd,...
-                                            lat_masked, enlarge );
+                d2cfield = convfield_Field( lat_data, params, 2 );
             else
                 d2cfield = Field();
             end
