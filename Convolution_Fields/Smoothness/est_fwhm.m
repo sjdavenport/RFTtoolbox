@@ -51,14 +51,28 @@ function fwhm_est = est_fwhm( lat_data, Kernel, lat_masked )
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
+D = lat_data.D;
 % Get variable domain counter
-indexD = repmat( {':'}, 1, lat_data.D );
+indexD = repmat( {':'}, 1, D );
+
+%%  Check optional input
+%--------------------------------------------------------------------------
+% @Sam: Not sure whether you want this to be the default
+if ~exist( 'lat_masked', 'var' )
+    lat_masked = 1;
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-resadd = 0; %Only calculate Lambda at the voxels
-cfield  = convfield_Field( lat_data, Kernel, 0, resadd, lat_masked );
-dcfield = convfield_Field( lat_data, Kernel, 1, resadd, lat_masked );
+% Make sure convolution evaluated on original grid size
+if isnumeric( Kernel )
+    params = ConvFieldParams( Kernel*ones( [ 1 D ] ), 0, 0, lat_masked );
+else
+    params = ConvFieldParams( Kernel, 0, 0, lat_masked );
+end
+
+cfield  = convfield_Field( lat_data, params, 0 );
+dcfield = convfield_Field( lat_data, params, 1 );
 
 Lambda = Riemmetric_est( cfield, dcfield );
 % Lambda_data = Lambda.field(Lambda.mask); %@Fab is there any easy way to
