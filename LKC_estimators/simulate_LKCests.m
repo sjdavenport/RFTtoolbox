@@ -1,4 +1,4 @@
-function results = simulate_LKCests( Msim, nsubj, methods, cfield_props,...
+function results = simulate_LKCests( Msim, nsubj, methods, params,...
                                      data_gen )
 % simulate_LKCests( Msim, methods, data_gen ) simulates different LKC
 % estimators for random fields.
@@ -13,10 +13,7 @@ function results = simulate_LKCests( Msim, nsubj, methods, cfield_props,...
 %            - HPE filled with a logical for normalize from LKC_HP_est()    
 %            - bHPE filled with a 1 x 2 cell containing Mboot, normalize 
 %              from LKC_HP_est()
-%   cfield_props  a structure containing input to cfield_Field()
-%                 - lat_masked
-%                 - kernel a SepKernel object
-%                 - resadd
+%   params   an object of class ConvFieldParams.
 %
 % Optional
 %   data_gen  a function handle for the lattice data or a logical mask. If
