@@ -1,4 +1,4 @@
-function cfield = convfield_Field( lat_data, params, derivtype )
+function cfield = convfield( lat_data, params, derivtype )
 % CONVFIELD_FIELD( lat_data, Kernel, resadd, derivtype, enlarge )
 % generates an object of class Field containing the convolution field
 % derived from lattice data smoothed with a seperable kernel.
