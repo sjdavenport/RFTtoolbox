@@ -57,7 +57,7 @@ tcfield = Field( cfields.mask );
 
 % Calculate the t-statistic
 if D > 1
-    tcfield = mvtstat( cfields.field, spacep( Dim, resadd ) + 2* params.enlarge );
+    tcfield.field = mvtstat( cfields.field, spacep( Dim, params.resadd ) + 2* params.enlarge );
 else
     tcfield.field = mvtstat( cfields.field );
 end
