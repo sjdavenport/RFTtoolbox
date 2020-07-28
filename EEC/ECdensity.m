@@ -12,8 +12,11 @@ function rho_d = ECdensity( uvals, d, type, df )
 %   df
 %
 % Optional
-%   opt1   this is an optional parameter. Default 0.
-%
+%   type	string specifying the type of random field the EEC is computed
+%           from. Options are "Z" and "T".
+%           Default option is "Z".
+%   df      value depends on type
+%           - "t" an numeric the degrees of freedom.
 %--------------------------------------------------------------------------
 % OUTPUT
 %   rho_d  a vector of length uvals with the evaluated ECdensity
