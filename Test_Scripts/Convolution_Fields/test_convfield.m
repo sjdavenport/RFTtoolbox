@@ -201,29 +201,39 @@ aderiv = @(x) applyconvfield( x, lat_data.field(:,:,:,2), @(y) GkerMVderiv(y, FW
 dfeval = squeeze(derivfields.field(3,3,3,2,:))
 aceval = aderiv([3,3,3]')
 
-%%%% Updated until here.
 %% Adjusting the field (1D)
-nvox = 10; D = 1; FWHM = 2; lat_data = normrnd(0,1,1,nvox);
+nvox = 10; D = 1; FWHM = 2; mask = true( [ nvox, 1 ] );
+lat_data = wnfield( mask, 1 );
 kernel = SepKernel( D, FWHM ); kernel.adjust = 0.1; resadd = 10;
-[smoothfield, xvals_vecs] =  convfield( lat_data, FWHM, resadd, D);
-[adjust_field, xvals_vecs_adjust] = convfield( lat_data, kernel, 0, D);
+params = ConvFieldParams( FWHM, resadd, 0 );
+params_adj = ConvFieldParams(  kernel, resadd, 0 );
+smoothfield =  convfield( lat_data, params );
+adjust_field = convfield( lat_data, params_adj );
 
-plot(xvals_vecs{1}, smoothfield)
+plot( smoothfield );
 hold on
-plot(xvals_vecs_adjust{1},adjust_field)
+plot( adjust_field );
+hold on
+plot( adjust_field.xvals{1} + 0.1, adjust_field.field );
 
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
-adjust_field(3)
+% @Sam: they do not math. I do not unerstand why.
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
+adjust_field.field(3)
 acfield(3.1)
+
 
 %% Adjusting the field (3D)
 Dim = [10,10,10]; D = length(Dim); FWHM = 1.5;
-lat_data = normrnd(0,1,Dim); resadd = 9;
-[smoothfield, xvals_vecs] = convfield( lat_data, FWHM, resadd, D );
+mask = true( Dim );
+lat_data = wnfield(mask, 1); resadd = 9;
+params = ConvFieldParams( FWHM * ones( [ 1 D ] ), resadd, 0 );
+smoothfield = convfield( lat_data, params );
 
 kernel = SepKernel( D, FWHM ); kernel.adjust = [0.1,0,0];
-[adjust_field, xvals_vecs_adjust] = convfield( lat_data, kernel, 0, D );
+params_adj = ConvFieldParams( kernel, resadd, 0 );
+adjust_field = convfield( lat_data, params_adj );
 
+%%%% Updated until here.
 point = [1.1,1,1]'; spaced_point = spacep(point, resadd);
 plot(xvals_vecs{1}, smoothfield(:,spaced_point(2), spaced_point(3)))
 hold on
