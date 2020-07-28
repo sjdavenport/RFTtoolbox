@@ -1,4 +1,4 @@
-function [tcfield, cfields] = convfield_t_Field( lat_data, Kernel, resadd, enlarge )
+function [tcfield, cfields] = convfield_t_Field( lat_data, params )
 % CONVFIELD_T( lat_data, FWHM, resadd ) computes a convolution t field
 % with specified FWHM with resadd additional voxels added between the
 % original points of the lattice.
@@ -68,20 +68,12 @@ D = lat_data.D;
 
 %%  add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'resadd', 'var' )
-   % default option of resadd
-   resadd = 1;
-end
 
-if ~exist( 'enlarge', 'var' )
-   % default option of resadd
-   enlarge = ceil(resadd/2);
-end
 
 %%  main function
 %--------------------------------------------------------------------------
 % Obtain the convolution fields for each subject
-cfields  = convfield_Field( lat_data, Kernel, 0, resadd, 1, enlarge );
+cfields  = convfield_Field( lat_data, params, 0 );
 
 % Calculate the t-statistic
 if D > 1
