@@ -156,7 +156,7 @@ end
 %--------------------------------------------------------------------------
 
 %%%%%% return the input mask if resadd = 0
-if resadd == 0
+if resadd == 0 && enlarge == 0
     mask_hr = mask;
     weights = mask_hr;
     return
