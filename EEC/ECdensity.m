@@ -1,19 +1,23 @@
 function rho_d = ECdensity( uvals, d, type, df )
-% NEWFUN( var1, var2, opt1 ) is described here [...]
+% ECDENSITY( uvals, d, type, df ) implements the EC densities, i.e. the basis
+% functions in the EEC formula.
+% Currently, "Z" and "T" fields are supported
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%   var1   this is a mandatory variable.
-%   var2   this is a mandatory variable.
+%   uvals  a vector of values at which to evaluate the ECdensities.
+%   d      an integer denoting which ECdensity should be evaluated.
+%   type   
+%   df
 %
 % Optional
 %   opt1   this is an optional parameter. Default 0.
 %
 %--------------------------------------------------------------------------
 % OUTPUT
-%   out1  this is the first output
-%   out2  this is the second output
+%   rho_d  a vector of length uvals with the evaluated ECdensity
+%
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
@@ -35,7 +39,7 @@ function rho_d = ECdensity( uvals, d, type, df )
 % Parameter can be easily permuted
 if ~exist( 'type', 'var' )
    % Default option of opt1
-   type = "gaussian";
+   type = "Z";
    df   = 0;
 end
 
@@ -44,7 +48,7 @@ end
 %--------------------------------------------------------------------------
 
 % Compute the EC curves
-if strcmp( type, "gaussian" )
+if strcmp( type, "Z" )
     switch d
         case 0
             rho_d = 1 - normcdf( uvals );
@@ -57,7 +61,7 @@ if strcmp( type, "gaussian" )
             rho_d = ( uvals.^2 - 1 ) .* exp( -uvals.^2/2 ) / (2*pi)^(4/2);
     end
     
-elseif strcmp( type, "t" )
+elseif strcmp( type, "T" )
     % Factor depending on degrees of freedom
     if df > 250
         fac = 1;
