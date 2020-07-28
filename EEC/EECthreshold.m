@@ -47,6 +47,6 @@ end
 
 EECminusalpha = @(x) EEC( x, LKC, LKC0, type, df, 0 ) - FWER;
 
-u_FWER = fzero( EECminusalpha, [ 2, 100 ] );
+u_FWER = fzero( EECminusalpha, [ 2, 200 ] );
 
 return
