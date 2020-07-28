@@ -15,7 +15,7 @@ plot( convolution_field );
 nsubj = 3; 
 lat_data = wnfield( mask, nsubj );
 convolution_field = convfield( lat_data, params );
-plot( convolution_field )
+plot( convolution_field );
 hold off
 
 %% 1D derivatives
@@ -163,7 +163,7 @@ lat_data = wnfield( mask, 1);
 acfield = @(x) applyconvfield(x, lat_data.field, FWHM);
 Dim = [10,10,10];
 D = length(Dim); FWHM = 3; resadd = 0;
-params.resadd = resadd
+params.resadd = resadd;
 cfield = convfield( lat_data, params ); 
 acfield([5,5,5]')
 cfield.field(5,5,5)
@@ -197,7 +197,7 @@ Dim = [5,5,5]; D = length(Dim); FWHM = 3; nsubj = 2;
 lat_data = wnfield( mask, nsubj ); resadd = 0;
 params.resadd = resadd;
 derivfields = convfield( lat_data, params, 1);
-aderiv = @(x) applyconvfield( x, lat_data.field(:,:,:,2), @(y) GkerMVderiv(y, FWHM)  )
+aderiv = @(x) applyconvfield( x, lat_data.field(:,:,:,2), @(y) GkerMVderiv(y, FWHM)  );
 dfeval = squeeze(derivfields.field(3,3,3,2,:))
 aceval = aderiv([3,3,3]')
 
@@ -218,14 +218,14 @@ plot( adjust_field.xvals{1} + 0.1, adjust_field.field );
 
 % @Fabian: you need to use spaecp to get the right point
 acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
-adjust_field.field(spacep(3,resadd))
+adjust_field.field( spacep( 3, resadd ) )
 acfield(3.1)
 
 
 %% Adjusting the field (3D)
-Dim = [10,10,10]; D = length(Dim); FWHM = 1.5;
+Dim = [ 10, 10, 10]; D = length( Dim ); FWHM = 1.5;
 mask = true( Dim );
-lat_data = wnfield(mask, 1); resadd = 9;
+lat_data = wnfield( mask, 1 ); resadd = 9;
 params = ConvFieldParams( FWHM * ones( [ 1 D ] ), resadd, 0 );
 smoothfield = convfield( lat_data, params );
 
@@ -233,56 +233,62 @@ kernel = SepKernel( D, FWHM ); kernel.adjust = [0.1,0,0];
 params_adj = ConvFieldParams( kernel, resadd, 0 );
 adjust_field = convfield( lat_data, params_adj );
 
-%%%% Updated until here.
-point = [1.1,1,1]'; spaced_point = spacep(point, resadd);
-plot(xvals_vecs{1}, smoothfield(:,spaced_point(2), spaced_point(3)))
+point = [1.1,1,1]'; spaced_point = spacep( point, resadd );
+plot( smoothfield( :, spaced_point(2), spaced_point(3) ) );
 hold on
-plot(xvals_vecs_adjust{1},adjust_field(:,point(2),point(3)))
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
-adjust_field(1,1)
+plot( adjust_field(:,point(2),point(3)) );
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
+adjust_field.field( spacep( 1, resadd ), spacep( 1, resadd ), spacep( 1, resadd ) )
 acfield(point)
 
 %% %% Enlarging the field
 
 %% 1D enlargement
-nvox = 10; lat_data = normrnd(0,1,1,nvox); FWHM = 3; D = 1; resadd = 0;
-cfield = convfield( lat_data', FWHM, resadd, D, 0, 1);
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) );
+FWHM = 3; D = 1; resadd = 0;
+params = ConvFieldParams( FWHM, resadd, 1 );
+cfield = convfield( lat_data, params );
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
 
-cfield(1)
+cfield.field(1)
 acfield(0)
 
 %% 1D enlargement
-nvox = 10; lat_data = normrnd(0,1,1,nvox); FWHM = 3; D = 1; resadd = 1;
-dx = 1/(1+resadd); enlarge = 1;
-cfield = convfield( lat_data', FWHM, resadd, D, 0, enlarge);
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) ); FWHM = 3;
+resadd = 1; dx = 1/(1+resadd); enlarge = 1;
+params = ConvFieldParams( FWHM, resadd, enlarge );
+cfield = convfield( lat_data, params );
+acfield = @(tval) applyconvfield( tval, lat_data.field, FWHM );
 
-cfield(1)
-acfield(1-dx*enlarge)
+cfield.field( 1 )
+acfield( 1 - dx * enlarge )
 %%
-nvox = 10; lat_data = normrnd(0,1,1,nvox); FWHM = 3; D = 1; resadd = 0;
+nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) ); FWHM = 3; resadd = 0;
 dx = 1/(1+resadd); enlarge = 5;
-cfield = convfield( lat_data', FWHM, resadd, D, 0, enlarge);
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+params = ConvFieldParams( FWHM, resadd, enlarge );
 
-cfield(1)
-acfield(1-dx*enlarge)
+cfield = convfield( lat_data, params);
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
+
+cfield.field( 1 )
+acfield( 1 - dx * enlarge )
 
 %% 2D enlargement
-Dim = [10,10]; lat_data = normrnd(0,1,Dim); FWHM = 3; D = 2; resadd = 1;
+Dim = [10,10]; lat_data = wnfield( Dim, 1 ); FWHM = 3; D = 2; resadd = 1;
 dx = 1/(1+resadd); enlarge = 1;
-cfield = convfield( lat_data, FWHM, resadd, D, 0, enlarge)
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+params = ConvFieldParams( [ FWHM FWHM ], resadd, enlarge );
+cfield = convfield( lat_data, params );
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM);
 
-cfield(1,1)
-acfield([1-dx*enlarge,1-dx*enlarge]')
+cfield.field( 1, 1 )
+acfield( [ 1 - dx * enlarge, 1 - dx * enlarge ]' )
 
 %% 3D enlargement
-Dim = [10,10,10]; lat_data = normrnd(0,1,Dim); FWHM = 3; D = 3; resadd = 1;
+Dim = [10,10,10]; lat_data = wnfield( Dim, 1 ); FWHM = 3; resadd = 1;
 dx = 1/(1+resadd); enlarge = 1;
-cfield = convfield( lat_data, FWHM, resadd, D, 0, enlarge);
-acfield = @(tval) applyconvfield(tval, lat_data, FWHM);
+params = ConvFieldParams( [ FWHM FWHM FWHM ], resadd, enlarge );
+cfield = convfield( lat_data, params );
+acfield = @(tval) applyconvfield(tval, lat_data.field, FWHM );
 
-cfield(1,1,1)
-acfield([1-dx*enlarge,1-dx*enlarge,1-dx*enlarge]')
+cfield.field( 1, 1, 1 )
+acfield( [ 1 - dx * enlarge, 1 - dx * enlarge, 1 - dx * enlarge ]' )
