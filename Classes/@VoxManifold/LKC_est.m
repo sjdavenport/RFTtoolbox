@@ -62,7 +62,7 @@ g       = voxmfd.g.field;
 D       = voxmfd.D;
 
 % Allocate vector for Lipschitz Killing curvature
-L = NaN * ones( [ 1 D ] );
+L = zeros( [ 1 D ] );
 
 %%% Get the weights for integration
 weights = getweights( mask );
