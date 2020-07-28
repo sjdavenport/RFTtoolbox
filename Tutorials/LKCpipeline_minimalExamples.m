@@ -28,6 +28,18 @@ mask_sphere = bndry_voxels( logical( pad_vals( mask_sphere, pad) ), 'full' );
 lambda  = 1 / ( 2 * FWHM2sigma( FWHM )^2 );
 sphereL = [ sqrt( lambda ), lambda ] .* [ 4*(T-1) 4*(T-1) ];
 
+%% Minimal example
+lat_data = wnfield( mask, 30 );
+params = ConvFieldParams( FWHM*ones( [ 1 2 ] ), resadd, enlarge, false );
+version = true;
+
+% Only LKCs + all cfields (with dericatives)
+[ L, L0, nonstatInt, cfields ] = LKC_latconv_est( lat_data, params, version );
+                                                        
+% Full FWER analysis
+[ output_image, threshold, L ] = vRFT_Field( lat_data, params, 0.05, true );
+imagesc(output_image)
+
 %% 2D LKC simulation cube
 %--------------------------------------------------------------------------
 Msim = 50;
