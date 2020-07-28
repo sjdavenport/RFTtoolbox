@@ -1,21 +1,24 @@
 function u_FWER = EECthreshold( FWER, LKC, LKC0, type, df )
-% EECthreshold( FWER, LKC, D, LKC0, type )
+% EECthreshold( FWER, LKC, LKC0, type, df ) this function computes the FWER
+% threshold from the EC heuristic.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%   FWER  this is a mandatory variable.
-%   LKC   this is a mandatory variable.
-%   LKC0
+%   FWER  an numeric strictly between 0 and 1 denoting the FWER which
+%         needs to be controlled.
+%   LKC   an 1 x D vector containing the first to dth LKCs.
+%   LKC0  an integer containing the zeroth LKC
 %
 % Optional
-%   type   this is an optional parameter. Default "gaussian".
-%   df     degrees of freedom if "t" or "F" type is chosen.
+%   type   a character indicating the type of EEC curve used for the
+%          threshold. Options are same as in EEC(). Default "Z".
+%   df     degrees of freedom for the chosen type, see EEC().
 %
 %--------------------------------------------------------------------------
 % OUTPUT
-%   out1  this is the first output
-%   out2  this is the second output
+%   u_FWER  the FWER threshold
+%
 %--------------------------------------------------------------------------
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
@@ -29,17 +32,18 @@ function u_FWER = EECthreshold( FWER, LKC, LKC0, type, df )
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 
+
 %% Add/check optional values
 %--------------------------------------------------------------------------
 
 if ~exist( 'type', 'var' )
    % Default option of type
-   type = "gaussian";
+   type = "Z";
 end
 
 if ~exist( 'df', 'var' )
    % Default option of type
-   df = -100;
+   df = 2;
 end
 
 %% Main function  
@@ -47,6 +51,6 @@ end
 
 EECminusalpha = @(x) EEC( x, LKC, LKC0, type, df, 0 ) - FWER;
 
-u_FWER = fzero( EECminusalpha, [ 2, 100 ] );
+u_FWER = fzero( EECminusalpha, [ 2, 200 ] );
 
 return
