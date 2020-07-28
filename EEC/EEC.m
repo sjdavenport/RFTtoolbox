@@ -17,7 +17,7 @@ function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, LKC0,...
 %           from. Options are "Z" and "T".
 %           Default option is "Z".
 %   df      value depends on type
-%           - "t" an numeric the degrees of freedom.
+%           - "T" an numeric the degrees of freedom.
 %--------------------------------------------------------------------------
 % OUTPUT
 % EEC_vals    an Nuvals x N array containing the EEC curves evaluated
