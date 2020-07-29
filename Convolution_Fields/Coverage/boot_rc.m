@@ -143,5 +143,5 @@ end
 function lat_data = get_sample_fields_nifti(directory, nifti_file_locs, use_nif, mask, nsubj, with_rep, total_nsubj)
     subset = randsample(total_nsubj,nsubj,with_rep);
     lat_data = Field(mask); as_3D = 1;
-    lat_data.field = loadsubs( subset, directory, use_nif, as_3D, nifti_file_locs );
+    lat_data.field = loadsubs( subset, directory, use_nif, mask, as_3D, nifti_file_locs );
 end

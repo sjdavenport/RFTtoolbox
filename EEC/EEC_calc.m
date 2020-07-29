@@ -1,4 +1,4 @@
-function EEC = EEC_spm( thresholds, L, L0, field_type, nsubj, use_old )
+function EEC = EEC_calc( thresholds, L, L0, field_type, nsubj, use_old )
 % EEC_spm( LKCs, field_type ) calculates the expected Euler characteristic 
 % of the excursion set above the given thresholds
 %--------------------------------------------------------------------------
@@ -18,7 +18,7 @@ function EEC = EEC_spm( thresholds, L, L0, field_type, nsubj, use_old )
 % cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
 % dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
 % [L,L0] = LKC_voxmfd_est( cfield, dcfield );
-% EEC_spm( [2,3], L, L0, 'T', nsubj )
+% EEC_calc( [2,3], L, L0, 'T', nsubj )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
