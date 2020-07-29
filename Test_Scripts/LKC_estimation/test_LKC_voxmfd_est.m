@@ -164,6 +164,8 @@ LKC5 = LKC_voxmfd_est( cfield, dcfield );
 [ theoryL; LKC1; LKC3; LKC5 ]'
 
 %% %% D = 3 
+clear all
+close all
 % Parameters for the field
 D      = 3;
 T      = 5;
@@ -300,6 +302,8 @@ LKC5_HPE = LKC_HP_est( cfield, Mboot, 1 );
 % Here we see that the second integral somehow must be wrong
 ConvE = [ theoryL; LKC1; LKC3; LKC5 ]'
 HPE = [ theoryL; LKC1_HPE.hatL'; LKC3_HPE.hatL'; LKC5_HPE.hatL' ]'
+
+imagesc(cfield(:,20,:,1))
 
 %% Sphere domain example (highly non stationary data, L1 estimated using
 % both integrals)
