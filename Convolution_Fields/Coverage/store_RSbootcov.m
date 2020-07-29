@@ -86,7 +86,8 @@ for I = 1:lFWHM_vec
         J
         sample_size = rc.nsubj_vec(J);
         if use_spm
-            coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 1 );
+            error('not implemented yet need to use boot_rc')
+%             coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 1 );
         else
             coverage = boot_rc( nifti_file_dir, sample_size, FWHM, mask, rc.resadd, rc.niters );
         end

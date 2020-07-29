@@ -322,7 +322,7 @@ newHPEestimate = HPE.hatL'
 % SPM (Off of course due to the edge correction)
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask )
 
-%% Comapre EC curves
+%% Compare EC curves
 [ curve, thresholds ] = ECcurve( tcfield, [-5,5]);
 
 EEC_spm = EEC_calc( thresholds, L_spm, L0, 'T', nsubj )
@@ -337,7 +337,7 @@ hold on
 plot(thresholds, EEC_hpe)
 plot(thresholds, EEC_conv)
 plot(thresholds, EEC_mix)
-legend('Observed', 'SPM', 'HPE', 'Conv')
+legend('Observed', 'SPM', 'HPE', 'Conv', 'Mix')
 
 %%
 Lambda = Lambda_theory( FWHM, 3 );

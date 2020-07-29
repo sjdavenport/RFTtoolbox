@@ -1,5 +1,5 @@
-function threshold = spm_thresh( L, L0 )
-% spm_thresh( L, L0 )
+function threshold = spm_thresh( L, L0, field_type, df, alpha )
+% spm_thresh( L, L0 ) calculates the RFT voxelwise threshold using SPM.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -13,15 +13,8 @@ function threshold = spm_thresh( L, L0 )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-
-%%  Check mandatory input and get important constants
-%--------------------------------------------------------------------------
-
-%%  Add/check optional values
-%--------------------------------------------------------------------------
-if ~exist( 'opt1', 'var' )
-    % default option of opt1
-    opt1 = 0;
+if ~exist('alpha', 'var')
+    alpha = 0.05;
 end
 
 %%  Main Function Loop
@@ -30,7 +23,11 @@ end
 resel_vec = LKC2resel(L, L0);
 
 % Calculate the RFT threshold using SPM
-threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
+if strcmp(field_type, 'T')
+    threshold = spm_uc_RF_mod(alpha,[1,df],'T',resel_vec,1);
+else
+    error('not implemented yet')
+end
 
 end
 
