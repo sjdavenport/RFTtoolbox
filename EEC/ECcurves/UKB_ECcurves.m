@@ -1,4 +1,4 @@
-function UKB_ECcurves( FWHM, nsubj_vec, niters )
+function UKB_ECcurves( FWHM, nsubj_vec, RSfolder, niters )
 % UKB_ECCURVES( FWHM, nsubj_vec, niters ) generates EC curves from the
 % UKbiobank data
 %--------------------------------------------------------------------------
@@ -26,6 +26,10 @@ function UKB_ECcurves( FWHM, nsubj_vec, niters )
 if ~exist( 'niters', 'var' )
    % default option of opt1
    niters = 1000;
+end
+
+if ~exist('RSfolder', 'var')
+    RSfolder = 'RS_2Block';
 end
 
 %%  Main Function Loop
