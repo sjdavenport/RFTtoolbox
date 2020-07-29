@@ -209,24 +209,19 @@ switch D
 %          angle.y( angle.y > pi ) =  - pi/2;      
 %          angle.z = eucangle.z( eucangle.z ~= 0 );
 %          angle.z( angle.z > pi ) = - pi/2;
-%          
-%          angle.x = 1;
-%          angle.y = 1;
-%          angle.z = 1;
+         
         clear eucangle
 
         % Integrate volume form of edges against the internal cutting
         % angles with orthogonal plane
         if version(2)
-            weights.x = weights.x( weights.x ~= 0 );        
+            weights.x = weights.x( weights.x ~= 0 );
+            weights.y = weights.y( weights.y ~= 0 );
+            weights.z = weights.z( weights.z ~= 0 );
             L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
                                   .* weights.x .* angle.x ) * dx;
-
-            weights.y = weights.y( weights.y ~= 0 );
             L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
-                                  .* weights.y .* angle.y ) * dy;
-
-            weights.z = weights.z( weights.z ~= 0 );
+                                  .* weights.y .* angle.y ) * dy;       
             L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
                                   .* weights.z .* angle.z ) * dz;
         end
