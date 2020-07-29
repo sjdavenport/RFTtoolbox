@@ -31,20 +31,9 @@ toc
 
 %% Matlab version
 tic
-b = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, 'notC' );
-isequal(a,b)
+a = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, 'notC' );
+a{1}
 toc
 
 %% %% 3D Examples
-%% Simple 2D example
-FWHM = 6; resadd = 1; nsubj = 1; Dim = [50,50,50];
-lat_data = wnfield(Dim, nsubj);
-tic
-b = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask );
-toc
-
-%% Matlab version
-tic
-a = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, 'notC' );
-isequal(a,b)
-toc
+%% Simple 3D example

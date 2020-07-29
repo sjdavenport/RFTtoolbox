@@ -69,7 +69,7 @@ for I = 1:length(nsubj_vec)
         lat_data.field = loadsubs( subset, directory, use_nif, mask, as_3D, nifti_file_locs );
         
         tcfield = convfield_t_Field(lat_data, FWHM, resadd);
-        curve = ECcurve( tcfield, [-8,8], 0.01);
+        curve = ECcurve( tcfield, [-8,8], 0.01, 'notC');
         store_curves(I,J,:) = curve;
         save([RFTboxloc,'EEC/ECcurves/UKB_ECcurves_FWHM_', num2str(FWHM)], 'store_curves')
     end
