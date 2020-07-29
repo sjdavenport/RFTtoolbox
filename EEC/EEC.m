@@ -70,7 +70,7 @@ if ~exist( 'df', 'var' )
 end
 
 if ~exist( 'outfield', 'var' )
-    outfield = 1;
+    outfield = 0;
 end
 
 %% Main function

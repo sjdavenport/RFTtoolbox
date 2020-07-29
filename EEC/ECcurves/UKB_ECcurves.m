@@ -62,6 +62,7 @@ thresholds = -8:0.01:8;
 
 store_curves = zeros(length(nsubj_vec),niters, length(thresholds));
 for I = 1:length(nsubj_vec)
+    nsubj = nsubj_vec(I);
     for J = 1:niters
         subset = randsample(total_nsubj,nsubj,with_rep);
         lat_data = Field(mask);

@@ -1,4 +1,4 @@
-function [ curve, x ]  = ECcurve( lat_data, limits, increm )
+function [ curve, x ]  = ECcurve( lat_data, limits, increm, version)
 % ECcurve( lat_data, limits, ninter )
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -50,10 +50,15 @@ if ~exist( 'increm', 'var' )
     increm = 0.1;
 end
 
+if ~exist( 'version', 'var' )
+    % default option of ninter
+    version = "C";
+end
+
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 
-ECcalc = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask );
+ECcalc = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, version );
 ECchanges =  ECcalc{1}( 2:end-1, 1 )';
 ECvals = ECcalc{1}( 2:end, 2 )';
 
