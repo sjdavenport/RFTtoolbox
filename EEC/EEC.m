@@ -65,6 +65,10 @@ D    = sLKC(2);
 %% Check optional input
 %--------------------------------------------------------------------------
 
+if ~exist( 'df', 'var' )
+    df = 1;
+end
+
 if ~exist( 'outfield', 'var' )
     outfield = 1;
 end
