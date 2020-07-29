@@ -101,7 +101,8 @@ if exist( 'xvals', 'var' )
 end
 
 % Smooth the white noise field to introduce correlation
-obj  = convfield_Field( obj, FWHMcor, 0, 0, false, 0 );
+params = ConvFieldParams( FWHMcor * ones( [ 1 obj.D ] ), 0, 0, false );
+obj  = convfield( obj, params );
 
 % Generate voxelmap for subjects
 N = prod( obj.masksize );
@@ -116,7 +117,8 @@ obj.field = reshape( obj.field( voxmap ),...
                      obj.fieldsize );
    
 if FWHM ~= 0
-    obj  = convfield_Field( obj, FWHM, 0, 0, false, 0 );
+    params = ConvFieldParams( FWHM * ones( [ 1 obj.D ] ), 0, 0, false );
+    obj  = convfield( obj, params );
 end
 
 return
