@@ -67,7 +67,7 @@ if isnumeric(data)
     spfn = @(nsubj) get_sample_fields_mate(data, mask, nsubj, with_rep, total_nsubj, D, indexD);
  
 elseif ischar(data)
-    if isempty(data, '/')
+    if isempty(strfind(data, '/'))
         % If the input is a folder not a file paths it defaults to the
         % featruns folder
         global featruns
