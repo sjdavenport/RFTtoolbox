@@ -1,7 +1,7 @@
- function [ output_image, threshold, max_finelat, L ] = vRFT(...
-                            lat_data, params, alpha, version )
-% vRFT_Field( lat_data, params, alpha, version ) runs voxelwise RFT 
-% inference on a set of images to detect areas of activation using a 
+function [ output_image, threshold, maximum, L ] = vRFT(...
+                        lat_data, params, ninitpeaks, L0, alpha, version )
+% VRFT( lat_data, params, L0, ninitpeaks, alpha, version ) runs voxelwise
+% RFT inference on a set of images to detect areas of activation using a
 % one-sample t-statistic.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -10,6 +10,8 @@
 %            mask
 %  params    an object of class ConvFieldParams.
 % Optional
+%  ninitpeaks   the number of initial peaks to use to find the maximum of
+%               the convolution field
 %  alpha     the alpha level at which to threshold. Default is 0.05.
 %            Recommend alpha <= 0.05 for best performance.
 %  version   a logical/ logical vector. Length depends on voxmfd.D
@@ -20,11 +22,15 @@
 %            used in L1 and version(3) whether the second integral is used.
 %--------------------------------------------------------------------------
 % OUTPUT
-%  output_image  the (fine lattice) output image
+%  output_image   a logical array (with dimensions that of the resolution
+%                 increased data) with 0 if a given point is below the
+%                 threshold and 1 if above
 %  threshold     the voxelwise RFT threshold
-%  max_finelat   the maximum on a fine lattice given by spacing
-%--------------------------------------------------------------------------
-% DEVELOPERS TODOS:
+%  maximum    a structure with fields:
+%   maximum.lat      the maximum on the original lattice
+%   maximum.finelat  the maximum on the resolution increased lattice
+%   maximum.conv     the maximum of the convolution field calculated using
+%                   an optimization algorithm (findconvpeaks)
 %--------------------------------------------------------------------------
 % EXAMPLES
 %
@@ -34,20 +40,19 @@
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-% Obtain the size of the lattice input
-s_lat = size( lat_data );
-
-% Obtain the dimensions of the data
-Dim = s_lat( 1:end-1 );
-
-% Obtain the number of dimensions
-D = length( Dim );
+% Get the number of dimensions
+D = lat_data.D;
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
 
 if ~exist( 'alpha', 'var' )
     alpha = 0.05;
+end
+
+% If this is not supplied it searches for the max using 1 initial peak
+if ~exist( 'ninitpeaks', 'var' )
+    ninitpeaks = 1;
 end
 
 if ~exist( 'version', 'var' )
@@ -57,44 +62,55 @@ if ~exist( 'version', 'var' )
         case 2
             version = true;
         case 3
-            version = [ true, true, true ];
+            version = [ 1, 1, 0 ];
+            %             version = [ true, true, true ];
     end
 end
 
 if ~exist( 'type', 'var' )
-   % Default option of type
-   type = "T";
+    % Default option of type
+    field_type = "T";
 end
 
 if ~exist( 'df', 'var' )
-   % Default option of type
-   df = lat_data.fibersize-1;
+    % Default option of type
+    df = lat_data.fibersize-1;
+end
+
+if ~exist( 'L0', 'var')
+    L0 =  EulerChar(lat_data.mask, 0.5, lat_data.D);
 end
 
 %%  Main function
 %--------------------------------------------------------------------------
-% Calculate the convolution t field 
+
+%% LKC calculations
+% Calculate the convolution t field
 [ tfield_fine, cfields ] = convfield_t( lat_data, params );
 
 % Estimate the LKCs of the convoltution field
 dcfields = convfield( lat_data, params, 1 );
 d2cfields = Field();
 
+% @Fabian, L0 is buggy as it's calculated on the resadd increased mask.
+% Plus this is extra computation time so perhaps by default it shouldn't be computed?
+% As it will be the same every time so it doesn't make sense to recompute
+% it
 if lat_data.D == 3
     if version(3) == 1
         d2cfields = convfield( lat_data, params, 2 );
-        [ L, L0 ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-                                    version );
+        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
+            version );
     else
-        [ L, L0 ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-                                    version );
+        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
+            version );
     end
 else
-	[ L, L0 ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version );
+    [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version );
 end
 
 % Calculate the threshold using the EEC heuristic
-threshold = EECthreshold( alpha, L, L0, type, df );
+threshold = EECthreshold( alpha, L, L0, field_type, df );
 
 % Determine the areas of the image where the t-field exceeds the threshold,
 % need to use Newton Rhapson here
@@ -103,8 +119,48 @@ output_image = tfield_fine;
 % Convert the output to double (can't remember why I do this!)
 output_image.field = double( tfield_fine.field > threshold );
 
-% add output of maximum, if you think we need it
-max_finelat = 1;
+%% Obtain the maximum
+% Define the locations of the original voxels (in terms of the coordinates
+% of the resolution increased values.
+orig_lattice_locs = cell(1,D);
+for d = 1:D
+    orig_lattice_locs{d} = (ceil(params.resadd/2) + 1):(params.resadd+1):length(cfields.xvals{d});
+end
+
+% Calculate the maximum on the original lattice
+tfield_lat = tfield_fine.field(orig_lattice_locs{:});
+maximum.lat = max(tfield_lat(:).*zero2nan(lat_data.mask(:)));
+
+% Calculate the maximum on the fine lattice
+maximum.finelat = max(tfield_fine.field(:).*zero2nan(tfield_fine.mask(:)));
+
+if ninitpeaks > 0
+    % Find the locations of the top peaks of the fine tfield on the mask
+    % (these are needed to initialize the peak finding algorithm)
+    peak_est_locs = lmindices(tfield_fine.field, ninitpeaks, tfield_fine.mask);
+    
+    % Ensure that peak_est_locs is D by npeaks
+    if D == 1
+        peak_est_locs = peak_est_locs';
+    end
+    
+    % Covert to the correct coordinate system (determined by tfield_fine.xvals)
+    peak_est_locs = xvaleval(peak_est_locs, tfield_fine.xvals);
+    
+    % Obtain the FWHM from the kernel (need to update findconvpeaks to work
+    % with an arbitrary kernel!)
+    FWHM = Gker2FWHM( params.kernel );
+    
+    % Calculate the maximum of the convolution field
+    [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
+    maximum.conv = max(max_tfield_at_lms);
+    
+    % There are some residual mismatches in 1D between convfield and
+    % applyconvfield that need to be resolved.
+    if D == 1
+        maximum.conv = max(maximum.conv, maximum.finelat);
+    end
+end
 
 end
 
@@ -123,7 +179,7 @@ end
 %     top_lmlocs = findconvpeaks_t(lat_data, FWHM, peak_est_locs);
 %     tfield_at_lms = tcf(top_lmlocs);
 % end
-% 
+%
 % % Calculate the maximum on the lattice and of the convolution field
 % max_finelat = max(tfield_fine);
 % max_conv = max([tfield_at_lms,max_finelat]); %Included for stability in case the maximum finding didn't work correctly.

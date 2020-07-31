@@ -18,7 +18,7 @@ nvox = length(signal); nsubj = 75; FWHM = 1;
 lat_data = 10*wnfield(nvox, nsubj) + signal;
 
 % RFT thresholding
-[im, threshold, ~, xvals] = vRFT( lat_data, FWHM );
+[im, threshold, ~, xvals] = vRFT_orig( lat_data, FWHM );
 
 % Permutation thresholidng
 [im_perm, threshold_perm] = perm_thresh(lat_data.field, 'T', FWHM, NaN, 0);

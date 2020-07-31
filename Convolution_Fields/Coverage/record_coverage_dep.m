@@ -1,17 +1,19 @@
-function coverage = record_coverage( spfn, sample_size, params, niters, do_spm )
+function coverage = record_coverage_dep( spfn, sample_size, Kernel, resadd, niters, lkc_est_version, do_spm )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  spfn         a function handle which given an integer number of subjects
-%               nsubj generates nsubj random fields and saves them in a
-%               data type of class field
+%  spfn         a function handle
 %  sample_size   the size of each sample to be sampled from the data
-%  params       an object of class ConvFieldParams
+%  FWHM          the applied FWHM of the Gaussian Kernel in each direction
+%          (we smooth with an istropic Kernel as is commonly done in practice)
 % Optional
+%  resadd       a non-negative integer giving the resolution increase.
+%               Default is 1.
 %  niters        the number of resamples of the data to do
+%  lkc_est_version      either 'conv' or 'hpe'. Default is 'conv'
 %  do_spm       additionally calculate the lkcs using SPM (i.e. under
 %               stationarity
 %--------------------------------------------------------------------------
@@ -33,19 +35,13 @@ function coverage = record_coverage( spfn, sample_size, params, niters, do_spm )
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-
-% Obtain a sample of the field
 single_sample_field = spfn(1);
-
-% Allow multiple input formats
 if strcmp(class(single_sample_field), 'Field')
     direct_field = 1;
 else
     single_sample_field = single_sample_field.lat_data;
     direct_field = 0;
 end
-
-% Obtain properties of the data
 Dim = single_sample_field.fieldsize;
 D = single_sample_field.D;
 mask = single_sample_field.mask;
@@ -60,11 +56,21 @@ if ~exist( 'niters', 'var' )
     niters = 1000;
 end
 
-% Set the default do_spm value
-if ~exist('do_spm', 'var')
-   do_spm = 0; 
+% Set the default resadd value
+if ~exist('resadd', 'var')
+   resadd = 1; 
 end
 
+% Set the default do_spm value
+if ~exist('do_spm', 'var')
+   do_spm = 1; 
+end
+
+if ~exist('lkc_est_version', 'var')
+    lkc_est_version = 'conv';
+elseif ~(strcmp(lkc_est_version, 'conv') || strcmp(lkc_est_version, 'hpe'))
+    error('lkc_est_version must be conv or hpe');
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
@@ -76,13 +82,6 @@ nabovethresh_finelat = 0;
 nabovethresh_spm = 0;
 nabovethresh_lat_spm = 0;
 nabovethresh_finelat_spm = 0;
-
-% Initialize vectors to store the maxima
-latmaxima = zeros(1,niters);
-finelatmaxima = zeros(1,niters);
-convmaxima = zeros(1,niters);
-
-storeLKCs = zeros(D,niters);
 
 % Main
 for b = 1:niters
@@ -96,28 +95,106 @@ for b = 1:niters
         lat_data = spfn(sample_size).lat_data;
     end
     
-    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
-    storeLKCs(:,b) = L';
+    % Calculate the fine t convolution field and the individual convolution
+    % fields
+    [ tcfield, cfields ] = convfield_t_Field( lat_data, Kernel, resadd );
     
-    if maximum.conv > threshold
+    % Calculate the derivatives of the convolution fields
+    dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
+
+    % Define the locations of the original voxels
+    orig_lattice_locs = cell(1,D);
+    for d = 1:D
+        orig_lattice_locs{d} = (ceil(resadd/2) + 1):(resadd+1):length(cfields.xvals{d});
+    end
+    
+    % Find the maximum on the lattice
+    tfield_lat = tcfield.field(orig_lattice_locs{:});
+    max_tfield_lat = max(tfield_lat(:).*zero2nan(mask(:)));
+    
+    % Find the maximum on the fine lattice
+    max_tfield_finelat = max(tcfield.field(:).*zero2nan(cfields.mask(:)));
+    
+    % Calculate the LKCs
+    if strcmp(lkc_est_version, 'conv')
+        % Obtain the LKCs using the convolution estimate
+        L = LKC_voxmfd_est( cfields, dcfields ); %L0 in LKC_voxmfd_est calculated wrong: using the highres mask
+%         LKCs = LKC_conv_est( lat_data, mask, Kernel, resadd );
+    elseif strcmp(lkc_est_version, 'hpe')
+        % Obtain the LKCs using the HPE
+        LKCs  = LKC_HP_est( cfields, 1, 1 );
+        L = LKCs.hatL; L0 = LKCs.L0;
+    end
+    
+    % Convert the LKCs to resels
+    resel_vec = LKC2resel(L, L0);
+    
+    % Calculate the RFT threshold using SPM
+    threshold = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',resel_vec,1);
+    
+    % Initialize peak_est_locs and peakvals
+    [ peak_est_locs, ~, peakvals ] = lmindices(tcfield.field, 3, cfields.mask);
+    
+    % Ensure that peak_est_locs is D by npeaks
+    if D == 1
+        peak_est_locs = peak_est_locs';
+    end
+    
+    % Evaluate the peak values at the xval coordinates
+    peak_est_locs = xvaleval(peak_est_locs, cfields.xvals);
+    
+    % Find the peaks that are within gap of the threshold
+    % Need to incorporate the derivative to choose this gap correctly here
+    if D == 3
+        gap = 5;
+    else
+        gap = 1;
+    end
+    peaksest2use = peak_est_locs(:, peakvals > (threshold - gap));
+    
+    % Convert to a cell array in 1D for input to findconvpeaks
+    if D == 1
+        peaksest2use = num2cell(peaksest2use);
+    end
+    
+    % Find the peaks of the convolution t-field
+    if ~isempty(peaksest2use)
+        [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peaksest2use, 'T', mask);
+    else
+        max_tfield_at_lms = max_tfield_finelat;
+    end
+    max_tfield_at_lms = max(max_tfield_at_lms);
+    
+    % This line is included because in 1D convfield and applyconvfield.
+    % These are small but need to be resolved. comment this out and
+    % uncomment lines 159-161 to see this problem. We need to resolve these
+    % differences
+    if D == 1
+        max_tfield_at_lms = max(max_tfield_at_lms, max_tfield_finelat); 
+    end
+    if (max_tfield_at_lms + 10^(-10))< max_tfield_finelat
+        max_tfield_at_lms
+        max_tfield_finelat
+        warning('Max lm higher than max lat');
+    end
+
+    if max_tfield_at_lms > threshold
         nabovethresh = nabovethresh + 1;
     end
-    if  maximum.lat > threshold
+    if  max_tfield_lat > threshold
         nabovethresh_lat = nabovethresh_lat + 1;
     end
-    if  maximum.finelat > threshold
+    if  max_tfield_finelat > threshold
         nabovethresh_finelat = nabovethresh_finelat + 1;
     end
-    latmaxima(b) = maximum.lat;
-    finelatmaxima(b) = maximum.finelat;
-    convmaxima(b) = maximum.conv;
     
-    if maximum.finelat > maximum.conv + 10^(-10)
-        a = 1
+%     max_tfield_lat
+%     max_tfield_finelat
+%     max_tfield_at_lms
+%     pause
+%     threshold
+%     pause
     
-    end
-    
-    % The spm loop needs redoing!
     if do_spm
         orig_lattice_locs{D+1} = ':';
         smooth_data_lat = cfields.field(orig_lattice_locs{:});
@@ -135,7 +212,7 @@ for b = 1:niters
         threshold_spm = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',spm_resel_vec,1);
         
         % Since the threshold 
-        if isempty(peak_est_locs) && (peakvals(1) > (threshold_spm - gap))
+        if isempty(peaksest2use) && (peakvals(1) > (threshold_spm - gap))
             [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peak_est_locs(:,1), 'T', mask);
         else
             max_tfield_at_lms = max_tfield_finelat;
@@ -155,12 +232,6 @@ end
 coverage.conv = nabovethresh/niters;
 coverage.lat =  nabovethresh_lat/niters;
 coverage.finelat =  nabovethresh_finelat/niters;
-
-coverage.finelatmaxima = finelatmaxima;
-coverage.latmaxima = latmaxima;
-coverage.convmaxima = convmaxima;
-
-coverage.storeLKCs = storeLKCs;
 
 if do_spm
     coverage.convspm = nabovethresh_spm/niters;

@@ -37,7 +37,7 @@ toc
 
 %% %% 3D Examples
 %% Simple 2D example
-FWHM = 6; resadd = 1; nsubj = 1; Dim = [50,50,50];
+FWHM = 6; resadd = 1; nsubj = 1; Dim = [70,90,70];
 lat_data = wnfield(Dim, nsubj);
 tic
 b = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask );

@@ -39,13 +39,7 @@ function [tcfield, cfields] = convfield_t( lat_data, params )
 %--------------------------------------------------------------------------
 % Get the dimensions of the data
 Dim = lat_data.masksize;
-
-% Obtain the number of dimensions
 D = lat_data.D;
-
-%%  add/check optional values
-%--------------------------------------------------------------------------
-
 
 %%  main function
 %--------------------------------------------------------------------------
@@ -61,6 +55,8 @@ if D > 1
 else
     tcfield.field = mvtstat( cfields.field );
 end
+
+tcfield.xvals = cfields.xvals;
 
 end
 

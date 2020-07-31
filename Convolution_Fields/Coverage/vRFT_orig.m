@@ -1,4 +1,4 @@
- function [ output_image, threshold, max_finelat, xvals ] = vRFT( lat_data, ...
+ function [ output_image, threshold, max_finelat, xvals ] = vRFT_orig( lat_data, ...
                                                     Kernel, resadd, alpha )
 % vRFT( lat_data, Kernel, mask, resadd, alpha ) runs voxelwise RFT 
 % inference on a set of images to detect areas of activation using a 
@@ -50,7 +50,7 @@ end
 xvals = cfields.xvals;
 
 % Calcuate the maximum on the lattice
-max_finelat = max(tfield_fine(:));
+max_finelat = max(tfield_fine.field(:));
 
 % Calculate the derivatives of the convolution fields
 dcfields = convfield_Field( lat_data, Kernel, 1, resadd, 1 );
@@ -66,7 +66,7 @@ resel_vec = LKC2resel(L,L0);
 threshold = spm_uc_RF(alpha,[1,lat_data.fibersize-1],'T',resel_vec,1);
 
 % Determine the areas of the image where the t-field exceeds the threshold
-output_image = tfield_fine > threshold;
+output_image = tfield_fine.field > threshold;
 
 % Convert the output to double (can't remember why I do this!)
 output_image = double(output_image);

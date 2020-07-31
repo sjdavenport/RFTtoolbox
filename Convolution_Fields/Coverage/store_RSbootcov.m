@@ -77,11 +77,14 @@ if use_spm
     rc.finelatspm = zeros(lFWHM_vec,lnsubj_vec);
 end
 
+
+
 filesave = [dirsave, filename];
 
 for I = 1:lFWHM_vec
     I
     FWHM = rc.FWHM_vec(I);
+    params = ConvFieldParams(FWHM, rc.resadd);
     for J = 1:lnsubj_vec
         J
         sample_size = rc.nsubj_vec(J);
@@ -89,11 +92,17 @@ for I = 1:lFWHM_vec
             error('not implemented yet need to use boot_rc')
 %             coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 1 );
         else
-            coverage = boot_rc( nifti_file_dir, sample_size, FWHM, mask, rc.resadd, rc.niters );
+            % Obtain the function to generate the sample fields
+            spfn = get_sample_fields( data, mask );
+
+            % Obtain the coverage
+            coverage = record_coverage( spfn, sample_size, params, niters, do_spm );
+%             coverage = boot_rc( nifti_file_dir, sample_size, params, mask, rc.niters );
         end
         rc.conv(I,J) = coverage.conv;
         rc.lat(I,J) =  coverage.lat;
         rc.finelat(I,J) =  coverage.finelat;
+        rc.convmaxima = coverage.convmaxima;
         if use_spm
             rc.convspm(I,J) = coverage.convspm;
             rc.latspm(I,J) =  coverage.latspm;
