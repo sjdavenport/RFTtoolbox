@@ -71,7 +71,7 @@ elseif ischar(data)
         % If the input is a folder not a file paths it defaults to the
         % featruns folder
         global featruns
-        directory = [featruns, data, '_warped'];
+        directory = [featruns, data, '_warped/'];
     else
         directory = data;
     end
