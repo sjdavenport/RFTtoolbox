@@ -69,6 +69,8 @@ for I = 1:niters
     [ peak_est_locs, ~, peakvals ] = lmindices(tcfield.field, npeaks, tcfield.mask);
     lat_maxima(:,I) = peakvals';
     
+    sample_images
+    sample_images.lat_data
     size(sample_images.lat_data.field);
     FWHM
     peak_est_locs
