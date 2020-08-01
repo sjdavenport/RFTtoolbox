@@ -121,6 +121,5 @@ function out = get_sample_fields_nifti(directory, nifti_file_locs, use_nif, mask
     use_nif
     mask
     as_3D
-    
     out.lat_data.field = loadsubs( out.subset, directory, use_nif, mask, as_3D, nifti_file_locs );
 end

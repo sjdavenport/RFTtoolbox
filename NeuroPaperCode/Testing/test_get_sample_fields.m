@@ -23,4 +23,5 @@ spfn(20).lat_data
 %% Resting State Data example
 mask = imgload('MNImask');
 spfn = get_sample_fields( 'RS_2Block', mask );
+directory = '/vols/Scratch/ukbiobank/nichols/SelectiveInf/feat_runs/RS_2Block_warped';
 a = spfn(20)
