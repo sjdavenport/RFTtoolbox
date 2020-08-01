@@ -64,17 +64,10 @@ for I = 1:niters
     store_sampleids(:,I) = sample_images.subset;
     
     tcfield = convfield_t( sample_images.lat_data, params );
-    clear sample_images
     
     [ peak_est_locs, ~, peakvals ] = lmindices(tcfield.field, npeaks, tcfield.mask);
     lat_maxima(:,I) = peakvals';
-    
-    sample_images
-    sample_images.lat_data
-    size(sample_images.lat_data.field);
-    FWHM
-    peak_est_locs
-    size(tcfield.mask)
+
     [~, max_tfield_at_lms] = findconvpeaks(sample_images.lat_data.field, FWHM, peak_est_locs, 'T', tcfield.mask);
     conv_maxima(:,I) = max_tfield_at_lms';
     save([RFTboxloc,'NeuroPaperCode/Maxdist/md_FWHM_', num2str(FWHM), 'nsubj_', num2str(nsubj)], 'lat_maxima', 'conv_maxima', 'store_sampleids')
