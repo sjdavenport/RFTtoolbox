@@ -94,6 +94,8 @@ elseif ischar(data)
        error('All the files in the directory must be of the same type') 
     end
     
+    [ ~, mask ] = mask_bounds( mask );
+    
     % Obtain the sample function
     spfn = @(nsubj) get_sample_fields_nifti(directory, nifti_file_locs,...
                               use_nif, mask, nsubj, with_rep, total_nsubj);
@@ -115,12 +117,5 @@ end
 function out = get_sample_fields_nifti(directory, nifti_file_locs, use_nif, mask, nsubj, with_rep, total_nsubj)
     out.subset = randsample(total_nsubj,nsubj,with_rep);
     out.lat_data = Field(mask); as_3D = 1;
-    
-    out.subset
-    directory
-    use_nif
-    mask
-    as_3D
-    
     out.lat_data.field = loadsubs( out.subset, directory, use_nif, mask, as_3D, nifti_file_locs );
 end
