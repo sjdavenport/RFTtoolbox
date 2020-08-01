@@ -56,7 +56,7 @@ conv_maxima = zeros(npeaks, niters);
 spfn = get_sample_fields( RSfolder, mask );
 
 % Obtain the params for the convolution
-params = ConvFieldParams( FWHM, resadd );
+params = ConvFieldParams( [FWHM,FWHM,FWHM], resadd );
 
 % Find the local maxima
 for I = 1:niters
