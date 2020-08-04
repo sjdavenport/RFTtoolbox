@@ -1,10 +1,15 @@
-function spfn = get_sample_fields( data, mask )
+function spfn = get_sample_fields( RSfolder, mask )
 % get_sample_fields( data, mask ) obtains a function that generates fields
 % from data
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
+%  RSfolder     the name of the resting state set of data that is being
+%               worked with 
 % Optional
+%  mask         the mask for the data. If this is an array then it is taken
+%               to be the mask for the data. If is it not specified then
+%               the masks are obtained from the corresponding directory
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
@@ -48,7 +53,7 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-if isnumeric(data)
+if isnumeric(RSfolder)
     % Get mask dimensions
     [Dim, D] = getdim(mask);
     
@@ -56,7 +61,7 @@ if isnumeric(data)
     indexD = repmat( {':'}, 1, D );
     
     % Obtain the size of the data
-    sD = size(data);
+    sD = size(RSfolder);
     
     % Obtain the total number of subjects
     total_nsubj = sD(end);
@@ -67,16 +72,16 @@ if isnumeric(data)
     end
     
     % Obtain the sample function
-    spfn = @(nsubj) get_sample_fields_mate(data, mask, nsubj, with_rep, total_nsubj, D, indexD);
+    spfn = @(nsubj) get_sample_fields_mate(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
  
-elseif ischar(data)
-    if isempty(strfind(data, '/'))
+elseif ischar(RSfolder)
+    if isempty(strfind(RSfolder, '/'))
         % If the input is a folder not a file paths it defaults to the
         % featruns folder
         global featruns
-        directory = [featruns, data, '_warped/'];
+        directory = [featruns, RSfolder, '_warped/'];
     else
-        directory = data;
+        directory = RSfolder;
     end
     
     % Obtain the nifti files in the directory (which have either a .nii or

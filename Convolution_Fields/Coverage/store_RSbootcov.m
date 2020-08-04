@@ -1,4 +1,4 @@
-function rc = store_RSbootcov( FWHM_vec, nsubj_vec, nifti_file_dir, filename, resadd, niters, dirsave, use_spm )
+function rc = store_RSbootcov( FWHM_vec, nsubj_vec, RSfolder, filename, resadd, niters, dirsave, use_spm )
 % store_coverage( Dim, mask, FWHM_vec, nsubj_vec, use_spm, resadd, niters,dirsave )
 % records and saves the coverage
 %--------------------------------------------------------------------------
@@ -58,7 +58,8 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-mask = imgload('MNImask'); %load MNI mask (requires the BrainSTAT toolbox)
+MNImask = imgload('MNImask'); %load MNI mask (requires the BrainSTAT toolbox)
+[~, MNImask] = mask_bounds(MNImask);
 
 rc.FWHM_vec = FWHM_vec;
 rc.nsubj_vec = nsubj_vec;
@@ -77,8 +78,6 @@ if use_spm
     rc.finelatspm = zeros(lFWHM_vec,lnsubj_vec);
 end
 
-
-
 filesave = [dirsave, filename];
 
 for I = 1:lFWHM_vec
@@ -93,7 +92,7 @@ for I = 1:lFWHM_vec
 %             coverage = record_coverage( rc.spfn, sample_size, FWHM, rc.resadd, rc.niters, 'conv', 1 );
         else
             % Obtain the function to generate the sample fields
-            spfn = get_sample_fields( data, mask );
+            spfn = get_sample_fields( RSfolder, mask );
 
             % Obtain the coverage
             coverage = record_coverage( spfn, sample_size, params, niters, do_spm );
