@@ -35,7 +35,7 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 % Obtain the directory where the resting state data is saved
-global featruns
+global featruns RFTboxloc
 directory = [featruns,RSfolder,'_warped/'];
 
 % Obtain the location of the nifti files
