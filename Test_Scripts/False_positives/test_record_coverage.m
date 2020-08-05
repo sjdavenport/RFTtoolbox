@@ -21,7 +21,7 @@ spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 record_coverage( spfn, sample_size, params, niters)
 
-%% 1D with mask
+%% 1D bootstrap example
 
 %% %% 2D examples
 %% small 2D example 
@@ -35,6 +35,13 @@ record_coverage( spfn, sample_size, params, niters)
 FWHM = 3; resadd = 11; sample_size = 50;
 spfn = @(nsubj) wnfield(Dim, nsubj); niters = 1000;
 record_coverage_dep( spfn, sample_size, FWHM, resadd, niters, 'hpe')
+
+%% large 2D example 
+%(Note that on a small domain conv and finelat are similar even for reasonable resadd)
+FWHM = 3; resadd = 1; sample_size = 50; Dim = [100,100];
+spfn = @(nsubj) wnfield(Dim, nsubj); niters = 1000;
+params = ConvFieldParams( [FWHM,FWHM], resadd );
+record_coverage( spfn, sample_size, params, niters)
 
 %% small 2D sphere example
 FWHM = 3; resadd = 3; sample_size = 50; Dim = [5,5];

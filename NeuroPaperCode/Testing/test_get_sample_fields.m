@@ -8,7 +8,13 @@
 %% Simple 1D example
 tot_nsubj = 30; nvox = 100; data = normrnd(0,1,nvox, tot_nsubj); 
 mask = true(1,nvox)';
-spfn = get_sample_fields( data, mask );
+spfn = get_sample_fields( data, mask, 1 );
+spfn(10)
+%% 1D example with variable masks
+tot_nsubj = 30; nvox = 100; data = normrnd(0,1,nvox, tot_nsubj); 
+masks = randi(2, nvox, tot_nsubj) - 1;
+spfn = get_sample_fields( data, masks, 1 );
+spfn(4)
 
 %% %% 2D Examples
 %% Simple 2D example

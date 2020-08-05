@@ -98,6 +98,9 @@ for b = 1:niters
     
     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
     storeLKCs(:,b) = L';
+    if any(isnan(L))
+        warning('NAN LKC recorded')
+    end
     
     if maximum.conv > threshold
         nabovethresh = nabovethresh + 1;

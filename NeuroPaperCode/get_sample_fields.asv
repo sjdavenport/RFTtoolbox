@@ -1,4 +1,4 @@
-function spfn = get_sample_fields( RSfolder, mask, D )
+function spfn = get_sample_fields( RSfolder, mask )
 % get_sample_fields( data, mask ) obtains a function that generates fields
 % from data
 %--------------------------------------------------------------------------
@@ -54,6 +54,9 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 if isnumeric(RSfolder)
+    % Get mask dimensions
+    [Dim, D] = getdim(mask);
+    
     % Index for multidimensional coding
     indexD = repmat( {':'}, 1, D );
     
@@ -63,11 +66,15 @@ if isnumeric(RSfolder)
     % Obtain the total number of subjects
     total_nsubj = sD(end);
     
+    % Ensure the dimensions of the data and the mask match
+    if ~isequal(sD(1:end-1), Dim)
+        error('The dimensions of the data must match those of the mask')
+    end
+    
     % Obtain the sample function
     if isequal(size(RSfolder), size(mask))
-        spfn = @(nsubj) get_sample_fields_mate_varmask(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
+    spfn = @(nsubj) get_sample_fields_mate(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
     else
-        spfn = @(nsubj) get_sample_fields_mate(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
     end
  
 elseif ischar(RSfolder)
@@ -128,7 +135,7 @@ end
 function out = get_sample_fields_mate_varmask(data, mask_data, nsubj, with_rep, total_nsubj, D, index)
     out.subset = randsample(total_nsubj,nsubj,with_rep);
     index{D+1} = out.subset;
-    mask = logical(prod(mask_data(index{:}), D+1));
+    mask = prod(mask_data(index{:}), D+1)
     out.lat_data = Field(mask);
     out.lat_data.field = data(index{:});
 end
