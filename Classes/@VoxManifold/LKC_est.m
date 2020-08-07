@@ -6,7 +6,8 @@ function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 % Mandatory
 %  voxmfd  an object of class VoxManifold. voxmfd.D < 4.
 %
-% Optional%  version a logical/ logical vector. Length depends on voxmfd.D
+% Optional
+%  version a logical/ logical vector. Length depends on voxmfd.D
 %          - D = 1, always true.
 %          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else.
 %          - D = 3, logical of length 3. version(1), indicates whether L2
@@ -203,12 +204,12 @@ switch D
         %%% Calculate LKC 1
         % Get the opening angles with respect to the metric g
         angle = IntegralAlpha( voxmfd, bdry, eucangle );
-         angle.x = eucangle.x( eucangle.x ~= 0 );
-         angle.x( angle.x > pi ) = - pi/2;
-         angle.y = eucangle.y( eucangle.y ~= 0 );
-         angle.y( angle.y > pi ) =  - pi/2;      
-         angle.z = eucangle.z( eucangle.z ~= 0 );
-         angle.z( angle.z > pi ) = - pi/2;
+%          angle.x = eucangle.x( eucangle.x ~= 0 );
+%          angle.x( angle.x > pi ) = - pi/2;
+%          angle.y = eucangle.y( eucangle.y ~= 0 );
+%          angle.y( angle.y > pi ) =  - pi/2;      
+%          angle.z = eucangle.z( eucangle.z ~= 0 );
+%          angle.z( angle.z > pi ) = - pi/2;
          
         clear eucangle
 
