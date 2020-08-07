@@ -1,5 +1,5 @@
 function [ output_image, threshold, maximum, L ] = vRFT(...
-                        lat_data, params, ninitpeaks, L0, alpha, version )
+                        lat_data, params, ninitpeaks, version, alpha, L0 )
 % VRFT( lat_data, params, L0, ninitpeaks, alpha, version ) runs voxelwise
 % RFT inference on a set of images to detect areas of activation using a
 % one-sample t-statistic.
@@ -88,28 +88,34 @@ end
 % Calculate the convolution t field
 [ tfield_fine, cfields ] = convfield_t( lat_data, params );
 
-% Estimate the LKCs of the convoltution field
-dcfields = convfield( lat_data, params, 1 );
-d2cfields = Field();
-
-% @Fabian, L0 is buggy as it's calculated on the resadd increased mask.
-% Plus this is extra computation time so perhaps by default it shouldn't be computed?
-% As it will be the same every time so it doesn't make sense to recompute
-% it
-if lat_data.D == 3
-    if version(3) == 1
-        d2cfields = convfield( lat_data, params, 2 );
-        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-            version );
-    else
-        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-            version );
-    end
+if isstr(version) && strcmp(version, 'HPE')
+    HPE  = LKC_HP_est( cfields, 1, 1 );
+    L = HPE.hatL;
 else
-    [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version );
+    % Estimate the LKCs of the convoltution field
+    dcfields = convfield( lat_data, params, 1 );
+    d2cfields = Field();
+    
+    % @Fabian, L0 is buggy as it's calculated on the resadd increased mask.
+    % Plus this is extra computation time so perhaps by default it shouldn't be computed?
+    % As it will be the same every time so it doesn't make sense to recompute
+    % it
+    if lat_data.D == 3
+        if version(3) == 1
+            d2cfields = convfield( lat_data, params, 2 );
+            [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
+                version );
+        else
+            [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
+                version );
+        end
+    else
+        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version );
+    end
 end
 
 % Calculate the threshold using the EEC heuristic
+L = real(L);
 threshold = EECthreshold( alpha, L, L0, field_type, df );
 
 % Determine the areas of the image where the t-field exceeds the threshold,
@@ -146,6 +152,11 @@ if ninitpeaks > 0
     
     % Covert to the correct coordinate system (determined by tfield_fine.xvals)
     peak_est_locs = xvaleval(peak_est_locs, tfield_fine.xvals);
+    
+    % Convert to a cell array in 1D for input to findconvpeaks
+    if D == 1
+        peak_est_locs = num2cell(peak_est_locs);
+    end
     
     % Obtain the FWHM from the kernel (need to update findconvpeaks to work
     % with an arbitrary kernel!)

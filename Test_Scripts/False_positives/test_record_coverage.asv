@@ -108,44 +108,22 @@ tmp2 = mod( voxmap, 6);
 voxmap = [ voxmap( tmp2 < 2 ), voxmap( tmp2 >= 2 ) ];
 spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
 
-FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
-params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-record_coverage( spfn, sample_size, params, niters, 'HPE')
-
-%% Non-stat 1D
-dim = [50 1]; D = 1;
-voxmap = randsample(50,50,0);
-spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
-
-FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
+FWHM = 3; sample_size = 20; resadd = 11; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 record_coverage( spfn, sample_size, params, niters)
 
-%% Examine EC curves
-LKC_estimate = mean(coverage.storeLKCs,2)';
-L0 = 1;
-[ curve, x ] = maxECcurve( coverage.convmaxima, 0.1 )
-plot(x, curve);
-curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
-hold on 
-plot(x,curve_conv)
-
-%% Examine tstat
-dim = [100 1]; D = 1;
+%% Non-stat 1D
+dim = [50 1]; D = 1;
 voxmap = 1:dim;
 tmp2 = mod( voxmap, 6);
 voxmap = [ voxmap( tmp2 < 2 ), voxmap( tmp2 >= 2 ) ];
 spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
 
+FWHM = 3; sample_size = 100; resadd = 11; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-tcfield = convfield_t( spfn(100), params );
-plot(tcfield)
+% record_coverage_dep( spfn, sample_size, FWHM, resadd, niters)
 
+%% Examine tstat
+params = ConvFieldParams( repmat(FWHM,1,D), resadd );
+tcfield = convfield_t( data, params
 %% Non-stat 2D
-Dim = [50 50]; D = length(Dim);
-voxmap = randsample(prod(Dim),prod(Dim),0);
-spfn = @(nsubj) cnfield( Dim, 10, voxmap, 0, nsubj );
-
-FWHM = 3; sample_size = 20; resadd = 1; niters = 1000;
-params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-record_coverage( spfn, sample_size, params, niters)

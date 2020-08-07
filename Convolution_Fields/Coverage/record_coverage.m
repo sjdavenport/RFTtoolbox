@@ -1,4 +1,4 @@
-function coverage = record_coverage( spfn, sample_size, params, niters, do_spm )
+function coverage = record_coverage( spfn, sample_size, params, niters, version )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -38,7 +38,7 @@ function coverage = record_coverage( spfn, sample_size, params, niters, do_spm )
 single_sample_field = spfn(1);
 
 % Allow multiple input formats
-if strcmp(class(single_sample_field), 'Field')
+if strcmp(class(single_sample_field), 'Field') || strcmp(class(single_sample_field), 'ConvField')
     direct_field = 1;
 else
     single_sample_field = single_sample_field.lat_data;
@@ -61,8 +61,8 @@ if ~exist( 'niters', 'var' )
 end
 
 % Set the default do_spm value
-if ~exist('do_spm', 'var')
-   do_spm = 0; 
+if ~exist('version', 'var')
+   version = 'conv'; 
 end
 
 
@@ -96,7 +96,8 @@ for b = 1:niters
         lat_data = spfn(sample_size).lat_data;
     end
     
-    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
+    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, version);
+%     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
     storeLKCs(:,b) = L';
     if any(isnan(L))
         warning('NAN LKC recorded')
@@ -115,43 +116,9 @@ for b = 1:niters
     finelatmaxima(b) = maximum.finelat;
     convmaxima(b) = maximum.conv;
     
-    if maximum.finelat > maximum.conv + 10^(-10)
+    % Error checking loop 
+    if maximum.finelat > maximum.conv + 10^(-2)
         a = 1
-    
-    end
-    
-    % The spm loop needs redoing!
-    if do_spm
-        orig_lattice_locs{D+1} = ':';
-        smooth_data_lat = cfields.field(orig_lattice_locs{:});
-        
-        % Calculate the resels under the assumption of stationarity
-        if D == 3
-            lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
-            spm_resel_vec = spm_resels_vol(double(mask),lat_FWHM_est);
-        elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
-            warning('This only works for a box!')
-            lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
-            spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
-        end
-        
-        threshold_spm = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',spm_resel_vec,1);
-        
-        % Since the threshold 
-        if isempty(peak_est_locs) && (peakvals(1) > (threshold_spm - gap))
-            [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peak_est_locs(:,1), 'T', mask);
-        else
-            max_tfield_at_lms = max_tfield_finelat;
-        end
-        if max_tfield_at_lms > threshold_spm
-            nabovethresh_spm = nabovethresh_spm + 1;
-        end
-        if  max_tfield_lat > threshold_spm
-            nabovethresh_lat_spm = nabovethresh_lat_spm + 1;
-        end
-        if  max_tfield_finelat > threshold_spm
-            nabovethresh_finelat_spm = nabovethresh_finelat_spm + 1;
-        end
     end
 end
 
@@ -165,11 +132,44 @@ coverage.convmaxima = convmaxima;
 
 coverage.storeLKCs = storeLKCs;
 
-if do_spm
-    coverage.convspm = nabovethresh_spm/niters;
-    coverage.latspm =  nabovethresh_lat_spm/niters;
-    coverage.finelatspm =  nabovethresh_finelat_spm/niters;
 end
 
-end
-
+% 
+% % The spm loop needs redoing!
+% if do_spm
+%     orig_lattice_locs{D+1} = ':';
+%     smooth_data_lat = cfields.field(orig_lattice_locs{:});
+%     
+%     % Calculate the resels under the assumption of stationarity
+%     if D == 3
+%         lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+%         spm_resel_vec = spm_resels_vol(double(mask),lat_FWHM_est);
+%     elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
+%         warning('This only works for a box!')
+%         lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
+%         spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
+%     end
+%     
+%     threshold_spm = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',spm_resel_vec,1);
+%     
+%     % Since the threshold
+%     if isempty(peak_est_locs) && (peakvals(1) > (threshold_spm - gap))
+%         [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peak_est_locs(:,1), 'T', mask);
+%     else
+%         max_tfield_at_lms = max_tfield_finelat;
+%     end
+%     if max_tfield_at_lms > threshold_spm
+%         nabovethresh_spm = nabovethresh_spm + 1;
+%     end
+%     if  max_tfield_lat > threshold_spm
+%         nabovethresh_lat_spm = nabovethresh_lat_spm + 1;
+%     end
+%     if  max_tfield_finelat > threshold_spm
+%         nabovethresh_finelat_spm = nabovethresh_finelat_spm + 1;
+%     end
+% end
+% if do_spm
+%     coverage.convspm = nabovethresh_spm/niters;
+%     coverage.latspm =  nabovethresh_lat_spm/niters;
+%     coverage.finelatspm =  nabovethresh_finelat_spm/niters;
+% end

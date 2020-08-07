@@ -10,6 +10,8 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % tstat         the one sample t-statistic at each voxel.
 %--------------------------------------------------------------------------
 % EXAMPLES
+% mvtstat(normrnd(0,1,1,100))
+%
 % noise = noisegen([91,109,91], 20, 6, 0);
 % tstat = mvtstat(noise);
 %
@@ -51,11 +53,7 @@ sq_xbar = mean(data.^2, (D+1));
 est_var = (nsubj/(nsubj-1))*(sq_xbar - (xbar.^2)); %This is the population estimate!
 std_dev = sqrt(est_var);
 
-if Dim == 1
-    stdsize = [91,109,91];
-    xbar = reshape(xbar, stdsize);
-    std_dev = reshape(std_dev, stdsize);
-elseif isequal(prod(Dim),  prod(sD(1:end-1))) && (length(Dim) > 1)
+if isequal(prod(Dim),  prod(sD(1:end-1))) && (length(Dim) > 1)
     xbar = reshape(xbar, Dim);
     std_dev = reshape(std_dev, Dim);
 else

@@ -27,6 +27,26 @@ plot(fconv(signal, FWHM)); title('Smoothed Signal');
 xlim(vec2lim(im.xvals{1}))
 threshold
 
+%% Using HPE
+
+signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
+nvox = length(signal); nsubj = 75; FWHM = 1; resadd = 3;
+lat_data = 10*wnfield(nvox, nsubj) + signal;
+params = ConvFieldParams( FWHM, resadd );
+
+% Threshold
+[im, threshold, maxvals, L_conv] = vRFT( lat_data, params, 1 );
+[im, threshold, maxvals, L_hpe] = vRFT( lat_data, params, 1, 'HPE' );
+
+% Plot results
+subplot(2,1,1)
+plot(im.xvals{1}, im.field); title('Discoveries')
+xlim(vec2lim(im.xvals{1}))
+subplot(2,1,2)
+plot(fconv(signal, FWHM)); title('Smoothed Signal');
+xlim(vec2lim(im.xvals{1}))
+threshold
+
 %% 1D example with no peak finding
 [im, threshold, maxvals, L] = vRFT( lat_data, params, 0);
 

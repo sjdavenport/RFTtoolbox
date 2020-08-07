@@ -17,9 +17,6 @@ cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
 dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
 
-% Convolution L_1 (LKC_conv_est)
-LKCs = LKC_conv_est( lat_data.field, lat_data.mask, FWHM, resadd );
-
 % HPE L_1
 HPE  = LKC_HP_est( cfield, 1, 1 );
 
@@ -30,7 +27,7 @@ L_theory = LKC_isogauss_theory( FWHM, nvox );
 L_spm = LKC_SPM_est( FWHM, lat_data.mask );
 
 % Compare results
-struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'conv_est', LKCs.hatL,...
+struct( 'theory', L_theory, 'voxmfd_est', L_conv, ...
         'HPE', HPE.hatL, 'SPM', L_spm )
     
 % FT: Works perfectly well, now.

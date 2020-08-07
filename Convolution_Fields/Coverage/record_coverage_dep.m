@@ -36,7 +36,7 @@ function coverage = record_coverage_dep( spfn, sample_size, Kernel, resadd, nite
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
 single_sample_field = spfn(1);
-if strcmp(class(single_sample_field), 'Field')
+if strcmp(class(single_sample_field), 'Field') || strcmp(class(single_sample_field), 'ConvField')
     direct_field = 1;
 else
     single_sample_field = single_sample_field.lat_data;
@@ -63,7 +63,7 @@ end
 
 % Set the default do_spm value
 if ~exist('do_spm', 'var')
-   do_spm = 1; 
+   do_spm = 0; 
 end
 
 if ~exist('lkc_est_version', 'var')

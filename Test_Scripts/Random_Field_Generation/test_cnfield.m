@@ -32,7 +32,23 @@ shift = 4;
 tmp2   = mod( voxmap, cut);
 voxmap2 = [ voxmap( tmp2 <= cut-shift ), voxmap( tmp2 > cut-shift ) ]
 
-lat_data = cnfield( dim, 10, voxmap2, 3, nsubj )
+lat_data = cnfield( dim, 10, voxmap2, 0, nsubj )
+figure(1);
+subplot(1,3,1)
+imagesc( lat_data( :, :, 1 ) );
+subplot(1,3,2)
+imagesc( lat_data( :, :, 3 ) );
+subplot(1,3,3)
+imagesc( lat_data( :, :, 5 ) );
+
+
+%% Better 2D example
+%% %% 2D Examples
+dim    = [ 50 50 ];
+nsubj  = 10
+voxmap = randsample(prod(dim),prod(dim),0)
+
+lat_data = cnfield( dim, 10, voxmap, 3, nsubj )
 figure(1);
 subplot(1,3,1)
 imagesc( lat_data( :, :, 1 ) );
