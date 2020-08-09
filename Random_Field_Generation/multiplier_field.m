@@ -23,13 +23,15 @@ function data = multiplier_field( base_fields, nSubj )
 %--------------------------------------------------------------------------
 % AUTHORS:
 % Fabian Telschow
-
+data2 = base_fields;
+base_fields = data2.field;
 % get size of the base_fields and the number of base_fields.
 sBase = size(base_fields);
 nBase = sBase(end);
 
 % index structure to deal with different dimensions
-indexD  = repmat( {':'}, 1, length(sBase)-1 ); 
+indexD  = repmat( {':'}, 1, length(sBase)-1 );
+D = length(sBase)-1;
 
 % Get weights for the multiplier bootstrap
 multiplier = normrnd( 0, 1, [ nBase, nSubj ] );
@@ -44,6 +46,13 @@ data = zeros( [ sBase( 1:end-1 ), nSubj ] );
 
 for i = 1:nSubj
     % get the bootstrapped process
-    data( indexD{:}, i ) = reshape( base_fields * multiplier( :, i ),...
+    if D>1
+        data( indexD{:}, i ) = reshape( base_fields * multiplier( :, i ),...
                                         sBase( 1:end-1 ) );
+    else
+        data( indexD{:}, i ) = base_fields * multiplier( :, i );
+    end
 end
+
+data2.field = data;
+data = data2;
