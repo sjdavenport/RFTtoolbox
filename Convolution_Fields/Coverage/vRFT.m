@@ -166,6 +166,8 @@ if ninitpeaks > 0
     [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
     maximum.conv = max(max_tfield_at_lms);
     
+    maximum.allmaxima = max_tfield_at_lms;
+    
     % There are some residual mismatches in 1D between convfield and
     % applyconvfield that need to be resolved.
     if D == 1

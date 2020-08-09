@@ -1,4 +1,4 @@
-function u_FWER = EECthreshold( FWER, LKC, LKC0, type, df )
+function u_FWER = EECthreshold( FWER, LKC, LKC0, type, df, option )
 % EECthreshold( FWER, LKC, LKC0, type, df ) this function computes the FWER
 % threshold from the EC heuristic.
 %
@@ -46,11 +46,20 @@ if ~exist( 'df', 'var' )
    df = 2;
 end
 
+if ~exist( 'option', 'var' )
+   option = 'standard'; 
+end
+
 %% Main function  
 %--------------------------------------------------------------------------
 
-EECminusalpha = @(x) EEC( x, LKC, LKC0, type, df, 0 ) - FWER;
-
-u_FWER = fzero( EECminusalpha, [ 2, 200 ] );
-
+if strcmp(option, 'standard')
+    EECminusalpha = @(x) EEC( x, LKC, LKC0, type, df, 0 ) - FWER;
+    u_FWER = fzero( EECminusalpha, [ 2, 200 ] );
+elseif strcmp(option, 'poisson') || strcmp(option, 'Poisson') || strcmp(option, 'P') || strcmp(option, 'p')
+    possionprob = @(x) 1-exp(-EEC( x, LKC, LKC0, type, df, 0 )) - FWER;
+    u_FWER = fzero( possionprob, [ 2, 200 ] );
+else 
+    error('This option has not been set')
+end
 return
