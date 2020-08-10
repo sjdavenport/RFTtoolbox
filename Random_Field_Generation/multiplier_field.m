@@ -1,28 +1,22 @@
-function data = multiplier_field( base_fields, nSubj )
-% multiplier_field( base_fields, nSubj ) generates samples from a mean zero
+function data = multiplier_field( base_fields, nsubj )
+% multiplier_field( base_fields, nsubj ) generates samples from a mean zero
 % unit variance field given by the base_fields using Gaussian multipliers.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% base_fields   an array of dimension Dim x nBase containing
-%               the base_fields. nBase is the amount of base_fields.
-% nSubj         The number of subjects.
-% shape_of_array    0/1/2, default is 0. Determines the shape of the array.
-%                   If 0 data is Dim by nSubj,
-%                   If 1 data is nSubj by Dim,
-%                   If 2 data is prod(Dim) by nSubj instead of
-%                   nSubj by Dim. 
-%                   If 3 data is nSubj by prod(Dim) instead of
-%                   Dim by nSubj.
+% base_fields   an object of class Field containing base_fields.fibersize
+%               base_fields.
+% nsubj         The number of subjects to be drawn from the base_fields
+%               gaussian multiplier.
 %--------------------------------------------------------------------------
 % OUTPUT
-% data  an array of size Dim by nSubj as default.
-%       (Note that the shape of the array can be changed using
-%        the shape of array parameter.)
+% data   an object of class Field containing the nsubj sample fields
 %--------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
 % AUTHORS:
 % Fabian Telschow
+
+
 data2 = base_fields;
 base_fields = data2.field;
 % get size of the base_fields and the number of base_fields.
@@ -34,7 +28,7 @@ indexD  = repmat( {':'}, 1, length(sBase)-1 );
 D = length(sBase)-1;
 
 % Get weights for the multiplier bootstrap
-multiplier = normrnd( 0, 1, [ nBase, nSubj ] );
+multiplier = normrnd( 0, 1, [ nBase, nsubj ] );
 
 % reshape and and standardize the field, such that it has unit variance
 base_fields = reshape( base_fields, prod( sBase(1:end-1) ), nBase );
@@ -42,9 +36,9 @@ base_fields = reshape( base_fields, prod( sBase(1:end-1) ), nBase );
 base_fields = ( base_fields - mean( base_fields, 2 ) ) ...
                                        ./ sqrt( sum( base_fields.^2, 2 ) );
 
-data = zeros( [ sBase( 1:end-1 ), nSubj ] );
+data = zeros( [ sBase( 1:end-1 ), nsubj ] );
 
-for i = 1:nSubj
+for i = 1:nsubj
     % get the bootstrapped process
     if D>1
         data( indexD{:}, i ) = reshape( base_fields * multiplier( :, i ),...
