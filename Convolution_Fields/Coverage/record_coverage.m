@@ -38,7 +38,7 @@
 single_sample_field = spfn(1);
 
 % Allow multiple input formats
-if strcmp(class(single_sample_field), 'Field') || strcmp(class(single_sample_field), 'ConvField')
+if isa( single_sample_field, 'Field' ) || isa( single_sample_field, 'ConvField' )
     direct_field = 1;
 else
     single_sample_field = single_sample_field.lat_data;
@@ -46,7 +46,6 @@ else
 end
 
 % Obtain properties of the data
-Dim = single_sample_field.fieldsize;
 D = single_sample_field.D;
 mask = single_sample_field.mask;
 
@@ -78,13 +77,15 @@ nabovethresh_lat = 0;
 nabovethresh_finelat = 0;
 
 % Initialize vectors to store the maxima
-latmaxima = zeros(1,niters);
-finelatmaxima = zeros(1,niters);
-convmaxima = zeros(1,niters);
+latmaxima     = zeros( 1, niters );
+finelatmaxima = zeros( 1, niters );
+convmaxima    = zeros( 1, niters );
+thresholds    = zeros( 1, niters );
+maxabovethreshold = zeros( 1, niters );
 
-storeLKCs = zeros(D,niters);
+storeLKCs = zeros( D, niters );
 
-allmaxima = zeros(npeaks, niters);
+allmaxima = zeros( npeaks, niters );
 
 % Main
 for b = 1:niters
@@ -119,7 +120,8 @@ for b = 1:niters
     finelatmaxima(b) = maximum.finelat;
     convmaxima(b) = maximum.conv;
     allmaxima(1:length(maximum.allmaxima),b) = maximum.allmaxima';
-    
+    thresholds(b) = threshold;
+    maxabovethreshold(b) = sum( maximum.allmaxima > threshold );
     % Error checking loop 
     if maximum.finelat > maximum.conv + 10^(-2)
         a = 1
@@ -131,9 +133,11 @@ coverage.lat =  nabovethresh_lat/niters;
 coverage.finelat =  nabovethresh_finelat/niters;
 
 coverage.finelatmaxima = finelatmaxima;
-coverage.latmaxima = latmaxima;
+coverage.latmaxima  = latmaxima;
 coverage.convmaxima = convmaxima;
-coverage.allmaxima = allmaxima;
+coverage.allmaxima  = allmaxima;
+coverage.thresholds = thresholds;
+coverage.maxabovethreshold = maxabovethreshold;
 
 coverage.storeLKCs = storeLKCs;
 
