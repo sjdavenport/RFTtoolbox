@@ -35,7 +35,7 @@ function [ L, L0, nonstatInt, cfields ] = LKC_latconv_est( lat_data,...
 %--------------------------------------------------------------------------
 
 if ~exist( 'version', 'var' )
-    if field.D < 3
+    if lat_data.D < 3
         version = true;
     else
         version = true( [ 1 3 ] );

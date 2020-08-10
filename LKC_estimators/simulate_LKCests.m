@@ -67,6 +67,11 @@ if isfield( methods, "convE" )
     version = methods.convE;
 end
 
+if isfield( methods, "stationaryE" )
+    L_stationary_ests = NaN * ones( [ Msim D ] );
+    version2 = methods.stationaryE;
+end
+
 if isfield( methods, "HPE" )
     L_HP_ests    = NaN * ones( [ Msim D ] );
     normalizeHPE = methods.HPE(1);
@@ -109,6 +114,14 @@ for m = 1:Msim
         L_conv_ests( m, : ) = L_conv;
         L_conv_ests_nonstatInt( m ) = nonstatInt;
     end
+    
+    if isfield( methods, "stationaryE" )
+        if ~exist( 'dcfield', 'var' )
+            dcfield  = convfield( lat_data, params, 1 );
+        end
+        tmp = LKC_stationary_est( cfield, dcfield, version2 );
+        L_stationary_ests(m,:) = tmp;
+    end    
 
     if isfield( methods, "HPE" )
         tmp = LKC_HP_est( Mask(cfield), 1, normalizeHPE );
@@ -129,6 +142,10 @@ if isfield( methods, "convE" )
     results.convE = L_conv_ests;
     results.convE;
     results.nonstatInt = L_conv_ests_nonstatInt;
+end
+
+if isfield( methods, "stationaryE" )
+    results.stationaryE = L_stationary_ests;
 end
 
 if isfield( methods, "HPE" )
