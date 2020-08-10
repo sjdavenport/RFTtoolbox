@@ -188,6 +188,8 @@ for d = 1:D
     index{d} = ( enlarge + 1 ):( resadd + 1 ):( s_hr(d) - enlarge );
 end
 
+%mask = ~mask;
+
 % fill the resolution increased mask with the values from the original mask
 % at the correct locations
 mask_hr = false( s_hr );
@@ -199,8 +201,9 @@ end
 
 % fill the zero values of the resolution increased mask, which belong to
 % the mask. Note that this enlarges the mask by resadd
-mask_hr = logical( imdilate( mask_hr, ones( ones([ 1 D ]) ...
-                                              * (2*ceil(resadd/2)+1) ) ) );
+dilateFilter = ones( ones([ 1 D ]) * (2*ceil(resadd/2)+1) );
+
+mask_hr = logical( imdilate( mask_hr, dilateFilter ) );
 
 if enlarge ~= ceil( resadd / 2 )
     % number of voxels which the inverse mask or the normal mask needs to
@@ -217,6 +220,8 @@ if enlarge ~= ceil( resadd / 2 )
                                               * (2*denlarge+1) ) ) );
     end
 end
+
+%mask_hr = ~mask_hr;
 
 % show plots explaining the output
 if plots
