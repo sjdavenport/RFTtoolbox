@@ -126,12 +126,27 @@ spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
 
 FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-coverage = record_coverage( spfn, sample_size, params, niters)
+coverage1D = record_coverage( spfn, sample_size, params, niters)
 
 %% Examine EC curves
-LKC_estimate = mean(coverage.storeLKCs,2)';
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
 L0 = 1;
-[ curve, x ] = maxECcurve( coverage.allmaxima, 0.1 )
+[ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 )
+[ curve_all, x_all ] = maxECcurve( coverage1D.allmaxima, 0.1 )
+
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
+hold on 
+plot(x,curve_conv)
+hold on 
+plot(x_all,curve_all)
+legend('max', 'LKC', 'all')
+
+
+%% Examine EC curves
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
+L0 = 1;
+[ curve, x ] = maxECcurve( coverage1D.allmaxima, 0.1 )
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
 hold on 

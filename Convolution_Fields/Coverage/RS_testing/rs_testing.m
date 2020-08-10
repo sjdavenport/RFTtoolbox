@@ -41,10 +41,16 @@ imagesc(tcfield.field.*tcfield.mask)
 %% Record the coverage
 D = 2; niters = 1000;
 spfn = get_sample_fields( new_data, bounded_mask, D );
-FWHM = 15; sample_size = 20; resadd = 1;
+FWHM = 3; sample_size = 20; resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 coverage = record_coverage( spfn, sample_size, params, niters, 10)
 
+%%
+sample_data = spfn(20);
+tstat = Mask(convfield_t(sample_data.lat_data, params));
+% imagesc(tstat)
+
+imagesc(tstat.field > 5.25)
 %% EC curve analysis
 LKC_estimate = mean(coverage.storeLKCs,2)';
 L0 = EulerChar(bounded_mask, 0.5, D);
@@ -56,7 +62,7 @@ curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
 hold on 
 plot(x,curve_conv)
 hold on 
-plot(x_all,curve_all)
+plot(x_all(100:end),curve_all(100:end))
 legend('max', 'LKC', 'all')
 
 threshold = EECthreshold( 0.05, LKC_estimate, L0, 'T', nsubj -1)
