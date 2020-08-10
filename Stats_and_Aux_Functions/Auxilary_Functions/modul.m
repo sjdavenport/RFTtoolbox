@@ -1,8 +1,10 @@
 function modul( iterand, niterand )
-% NEWFUN serves as a function template.
+% MODUL( iterand, niterand ) allows you to easily check how a for loop is
+% progressing by displaying iterand iff it is evenly divided by niterand
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% 
+% iterand   
+% niterand 
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
@@ -12,9 +14,12 @@ function modul( iterand, niterand )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if nargin < 2
+if ~exist('niterand', 'var')
+    % Set the default option for niterand
     niterand = 100;
 end
+
+% Test to see whether the iterand is evenly divided by the niterand
 if mod(iterand, niterand) == 0
     disp(iterand);
 end

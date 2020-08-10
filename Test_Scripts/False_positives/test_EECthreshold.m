@@ -15,6 +15,8 @@ dcfields = convfield_Field( lat_data, FWHM, 1, resadd );
 
 threshold_spm = spm_thresh( L, L0, 'T', nsubj -1, 0.05)
 threshold_EEC = EECthreshold( 0.05, L, L0, 'T', nsubj -1)
+threshold_EEC_poisson = EECthreshold( 0.05, L, L0, 'T', nsubj -1, 'poisson')
+
 
 %% Non-stat 1D example
 dim = [50 1]; D = 1;
@@ -30,6 +32,7 @@ dcfields = convfield( lat_data, params, 1 );
 
 threshold_spm = spm_thresh( L, L0, 'T', nsubj -1, 0.05)
 threshold_EEC = EECthreshold( 0.05, L, L0, 'T', nsubj -1)
+threshold_EEC_poisson = EECthreshold( 0.05, L, L0, 'T', nsubj -1, 'poisson')
 
 %% %% 2D Examples
 %% Simple 2D example
@@ -42,6 +45,7 @@ dcfields = convfield_Field( lat_data, FWHM, 1, resadd );
 
 threshold_spm = spm_thresh( L, L0, 'T', nsubj -1, 0.05)
 threshold_EEC = EECthreshold( 0.05, L, L0, 'T', nsubj -1)
+threshold_EEC_poisson = EECthreshold( 0.05, L, L0, 'T', nsubj -1, 'poisson')
 
 %% %% 3D Examples
 %% Simple 3D example
@@ -54,3 +58,4 @@ dcfields = convfield_Field( lat_data, FWHM, 1, resadd );
 
 threshold_spm = spm_thresh( L, L0, 'T', nsubj -1, 0.05)
 threshold_EEC = EECthreshold( 0.05, L, L0, 'T', nsubj -1)
+threshold_EEC_poisson = EECthreshold( 0.05, L, L0, 'T', nsubj -1, 'poisson')

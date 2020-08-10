@@ -16,7 +16,7 @@ params = ConvFieldParams( FWHM, resadd );
 record_coverage( spfn, sample_size, params, niters)
 
 %% Second small 1D example
-FWHM = 3; sample_size = 10; nvox = 50; resadd = 1;
+FWHM = 3; sample_size = 10; nvox = 10; resadd = 1;
 spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 record_coverage( spfn, sample_size, params, niters)
@@ -103,14 +103,21 @@ record_coverage( spfn, sample_size, FWHM, resadd, niters, 'conv', 0)
 
 %% Non-stat 1D
 dim = [50 1]; D = 1;
-voxmap = 1:dim;
-tmp2 = mod( voxmap, 6);
-voxmap = [ voxmap( tmp2 < 2 ), voxmap( tmp2 >= 2 ) ];
+voxmap = randsample(50,50,0);
 spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
 
 FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-record_coverage( spfn, sample_size, params, niters, 'HPE')
+cov_conv = record_coverage( spfn, sample_size, params, niters)
+
+%% Non-stat 1D HPE
+dim = [50 1]; D = 1;
+voxmap = randsample(50,50,0);
+spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
+
+FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
+params = ConvFieldParams( repmat(FWHM,1,D), resadd );
+cov_HPE = record_coverage( spfn, sample_size, params, niters, 'HPE')
 
 %% Non-stat 1D
 dim = [50 1]; D = 1;
@@ -119,16 +126,34 @@ spfn = @(nsubj) cnfield( dim, 10, voxmap, 0, nsubj );
 
 FWHM = 3; sample_size = 20; resadd = 3; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-record_coverage( spfn, sample_size, params, niters)
+coverage1D = record_coverage( spfn, sample_size, params, niters)
 
 %% Examine EC curves
-LKC_estimate = mean(coverage.storeLKCs,2)';
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
 L0 = 1;
-[ curve, x ] = maxECcurve( coverage.convmaxima, 0.1 )
+[ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 )
+[ curve_all, x_all ] = maxECcurve( coverage1D.allmaxima, 0.1 )
+
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
 hold on 
 plot(x,curve_conv)
+hold on 
+plot(x_all,curve_all)
+legend('max', 'LKC', 'all')
+
+
+%% Examine EC curves
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
+L0 = 1;
+[ curve, x ] = maxECcurve( coverage1D.allmaxima, 0.1 )
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
+hold on 
+plot(x,curve_conv)
+
+%%
+
 
 %% Examine tstat
 dim = [100 1]; D = 1;
@@ -146,6 +171,28 @@ Dim = [50 50]; D = length(Dim);
 voxmap = randsample(prod(Dim),prod(Dim),0);
 spfn = @(nsubj) cnfield( Dim, 10, voxmap, 0, nsubj );
 
-FWHM = 3; sample_size = 20; resadd = 1; niters = 1000;
+FWHM = 3; sample_size = 100; resadd = 1; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 record_coverage( spfn, sample_size, params, niters)
+
+%% Gaussian multiplier fields
+Dim = [50,1]; nsubj = 20; D = 1;
+initial_data = wnfield(Dim, nsubj);
+spfn = @(nsubj) Gmult(initial_data); %Gmult generates a Gaussian multiplier field
+FWHM = 3; sample_size = 20; resadd = 1; niters = 1000;
+params = ConvFieldParams( repmat(FWHM,1,D), resadd );
+coverage1D = record_coverage( spfn, sample_size, params, niters)
+
+%% EC curve analysis
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
+L0 = EulerChar(mask_slice, 0.5, D);
+[ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 )
+[ curve_all, x_all ] = maxECcurve( coverage1D.allmaxima, 0.1 )
+
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
+hold on 
+plot(x,curve_conv)
+hold on 
+plot(x_all,curve_all)
+legend('max', 'LKC', 'all')

@@ -23,7 +23,7 @@ new_data = new_data(bounds{1}, bounds{2}, :);
 %% Histogram of data
 lat_data = Field(bounded_mask);
 lat_data.field = new_data;
-FWHM = 3; resadd = 1;
+FWHM = 20; resadd = 1;
 params = ConvFieldParams( [FWHM, FWHM], resadd );
 tcfield = convfield_t(lat_data, params);
 % plot(squeeze(new_data(60,40,:)))
@@ -31,22 +31,50 @@ imagesc(tcfield.field.*tcfield.mask)
 figure
 histogram(tcfield.field(tcfield.mask))
 
+%% Sample field
+D = 2; FWHM = 3; resadd = 1;
+spfn = get_sample_fields( new_data, bounded_mask, D );
+params = ConvFieldParams( [FWHM, FWHM], resadd );
+tcfield = convfield_t(spfn(20).lat_data, params);
+imagesc(tcfield.field.*tcfield.mask)
+
 %% Record the coverage
 D = 2; niters = 1000;
 spfn = get_sample_fields( new_data, bounded_mask, D );
 FWHM = 3; sample_size = 20; resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
-coverage = record_coverage( spfn, sample_size, params, niters)
+coverage = record_coverage( spfn, sample_size, params, niters, 10)
 
+%%
+sample_data = spfn(20);
+tstat = Mask(convfield_t(sample_data.lat_data, params));
+% imagesc(tstat)
+
+imagesc(tstat.field > 5.25)
 %% EC curve analysis
 LKC_estimate = mean(coverage.storeLKCs,2)';
-L0 = EulerChar(new_mask, 0.5,2);
+L0 = EulerChar(bounded_mask, 0.5, D);
 [ curve, x ] = maxECcurve( coverage.convmaxima, 0.1 )
+[ curve_all, x_all ] = maxECcurve( coverage.allmaxima, 0.1 )
+
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
 hold on 
 plot(x,curve_conv)
+hold on 
+plot(x_all(100:end),curve_all(100:end))
+legend('max', 'LKC', 'all')
 
+threshold = EECthreshold( 0.05, LKC_estimate, L0, 'T', nsubj -1)
+threshold_p = EECthreshold( 0.05, LKC_estimate, L0, 'T', nsubj -1, 'p')
+
+max_coverage = sum(coverage.convmaxima > threshold)/size(coverage.convmaxima, 2)
+cluster_coverage = sum(coverage.allmaxima(:) > threshold)/(size(coverage.allmaxima, 2))
+
+% Poisson
+max_coverage = sum(coverage.convmaxima > threshold_p)/size(coverage.convmaxima, 2)
+cluster_coverage = sum(coverage.allmaxima(:) > threshold_p)/(size(coverage.allmaxima, 2))
+% EECthreshold( 0.05, L, L0, 'T', nsubj -1, 'poisson')
 %% Simulation on the new mask (just to make sure)
 D = 2; niters = 1000;
 data = normrnd(0,1,[size(bounded_mask), 600]);
@@ -79,6 +107,26 @@ mask_slice = squeeze(bounded_mask(:,30));
 spfn_orig = get_sample_fields( data_slice, mask_slice, D );
 twenty_fields = spfn_orig(20).lat_data;
 spfn = @(nsubj) Gmult(twenty_fields); %Gmult generates a Gaussian multiplier field
-FWHM = 6; sample_size = 20; resadd = 1;
+FWHM = 3; sample_size = 20; resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 coverage1D = record_coverage( spfn, sample_size, params, niters)
+
+%% EC curve analysis
+LKC_estimate = mean(coverage1D.storeLKCs,2)';
+L0 = EulerChar(mask_slice, 0.5, D);
+[ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 )
+[ curve_all, x_all ] = maxECcurve( coverage1D.allmaxima, 0.1 )
+
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size -1 );
+hold on 
+plot(x,curve_conv)
+hold on 
+plot(x_all,curve_all)
+legend('max', 'LKC', 'all')
+%%
+FWHM = 3; sample_size = 20; resadd = 1;
+params = ConvFieldParams( repmat(FWHM,1,D), resadd );
+tcfield = convfield_t(spfn(sample_size), params);
+
+plot(tcfield)

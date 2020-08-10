@@ -31,14 +31,14 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-limits = [prctile(maxima, 100*(1-alpha_percentile) ), max(maxima)];
+limits = [prctile(maxima(:), 100*(1-alpha_percentile) ), max(maxima(:))];
 
 x = limits(1):increm:limits(2);
-n_maxima = length(maxima);
+n_maxima = size(maxima,2);
 
 curve = zeros(1, length(x));
 for I = 1:length(x)
-    curve(I) = sum(maxima>x(I));
+    curve(I) = sum(maxima(:)>x(I));
 end
 curve = curve/n_maxima;
 

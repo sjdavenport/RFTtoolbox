@@ -1,4 +1,4 @@
-function coverage = record_coverage( spfn, sample_size, params, niters, version )
+ function coverage = record_coverage( spfn, sample_size, params, niters, npeaks, version )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -65,6 +65,9 @@ if ~exist('version', 'var')
    version = 'conv'; 
 end
 
+if ~exist('npeaks', 'var')
+    npeaks = 3;
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
@@ -73,9 +76,6 @@ end
 nabovethresh = 0;
 nabovethresh_lat = 0;
 nabovethresh_finelat = 0;
-nabovethresh_spm = 0;
-nabovethresh_lat_spm = 0;
-nabovethresh_finelat_spm = 0;
 
 % Initialize vectors to store the maxima
 latmaxima = zeros(1,niters);
@@ -83,6 +83,8 @@ finelatmaxima = zeros(1,niters);
 convmaxima = zeros(1,niters);
 
 storeLKCs = zeros(D,niters);
+
+allmaxima = zeros(npeaks, niters);
 
 % Main
 for b = 1:niters
@@ -97,7 +99,7 @@ for b = 1:niters
         lat_data = tmp.lat_data;
     end
     
-    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, version);
+    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
 %     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
     storeLKCs(:,b) = L';
     if any(isnan(L))
@@ -116,6 +118,7 @@ for b = 1:niters
     latmaxima(b) = maximum.lat;
     finelatmaxima(b) = maximum.finelat;
     convmaxima(b) = maximum.conv;
+    allmaxima(1:length(maximum.allmaxima),b) = maximum.allmaxima';
     
     % Error checking loop 
     if maximum.finelat > maximum.conv + 10^(-2)
@@ -130,12 +133,16 @@ coverage.finelat =  nabovethresh_finelat/niters;
 coverage.finelatmaxima = finelatmaxima;
 coverage.latmaxima = latmaxima;
 coverage.convmaxima = convmaxima;
+coverage.allmaxima = allmaxima;
 
 coverage.storeLKCs = storeLKCs;
 
 end
 
-% 
+% % 
+% nabovethresh_spm = 0;
+% nabovethresh_lat_spm = 0;
+% nabovethresh_finelat_spm = 0;
 % % The spm loop needs redoing!
 % if do_spm
 %     orig_lattice_locs{D+1} = ':';
