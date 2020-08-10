@@ -8,7 +8,7 @@ function coverage = record_coverage( spfn, sample_size, params, niters, version 
 %  spfn         a function handle which given an integer number of subjects
 %               nsubj generates nsubj random fields and saves them in a
 %               data type of class field
-%  sample_size   the size of each sample to be sampled from the data
+%  sample_size  the size of each sample to be sampled from the data
 %  params       an object of class ConvFieldParams
 % Optional
 %  niters        the number of resamples of the data to do
@@ -93,7 +93,8 @@ for b = 1:niters
     if direct_field == 1
         lat_data = spfn(sample_size);
     else
-        lat_data = spfn(sample_size).lat_data;
+        tmp = spfn(sample_size);
+        lat_data = tmp.lat_data;
     end
     
     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, version);
