@@ -18,7 +18,7 @@ coverage = record_coverage( spfn, sample_size, params, niters)
 % ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
 
 %% 1D bootstrap t example
-rng(1)
+rng(2)
 nvox = 100; D = 1;
 spfn = @(nsubj) wtfield(nvox, nsubj, 3);
 data = spfn(560).field;

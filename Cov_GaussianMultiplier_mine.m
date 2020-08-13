@@ -27,9 +27,9 @@ imagesc(MNImask_2D)
 %% %% 1D
 % Parameters simulation
 D = 1;
-niters = 500;
+niters = 5000;
 FWHM   = 3;
-sample_size = 30;
+sample_size = 50;
 resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 
@@ -42,13 +42,15 @@ mask1D_eroded = squeeze( mask( :, 30 ) );
 data_m = mean( data1D, 2 );
 data_s = std( data1D, 0, 2 );
 
+% normalized data
+data1D_normalized = (data1D - data_m ) ./ data_s;
 figure
 plot( data1D )
 figure
 plot( mask1D )
 
 %% Get base fields for the simulations
-spfn_orig = get_sample_fields( data1D, mask1D_eroded, D );
+spfn_orig = get_sample_fields( data1D_normalized, mask1D_eroded, D );
 base_fields = spfn_orig(20);
 
 %% %% LKC estimation from the data
@@ -64,7 +66,7 @@ L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
 [L, L_HPE.hatL ]
 
 %% Gaussian analysis (Multiplier field)
-coverage1D = record_coverage( spfn, sample_size, params, niters)
+coverage1D = record_coverage( spfn, sample_size, params, niters, 10)
 
 % nsubj=300, niters=1000
 % coverage1D = 
@@ -91,17 +93,44 @@ title('Multiplier field: EEC and maxima distribution')
 
 %% Plot the number of maxima above the threshold (not that maximal 3 are
 % reported)
-tmp = coverage1D.allmaxima >= repmat( coverage1D.thresholds, [ 3 1 ] );
 figure
-plot(sum(tmp))
+plot(coverage1D.maxabovethreshold)
 title('Multiplier field: number of peaks above the threshold')
 
-tmp = coverage1D.convmaxima >= coverage1D.thresholds;
-sum(tmp)/niters
+sum(coverage1D.maxabovethreshold) / niters
+
+%% %% Gaussian analysis (Multiplier field all basis functions)
+base_fields = Field(mask1D_eroded);
+base_fields.field = data1D_normalized;
+% Get a sample of the multiplier bootstrap field
+spfn = @(nsubj)  Mask( multiplier_field( base_fields, nsubj ) );
+
+coverage1Dall = record_coverage( spfn, sample_size, params, niters, 10)
+
+% Seems to work way better than small samples, i.e. covariance structure
+% seems to admit reasonable approximation
+
+%% EC curve analysis
+LKC_estimate = mean( coverage1Dall.storeLKCs, 2 )';
+[ curve, x ] = maxECcurve( coverage1Dall.convmaxima, 0.1 );
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
+hold on 
+plot( x, curve_conv );
+hold off
+title('Multiplier field: EEC and maxima distribution')
+
+%% Plot the number of maxima above the threshold (not that maximal 3 are
+% reported)
+figure
+plot(coverage1Dall.maxabovethreshold)
+title('Multiplier field: number of peaks above the threshold')
+
+sum(coverage1Dall.maxabovethreshold) / niters
 
 %% White noise
 spfn = @(nsubj)  Mask( wnfield( mask1D_eroded, nsubj ) );
-coverage1D = record_coverage( spfn, sample_size, params, niters)
+coverage1Dwn = record_coverage( spfn, sample_size, params, niters)
 
 % nsubj=300, niters=1000
 % coverage1D = 
@@ -117,8 +146,9 @@ coverage1D = record_coverage( spfn, sample_size, params, niters)
 %         storeLKCs: [1×1000 double]
 
 %% EC curve analysis
-LKC_estimate = mean( coverage1D.storeLKCs, 2 )';
-[ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 );
+LKC_estimate = mean( coverage1Dwn.storeLKCs, 2 )';
+[ curve, x ] = maxECcurve( coverage1Dwn.convmaxima, 0.1 );
+figure
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
 hold on 
@@ -128,23 +158,18 @@ title('White noise: EEC and maxima distribution')
 
 %% Plot the number of maxima above the threshold (not that maximal 3 are
 % reported)
-tmp = coverage1D.allmaxima >= repmat( coverage1D.thresholds, [ 3 1 ] );
 figure
-plot(sum(tmp))
+plot(coverage1Dwn.maxabovethreshold)
 title('White Noise: number of peaks above the threshold')
 
-
-tmp = coverage1D.convmaxima >= coverage1D.thresholds;
-sum(tmp)/niters
-
+sum(coverage1Dwn.maxabovethreshold)/niters
 
 %% %% 2D
-close all
 % Parameters simulation
 D = 2;
-niters = 500;
+niters = 5000;
 FWHM   = 3;
-sample_size = 20;
+sample_size = 50;
 resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 
@@ -157,13 +182,15 @@ mask2D_eroded = mask;
 data_m = mean( data2D, 3 );
 data_s = std( data2D, 0, 3 );
 
+data2D_normalized = ( data2D - data_m ) ./ data_s;
+
 figure
 imagesc( data2D(:,:,1) )
 figure
 imagesc( mask2D )
 
 %% Get base fields for the simulations
-spfn_orig   = get_sample_fields( data2D, mask2D_eroded, D );
+spfn_orig   = get_sample_fields( data2D_normalized, mask2D_eroded, D );
 base_fields = spfn_orig(20);
 
 %%
@@ -189,7 +216,11 @@ L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
 [ L; L_HPE.hatL' ]
 
 %% Gaussian analysis (Multiplier field)
+<<<<<<< HEAD
 coverage2D = record_coverage( spfn, sample_size, params, niters, 10)
+=======
+coverage2D = record_coverage( spfn, sample_size, params, niters, 10 )
+>>>>>>> 426201db92e2a376a7802d725516d79cb53a39c5
 
 % sample_size = 20, niters = 1000
 % coverage2D = 
@@ -219,26 +250,53 @@ title('Multiplier field: EEC and maxima distribution')
 
 %% Plot the number of maxima above the threshold (not that maximal 3 are
 % reported)
-tmp = coverage2D.allmaxima >= repmat( coverage2D.thresholds, [ 3 1 ] );
-
 % This is part of the problem. There are quite frequently more than one
 % local maxima above the threshold. This means that EEC is larger at that
 % threshold than distribution of the maximum, which is what we observe.
 % Compare to the white noise simulation later.
 figure
-plot(sum(tmp))
+plot(coverage2D.maxabovethreshold)
 title('Multiplier field: number of peaks above the threshold')
 
-tmp = coverage2D.convmaxima >= coverage2D.thresholds;
-sum(tmp)/niters
+sum(coverage2D.maxabovethreshold)/niters
+
+%% %% Gaussian analysis (Multiplier field all basis functions)
+base_fields = Field(mask2D_eroded);
+base_fields.field = data2D_normalized;
+% Get a sample of the multiplier bootstrap field
+spfn = @(nsubj)  Mask( multiplier_field( base_fields, nsubj ) );
+
+coverage2Dall = record_coverage( spfn, sample_size, params, niters, 10)
+
+% Seems to work way better than small samples, i.e. covariance structure
+% seems to admit reasonable approximation
+
+%% EC curve analysis
+LKC_estimate = mean( coverage2Dall.storeLKCs, 2 )';
+[ curve, x ] = maxECcurve( coverage2Dall.convmaxima, 0.1 );
+plot(x, curve);
+curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
+hold on 
+plot( x, curve_conv );
+hold off
+title('Multiplier field: EEC and maxima distribution')
+
+%% Plot the number of maxima above the threshold (not that maximal 3 are
+% reported)
+figure
+plot(coverage2Dall.maxabovethreshold)
+title('Multiplier field: number of peaks above the threshold')
+
+sum(coverage2Dall.maxabovethreshold) / niters
+
 
 %% %% White noise
 spfn = @(nsubj)  Mask( wnfield( mask2D_eroded, nsubj ) );
-coverage2D = record_coverage( spfn, sample_size, params, niters)
+coverage2Dwn = record_coverage( spfn, sample_size, params, niters)
 
 %% EC curve analysis
-LKC_estimate = mean( coverage2D.storeLKCs, 2 )';
-[ curve, x ] = maxECcurve( coverage2D.convmaxima, 0.1 );
+LKC_estimate = mean( coverage2Dwn.storeLKCs, 2 )';
+[ curve, x ] = maxECcurve( coverage2Dwn.convmaxima, 0.1 );
 figure
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
@@ -249,11 +307,8 @@ hold off
 
 %% Plot the number of maxima above the threshold (not that maximal 3 are
 % reported)
-tmp = coverage2D.allmaxima >= repmat( coverage2D.thresholds, [ 3 1 ] );
 figure
-plot(sum(tmp))
+plot( coverage2Dwn.maxabovethreshold )
 title('White noise: number of peaks above the threshold')
 
-
-tmp = coverage2D.convmaxima >= coverage2D.thresholds;
-sum(tmp)/niters
+sum(coverage2Dwn.maxabovethreshold)/niters
