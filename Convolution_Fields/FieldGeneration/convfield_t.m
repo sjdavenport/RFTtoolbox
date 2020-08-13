@@ -57,6 +57,6 @@ else
 end
 
 tcfield.xvals = cfields.xvals;
-
+tcfield = Mask(tcfield);
 end
 

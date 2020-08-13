@@ -166,6 +166,16 @@ imagesc( mask2D )
 spfn_orig   = get_sample_fields( data2D, mask2D_eroded, D );
 base_fields = spfn_orig(20);
 
+%%
+data_path = 'C:\Users\12SDa\davenpor\Data\RestingStateData\EklundData\';
+load([data_path 'UKB_2D_randomized'])
+MNImask = imgload('MNImask');
+MNImask_2D = MNImask(:,:,45);
+
+D = 2; niters = 1000;
+spfn = get_sample_fields( im_store_2D, MNImask_2D, D );
+base_fields = spfn(20);
+
 %% %% LKC estimation from the data
 % Get a sample of the multiplier bootstrap field
 spfn = @(nsubj)  Mask( multiplier_field( base_fields.lat_data, nsubj ) );
@@ -179,7 +189,7 @@ L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
 [ L; L_HPE.hatL' ]
 
 %% Gaussian analysis (Multiplier field)
-coverage2D = record_coverage( spfn, sample_size, params, niters)
+coverage2D = record_coverage( spfn, sample_size, params, niters, 10)
 
 % sample_size = 20, niters = 1000
 % coverage2D = 
@@ -192,6 +202,9 @@ coverage2D = record_coverage( spfn, sample_size, params, niters)
 %         latmaxima: [1×1000 double]
 %        convmaxima: [1×1000 double]
 %         storeLKCs: [2×1000 double]
+
+%%
+ECcurveanal( coverage2D, MNImask_2D, sample_size)
 
 %% EC curve analysis
 LKC_estimate = mean( coverage2D.storeLKCs, 2 )';

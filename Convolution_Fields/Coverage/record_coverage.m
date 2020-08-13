@@ -100,6 +100,7 @@ for b = 1:niters
         lat_data = tmp.lat_data;
     end
     
+    lat_data = Mask(lat_data);
     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
 %     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
     storeLKCs(:,b) = L';
