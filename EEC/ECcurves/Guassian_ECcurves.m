@@ -45,7 +45,7 @@ lat_data = wnfield(nvox, nsubj);
 dcfields = convfield_Field( lat_data, FWHM, 1, resadd );
 [ curve, thresholds ] = ECcurve( tcfield );
 [L,L0] = LKC_voxmfd_est( cfields, dcfields );
-EEC = EEC_spm( thresholds, L, L0, 'T', nsubj )
+EEC_out = EEC( thresholds, L, L0, 'T', nsubj )
 plot(thresholds, curve)
 hold on 
 plot(thresholds, EEC)

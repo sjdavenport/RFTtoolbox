@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
-%%%    This script tests the record_coverage function
+%%%    This script tests the record_coverage when the fields are not
+%%%    Gaussian
 %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% prepare workspace
@@ -9,11 +10,30 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% %% 1D examples
-%% Simple 1D example
-FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;
-spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;
+%% 1D white t example
+FWHM = 3; sample_size = 100; nvox = 100; resadd = 3; df = 3;
+spfn = @(nsubj) wtfield( nvox, nsubj, df ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
-record_coverage( spfn, sample_size, params, niters)
+coverage = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
+
+%% 1D bootstrap t example
+rng(2)
+nvox = 100; D = 1;
+spfn = @(nsubj) wtfield(nvox, nsubj, 3);
+data = spfn(560).field;
+spfn = get_sample_fields( data, true(1,nvox)', D );
+
+FWHM = 3; resadd = 1; sample_size = 200;  niters = 1000;
+params = ConvFieldParams( FWHM, resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+
+%% 1D white Laplacian example
+FWHM = 3; sample_size = 20; nvox = 20; resadd = 1; scale = 2;
+spfn = @(nsubj) wlfield( nvox, nsubj, scale ); niters = 1000;
+params = ConvFieldParams( FWHM, resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
 
 %% Second small 1D example
 FWHM = 3; sample_size = 10; nvox = 10; resadd = 1;
@@ -30,12 +50,36 @@ params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 record_coverage( spfn, sample_size, params, niters)
 
 %% %% 2D examples
-%% small 2D example 
+%% small 2D white t example
 %(Note that on a small domain conv and finelat are similar even for reasonable resadd)
-FWHM = 3; resadd = 3; sample_size = 50;
-spfn = @(nsubj) wnfield(Dim, nsubj); niters = 1000;
-params = ConvFieldParams( FWHM, resadd );
-record_coverage( spfn, sample_size, params, niters)
+Dim = [10,10]; FWHM = 3; resadd = 1; sample_size = 100;
+spfn = @(nsubj) wtfield(Dim, nsubj, 3); niters = 1000;
+params = ConvFieldParams( [FWHM, FWHM], resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal(coverage, true(Dim), sample_size, 0.1)
+
+%% 2D t bootstrap example
+%% Set Sample field function and parameters
+D = 2; niters = 1000;
+spfn = get_sample_fields( im_store_2D, MNImask_2D, D );
+FWHM = 3; resadd = 1;
+
+Dim = [10,10]; 
+spfn = @(nsubj) wtfield(Dim, nsubj, 3); niters = 1000;
+data = spfn(560).lat_data.field;
+
+FWHM = 3; resadd = 1; sample_size = 200;
+params = ConvFieldParams( [FWHM, FWHM], resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal(coverage, true(Dim), sample_size, 0.1)
+
+%% small 2D white Laplacian example
+%(Note that on a small domain conv and finelat are similar even for reasonable resadd)
+Dim = [30,30]; FWHM = 3; resadd = 1; scale = 0.01; sample_size = 100;
+spfn = @(nsubj) wlfield(Dim, nsubj, scale); niters = 1000;
+params = ConvFieldParams( [FWHM, FWHM], resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal(coverage, true(Dim), sample_size, 0.1)
 
 %% small 2D example - using HPE
 FWHM = 3; resadd =  11; sample_size = 50;

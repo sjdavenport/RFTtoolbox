@@ -69,7 +69,7 @@ for I = 1:length(x)
     if x_position == 0
         % Here before any critical points the excursion set is just 1
         % connected component.
-        curve(I) = 1;
+        curve(I) = ECvals(1);
     else
         curve(I) = ECvals(x_position+1);
     end

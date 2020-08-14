@@ -1,8 +1,10 @@
 RSDmask = imgload('RSDmask_Beijing');
-data = loadRSD(1:198, 'Cambridge', 4);
+data = loadRSD(1:198, 'Cambridge', 6);
 
 twoDdata = squeeze(data(:,:,50,:));
-[bounds, bounded_mask] = mask_bounds(RSDmask);
+% [bounds, bounded_mask] = mask_bounds(RSDmask);
+MNImask = imgload('MNImask');
+[bounds, bounded_mask] = mask_bounds(MNImask);
 twoDmask = squeeze(bounded_mask(:,:,50));
 
 %%
@@ -15,10 +17,11 @@ tinv(max_tstat, 197)
 %% 1D slice
 D = 1; niters = 1000; data_slice = squeeze(twoDdata(:,30,:));
 mask_slice = squeeze(twoDmask(:,30));
-spfn = get_sample_fields( data_slice, mask_slice, D );
-FWHM = 3; sample_size = 20; resadd = 1;
+spfn = get_sample_fields( -data_slice, mask_slice, D );
+FWHM = 1; sample_size = 20; resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 coverage1D = record_coverage( spfn, sample_size, params, niters)
+% ECcurveanal( coverage1D, mask_slice, sample_size, 0.1 )
 
 %% 2D slice
 D = 2; niters = 1000;

@@ -29,6 +29,17 @@ a = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask );
 a{1}
 toc
 
+%% tstat example
+MNImask = imgload('MNImask');
+MNImask_2D = logical(MNImask(:,:,45)); nsubj = 20;
+lat_data = wnfield(MNImask_2D, nsubj);
+params = ConvFieldParams( [3,3], 1);
+tcfield = convfield_t( lat_data, params );
+ECC = EulerCharCrit( tcfield.field, tcfield.D, tcfield.mask )
+plot(ECC{1}(2:end-1,1), ECC{1}(3:end,2))
+%%
+imagesc(tcfield.field > -3)
+
 %% Matlab version
 tic
 b = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, 'notC' );
