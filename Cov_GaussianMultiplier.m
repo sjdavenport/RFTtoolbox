@@ -12,7 +12,7 @@ addpath(genpath("/home/drtea/matlabToolboxes/spm12/"))
 
 % Load the data
 data_path = '/home/drtea/Desktop/';
-load([data_path 'UKB_2D'])
+load([data_path 'UKB_2D_randomized'])
 
 % Load MNImask
 MNImask = imgload('/home/drtea/matlabToolboxes/BrainStat/BrainImages/MNImask');
@@ -24,12 +24,16 @@ imagesc(mask)
 subplot(1,2,2)
 imagesc(MNImask_2D)
 
+if exist('im_store_2D', 'var')
+    im_store = im_store_2D;
+end
+
 %% %% 1D
 % Parameters simulation
 D = 1;
-niters = 5000;
+niters = 500;
 FWHM   = 3;
-sample_size = 50;
+sample_size = 100;
 resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 
@@ -68,22 +72,27 @@ L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
 %% Gaussian analysis (Multiplier field)
 coverage1D = record_coverage( spfn, sample_size, params, niters, 10)
 
-% nsubj=300, niters=1000
-% coverage1D = 
-% 
-%   struct with fields:
-% 
-%              conv: 0.0390
-%               lat: 0.0370
-%           finelat: 0.0390
-%     finelatmaxima: [1×1000 double]
-%         latmaxima: [1×1000 double]
-%        convmaxima: [1×1000 double]
-%         storeLKCs: [1×1000 double]
+% nsubj=50, niters=5000
+%    conv: 0.0428
+%     lat: 0.0382
+% finelat: 0.0418
+
+% nsubj=200, niters=5000
+%    conv: 0.0394
+%     lat: 0.0348
+% finelat: 0.0382
+
+% randomized
+% nsubj=100, niters=50
+%    conv: 0.0360
+%     lat: 0.0320
+% finelat: 0.0360
+
 
 %% EC curve analysis
 LKC_estimate = mean( coverage1D.storeLKCs, 2 )';
 [ curve, x ] = maxECcurve( coverage1D.convmaxima, 0.1 );
+figure
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
 hold on 
@@ -110,9 +119,25 @@ coverage1Dall = record_coverage( spfn, sample_size, params, niters, 10)
 % Seems to work way better than small samples, i.e. covariance structure
 % seems to admit reasonable approximation
 
+% nsubj=50, niters=5000
+%    conv: 0.0508
+%     lat: 0.0460
+% finelat: 0.0496
+% nsubj=200, niters=5000
+%    conv: 0.0468
+%     lat: 0.0422
+% finelat: 0.0462
+
+% randomized
+% nsubj=100, niters=50
+%    conv: 0.0480
+%     lat: 0.0460
+% finelat: 0.0480
+
 %% EC curve analysis
 LKC_estimate = mean( coverage1Dall.storeLKCs, 2 )';
 [ curve, x ] = maxECcurve( coverage1Dall.convmaxima, 0.1 );
+figure
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
 hold on 
@@ -132,18 +157,14 @@ sum(coverage1Dall.maxabovethreshold) / niters
 spfn = @(nsubj)  Mask( wnfield( mask1D_eroded, nsubj ) );
 coverage1Dwn = record_coverage( spfn, sample_size, params, niters)
 
-% nsubj=300, niters=1000
-% coverage1D = 
-% 
-%   struct with fields:
-% 
-%              conv: 0.0390
-%               lat: 0.0370
-%           finelat: 0.0390
-%     finelatmaxima: [1×1000 double]
-%         latmaxima: [1×1000 double]
-%        convmaxima: [1×1000 double]
-%         storeLKCs: [1×1000 double]
+% nsubj=50, niters=5000
+%    conv: 0.0528
+%     lat: 0.0464
+% finelat: 0.0514
+% nsubj=200, niters=5000
+%    conv: 0.0512
+%     lat: 0.0452
+% finelat: 0.0496
 
 %% EC curve analysis
 LKC_estimate = mean( coverage1Dwn.storeLKCs, 2 )';
@@ -167,9 +188,9 @@ sum(coverage1Dwn.maxabovethreshold)/niters
 %% %% 2D
 % Parameters simulation
 D = 2;
-niters = 5000;
+niters = 500;
 FWHM   = 3;
-sample_size = 50;
+sample_size = 100;
 resadd = 1;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 
@@ -188,6 +209,19 @@ figure
 imagesc( data2D(:,:,1) )
 figure
 imagesc( mask2D )
+
+spfn_orig   = get_sample_fields( data2D_normalized, mask2D_eroded, D );
+base_fields = spfn_orig(100);
+
+data2df = base_fields.lat_data;
+data2df.mask = mask2D_eroded;
+
+[ L, L0, ~, cfields ] = LKC_latconv_est( data2df, params );
+
+L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
+
+% (This seems to work)
+[ L; L_HPE.hatL' ]
 
 %% Get base fields for the simulations
 spfn_orig   = get_sample_fields( data2D_normalized, mask2D_eroded, D );
@@ -208,17 +242,14 @@ L_HPE = LKC_HP_est( cfields{1}, 1000, 1 );
 %% Gaussian analysis (Multiplier field)
 coverage2D = record_coverage( spfn, sample_size, params, niters, 10 )
 
-% sample_size = 20, niters = 1000
-% coverage2D = 
-%   struct with fields:
-% 
-%              conv: 0.0390
-%               lat: 0.0230
-%           finelat: 0.0330
-%     finelatmaxima: [1×1000 double]
-%         latmaxima: [1×1000 double]
-%        convmaxima: [1×1000 double]
-%         storeLKCs: [2×1000 double]
+% nsubj=50, niters=5000
+%    conv: 0.0270
+%     lat: 0.0192
+% finelat: 0.0254
+% nsubj=200, niters=5000
+%    conv: 0.0282
+%     lat: 0.0216
+% finelat: 0.0264
 
 %% EC curve analysis
 LKC_estimate = mean( coverage2D.storeLKCs, 2 )';
@@ -254,9 +285,25 @@ coverage2Dall = record_coverage( spfn, sample_size, params, niters, 10)
 % Seems to work way better than small samples, i.e. covariance structure
 % seems to admit reasonable approximation
 
+% nsubj=50, niters=5000
+%    conv: 0.0492
+%     lat: 0.0378
+% finelat: 0.0456
+% nsubj=200, niters=5000
+%    conv: 0.0446
+%     lat: 0.0364
+% finelat: 0.0426
+
+% randomized
+% nsubj=100, niters=500
+%    conv: 0.0380
+%     lat: 0.0280
+% finelat: 0.0360
+
 %% EC curve analysis
 LKC_estimate = mean( coverage2Dall.storeLKCs, 2 )';
 [ curve, x ] = maxECcurve( coverage2Dall.convmaxima, 0.1 );
+figure
 plot(x, curve);
 curve_conv = EEC( x, LKC_estimate, L0, 'T', sample_size-1 );
 hold on 
@@ -276,6 +323,15 @@ sum(coverage2Dall.maxabovethreshold) / niters
 %% %% White noise
 spfn = @(nsubj)  Mask( wnfield( mask2D_eroded, nsubj ) );
 coverage2Dwn = record_coverage( spfn, sample_size, params, niters)
+
+% nsubj=50, niters=5000
+%    conv: 0.0494
+%     lat: 0.0282
+% finelat: 0.0444
+% nsubj=200, niters=5000
+%    conv: 0.0520
+%     lat: 0.0308
+% finelat: 0.0454
 
 %% EC curve analysis
 LKC_estimate = mean( coverage2Dwn.storeLKCs, 2 )';
