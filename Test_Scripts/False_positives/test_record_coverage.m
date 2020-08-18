@@ -15,6 +15,14 @@ spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 record_coverage( spfn, sample_size, params, niters)
 
+%% Pre-estimating the LKCs for quicker coverage
+FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;
+spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;
+params = ConvFieldParams( FWHM, resadd );
+lat_data = spfn(100);
+[ ~, ~, ~, L ] = vRFT(lat_data, params, 3 );
+record_coverage( spfn, sample_size, params, niters, 2, L)
+
 %% Second small 1D example
 FWHM = 3; sample_size = 10; nvox = 10; resadd = 1;
 spfn = @(nsubj) wnfield( nvox, nsubj ); niters = 1000;

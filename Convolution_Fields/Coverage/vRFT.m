@@ -58,11 +58,11 @@ end
 if ~exist( 'version', 'var' )
     switch lat_data.D
         case 1
-            version = 0;
+            version = false;
         case 2
             version = true;
         case 3
-            version = [ 1, 1, 0 ];
+            version = [ true, true, false ];
             %             version = [ true, true, true ];
     end
 end
@@ -88,7 +88,9 @@ end
 % Calculate the convolution t field
 [ tfield_fine, cfields ] = convfield_t( lat_data, params );
 
-if isstr(version) && strcmp(version, 'HPE')
+if isnumeric(version)
+    L = version;
+elseif isstr(version) && strcmp(version, 'HPE')
     HPE  = LKC_HP_est( cfields, 1, 1 );
     L = HPE.hatL;
 else
@@ -173,6 +175,9 @@ if ninitpeaks > 0
     if D == 1
         maximum.conv = max(maximum.conv, maximum.finelat);
     end
+else
+    maximum.conv = maximum.finelat;
+    maximum.allmaxima = maximum.finelat;
 end
 
 end
