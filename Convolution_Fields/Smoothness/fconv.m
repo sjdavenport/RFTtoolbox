@@ -295,9 +295,10 @@ if ( D < length( s_data ) && D > 1 ) ...
     
     % Loop over subjects
     for J = 1:s_data( end )
-        smoothed_data( index{:}, J ) = fconv( squeeze( data( index{:}, J ) ),...
+        [tmp, ss] = fconv( squeeze( data( index{:}, J ) ),...
                                             Kernel, D, truncation, dx,...
                                             adjust_kernel );
+        smoothed_data( index{:}, J ) = tmp;
     end
     
     return
@@ -316,7 +317,7 @@ end
 
 
 % Calculate the kernel at the values in truncation vector
-kernel_in_direction = cell( D );
+kernel_in_direction = cell( [ 1 D ] );
 for d = 1:D
     % Get the kernel in the dth direction evaluate on truncation
     kernel_in_direction{d} = Kernel{d}( truncation_vecs{d} );
@@ -336,7 +337,7 @@ if D == 1
     end
     
     % Calculates the sum of the squares of the kernel
-    ss = sum( kernel_in_direction{1}.^2 );
+    ss = sum( kernel_in_direction{1}.^2 ) * dx;
     
 elseif D == 2
     
@@ -352,7 +353,7 @@ elseif D == 2
                       
     % This is the sum of the squares of the kernel in the truncation box,
     % since the kernel is by assumption separable.
-%     ss = sum(sum( kernel_in_direction{1}' * kernel_in_direction{2} ));
+     ss = sum(sum( (kernel_in_direction{1}' * kernel_in_direction{2}).^2 )) * dx(1)*dx(2);
     
 elseif D == 3
     
@@ -373,8 +374,10 @@ elseif D == 3
     
     % This is the sum of the squares of the kernel in the truncation box,
     % since the kernel is by assumption separable.
-%     tmp = kernel_in_direction{1}' * kernel_in_direction{2}
-%     ss =  sum(sum( kernel_in_direction{1}' * kernel_in_direction{2} ));
+    [X,Y,Z] = meshgrid( kernel_in_direction{1}', kernel_in_direction{2}', ...
+                        kernel_in_direction{3}' );
+    ss = ( X .* Y .* Z ).^2;
+    ss = sum(ss(:)) * dx(1)*dx(2)*dx(3);
     
 else
     error('fconv not coded for dimension > 3')
