@@ -457,6 +457,9 @@ classdef Field
                  [varargout{1:nargout}] = builtin('subsref', obj, s);
             end
        end
+       
+       % Get the stepsizes in each direction 
+       dx = get_dx( obj )
         
        % Function for masking data
        obj = Mask( obj, val, mask )
