@@ -1,4 +1,4 @@
-function cfield = convfield( lat_data, params, derivtype )
+function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 % CONVFIELD_FIELD( lat_data, Kernel, resadd, derivtype, enlarge )
 % generates an object of class Field containing the convolution field
 % derived from lattice data smoothed with a seperable kernel.
@@ -18,6 +18,7 @@ function cfield = convfield( lat_data, params, derivtype )
 % OUTPUT
 %  cfield   an object of class ConvField representing the field obtained by
 %           smoothing the lat_data field object by the Kernel object.
+%  ss       numeric to multiply the field by to make it variance 1.
 %--------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------
@@ -125,8 +126,9 @@ if D < 4
     % run the smoothing using fconv
     if derivtype == 0
         % calculates the convolution field
-        cfield.field = fconv( expanded_lat_data, Kernel.kernel, D,...
+        [ tmp, ss ] = fconv( expanded_lat_data, Kernel.kernel, D,...
                               Kernel.truncation, dx_hr, Kernel.adjust );
+        cfield.field = tmp;
         
     elseif derivtype == 1        
         % preallocate the output field for speed
@@ -172,6 +174,12 @@ if D < 4
     
 else
     error('D != 1,2,3 has not been implemented yet!')
+end
+
+if exist( 'ss', 'var' )
+    ss = 1 / sqrt(ss);
+else
+    ss = 1;
 end
 
 return
