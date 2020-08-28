@@ -22,25 +22,6 @@ function obj = wtfield( varmask, fibersize, df, xvals )
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %% % Simple example with whole domain mask
-% %% scalar field
-% lat_data = wnfield( [4 2 3] )
-%
-% %% many subjects field
-% lat_data = wnfield( [4 2 3], 100 )
-%
-% %% Simple example with mask
-% mask = true( [ 4, 12 ] )
-% mask = logical( pad_vals( mask ) )
-% lat_data = wnfield( mask, 1 )
-% figure, clf,
-% imagesc( lat_data ), colorbar
-% title( 'not masked field' )
-% % Generate masked data
-% lat_data = Mask( wnfield( mask, 1 ) )
-% figure, clf,
-% imagesc( lat_data )
-% title( 'masked field' )
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------

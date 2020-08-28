@@ -1,4 +1,4 @@
-function spfn = get_sample_fields( RSfolder, mask, D )
+function spfn = get_sample_fields( RSfolder, mask, do_gaussianize )
 % get_sample_fields( data, mask ) obtains a function that generates fields
 % from data
 %--------------------------------------------------------------------------
@@ -10,6 +10,8 @@ function spfn = get_sample_fields( RSfolder, mask, D )
 %  mask         the mask for the data. If this is an array then it is taken
 %               to be the mask for the data. If is it not specified then
 %               the masks are obtained from the corresponding directory
+% do_gaussianize    0/1 should you Gaussianize the data or not. Default is
+%                   0 i.e. no Gaussianization
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
@@ -43,12 +45,17 @@ function spfn = get_sample_fields( RSfolder, mask, D )
 %--------------------------------------------------------------------------
 % Ensure the mask is logical
 mask = logical(mask);
+D = length(size(mask));
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
 % Set the default with_rep value
 if ~exist('with_rep', 'var')
    with_rep = 0; 
+end
+
+if ~exist('do_gaussianize', 'var')
+    do_gaussianize = 0;
 end
 
 %%  Main Function Loop
@@ -67,7 +74,7 @@ if isnumeric(RSfolder)
     if isequal(size(RSfolder), size(mask))
         spfn = @(nsubj) get_sample_fields_mate_varmask(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
     else
-        spfn = @(nsubj) get_sample_fields_mate(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD);
+        spfn = @(nsubj) get_sample_fields_mate(RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD, do_gaussianize);
     end
  
 elseif ischar(RSfolder)
@@ -115,13 +122,16 @@ else
 end
 
 end
-
+% (RSfolder, mask, nsubj, with_rep, total_nsubj, D, indexD, do_gaussianize)
 % Function to obtain a subset field
-function out = get_sample_fields_mate(data, mask, nsubj, with_rep, total_nsubj, D, index)
+function out = get_sample_fields_mate(data, mask, nsubj, with_rep, total_nsubj, D, index, do_gaussianize)
     out.subset = randsample(total_nsubj,nsubj,with_rep);
     index{D+1} = out.subset;
     out.lat_data = Field(mask);
     out.lat_data.field = data(index{:});
+    if do_gaussianize && nsubj > 1
+        out.lat_data = Gaussianize(out.lat_data);
+    end
 end
 
 % Function to obtain a subset field with variable masks

@@ -10,12 +10,18 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% %% 1D examples
-%% 1D white t example
-FWHM = 3; sample_size = 300; nvox = 100; resadd = 3; df = 3;
+%% 1D white t  example
+FWHM = 3; sample_size = 20; nvox = 100; resadd = 3; df = 3;
 spfn = @(nsubj) wtfield( nvox, nsubj, df ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 coverage = record_coverage( spfn, sample_size, params, niters)
 % ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
+
+%% 1D white t Gaussianized
+FWHM = 3; sample_size = 20; nvox = 100; resadd = 3; df = 3;
+spfn = @(nsubj) Gaussianize(wtfield( nvox, nsubj, df )); niters = 1000;
+params = ConvFieldParams( FWHM, resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
 
 %% 1D bootstrap t example
 rng(3)

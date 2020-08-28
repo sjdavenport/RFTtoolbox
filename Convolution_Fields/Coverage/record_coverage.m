@@ -90,7 +90,7 @@ allmaxima = zeros( npeaks, niters );
 % Main
 for b = 1:niters
     %Display b if mod(b,100) = 0
-    modul(b,100)
+    modul(b,10)
     
     % Calculate data
     if direct_field == 1
