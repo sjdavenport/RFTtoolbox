@@ -94,7 +94,7 @@ for m = 1:Msim
     end
 
     % Generate convolution fields from lattice data
-    cfield   = convfield( lat_data, params, 0 );
+    cfield = convfield( lat_data, params, 0 );
 
     % Compute derivatives if convE is used in this simulation
     if isfield( methods, "convE" )

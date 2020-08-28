@@ -80,7 +80,7 @@ classdef ConvFieldParams
               obj.resadd = 1;
           end
           
-          if nargin == 3
+          if nargin >= 3
               obj.enlarge = varargin{3};
           else
               if mod( obj.resadd, 2 ) == 1
