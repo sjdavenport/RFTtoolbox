@@ -1,5 +1,5 @@
 function spfn = getUKBspfn( RSfolder, do_gaussianize, mask )
-% GET_SAMPLES_FIELDS( data, do_gaussianize, mask ) obtains a function that 
+% GETUKBSPFN( data, do_gaussianize, mask ) obtains a function that 
 % generates fields from data.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -19,11 +19,8 @@ function spfn = getUKBspfn( RSfolder, do_gaussianize, mask )
 % EXAMPLES
 % %% Resting State Data example
 % mask = imgload('MNImask');
-% spfn = get_sample_fields( 'RS_2Block', mask );
+% spfn = getUKBspfn( 'RS_2Block', 1, mask );
 % a = spfn(20)
-%
-% directory =
-% '/vols/Scratch/ukbiobank/nichols/SelectiveInf/feat_runs/RS_2Block_warped/'
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -39,19 +36,19 @@ end
 %--------------------------------------------------------------------------
 if ischar(mask)
     % Obtain the sample function
-    spfn = @(subset) get_sample_fields_nifti_intersect(subset, do_gaussianize);
+    spfn = @(subset) get_sample_fields_nifti_intersect(subset, do_gaussianize, RSfolder);
 else
     % Ensure the mask is logical
     mask = logical(mask);
     
     % Obtain the sample function
-    spfn = @(subset) get_sample_fields_nifti(subset, do_gaussianize, mask);
+    spfn = @(subset) get_sample_fields_nifti(subset, do_gaussianize, mask, RSfolder);
 end
 
 end
 
 % Function to obtain a subset field form nifti file locations
-function lat_data = get_sample_fields_nifti(subset2use, do_gaussianize, mask)
+function lat_data = get_sample_fields_nifti(subset2use, do_gaussianize, mask, RSfolder)
     if length(subset2use) == 1
         subset2use = {subset2use};
     end
@@ -63,7 +60,7 @@ function lat_data = get_sample_fields_nifti(subset2use, do_gaussianize, mask)
 end
 
 % Function to draw a given subset with the intersection mask!
-function lat_data = get_sample_fields_nifti_intersect(subset2use, do_gaussianize)
+function lat_data = get_sample_fields_nifti_intersect(subset2use, do_gaussianize, RSfolder)
     if length(subset2use) == 1
         error('Not set up for random subject selection or nsubj = 1');
     end
