@@ -32,7 +32,7 @@ record_coverage( spfn, sample_size, params, niters)
 %% 1D bootstrap example
 nvox = 100; tot_nsubj = 600; D = 1;
 data = normrnd(0,1,nvox, tot_nsubj);
-spfn = get_sample_fields( data, true(1,nvox)', D );
+spfn = getbootspfn( data, 0, true(1,nvox)' );
 FWHM = 3; sample_size = 20; resadd = 1; niters = 1000;
 params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 record_coverage( spfn, sample_size, params, niters)

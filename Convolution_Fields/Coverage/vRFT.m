@@ -77,9 +77,9 @@ if ~exist( 'df', 'var' )
     df = lat_data.fibersize-1;
 end
 
-if ~exist( 'L0', 'var')
-    L0 =  EulerChar(lat_data.mask, 0.5, lat_data.D);
-end
+% if ~exist( 'L0', 'var')
+%     L0 =  EulerChar(lat_data.mask, 0.5, lat_data.D);
+% end
 
 %%  Main function
 %--------------------------------------------------------------------------
@@ -90,29 +90,19 @@ end
 
 if isnumeric(version)
     L = version;
-elseif isstr(version) && strcmp(version, 'HPE')
+elseif ischar(version) && strcmp(version, 'HPE')
     HPE  = LKC_HP_est( cfields, 1, 1 );
     L = HPE.hatL;
-else
-    % Estimate the LKCs of the convoltution field
+else %I.e. otherwise runs the conv case
+    % Estimate the LKCs of the convolution field
     dcfields = convfield( lat_data, params, 1 );
     d2cfields = Field();
     
-    % @Fabian, L0 is buggy as it's calculated on the resadd increased mask.
-    % Plus this is extra computation time so perhaps by default it shouldn't be computed?
-    % As it will be the same every time so it doesn't make sense to recompute
-    % it
-    if lat_data.D == 3
-        if version(3) == 1
-            d2cfields = convfield( lat_data, params, 2 );
-            [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-                version );
-        else
-            [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields,...
-                version );
-        end
+    if lat_data.D == 3 && version(3) == 1
+        d2cfields = convfield( lat_data, params, 2 );
+        [ L, L0 ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version);
     else
-        [ L, L0bug ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version );
+        [ L, L0 ] = LKC_voxmfd_est( cfields, dcfields, d2cfields, version);
     end
 end
 

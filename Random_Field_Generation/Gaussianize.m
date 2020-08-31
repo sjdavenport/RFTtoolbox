@@ -1,12 +1,30 @@
 function lat_data = Gaussianize( lat_data )
-% Gaussianize takes in data on a lattice 
+% GAUSSIANIZE( lat_data ) takes in a field of data on a lattice and 
+% Gaussianizes it demeans. To do this it takes the data and demeans and 
+% standardizes it voxelwise and combines over voxels to obtain a null
+% marginal distribution (it makes the assumption that the marginal 
+% distribution a condition that is of course much weaker than Gaussianity).
+% It then compares the original, standardized but not demeaned, data
+% to this null marginal distribution calculates a quantile and Gaussianizes
+% it via comparison to the Gaussian pdf. The effect of this is to ensure
+% marginal Gaussian distributions at each voxel (note however that the
+% field transformed this way are not necessarily Gaussian). One of the 
+% benefits of this transformation is to ensure that the tails do not overly
+% influence the data. This is especially important in fMRI where due to
+% artefacts in the data it is common that some voxels of some subjects have 
+% very high tails so that an indivdiual subject can dominate the distribution
+% at a given voxel. This transformation increases the power to detect
+% activation and ensures that the assumptions of multiple testing methods
+% hold. Note that it is helpful for both the assumptions of permutation and 
+% random field theory.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-% Optional
+%  lat_data    a field of data on a lattice. For best performance this
+%              field should be made up of at least 10 subjects. 
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+%  lat_data    the Gaussianized field of data
 %--------------------------------------------------------------------------
 % EXAMPLES
 % lat_data = wtfield( [20,20], 100, 3 )

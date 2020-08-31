@@ -12,8 +12,10 @@
 %  params       an object of class ConvFieldParams
 % Optional
 %  niters        the number of resamples of the data to do
-%  do_spm       additionally calculate the lkcs using SPM (i.e. under
-%               stationarity
+%  npeaks       the number of peaks of the lattice data around which to
+%               search for the local maxima
+%  version      the version of the LKC estimation to use
+%  subsets
 %--------------------------------------------------------------------------
 % OUTPUT
 %  coverage    a structural array with entries:
@@ -37,20 +39,12 @@
 % Obtain a sample of the field
 single_sample_field = spfn(1);
 
-% Allow multiple input formats
-if isa( single_sample_field, 'Field' ) || isa( single_sample_field, 'ConvField' )
-    direct_field = 1;
-else
-    single_sample_field = single_sample_field.lat_data;
-    direct_field = 0;
-end
-
 % Obtain properties of the data
 D = single_sample_field.D;
-mask = single_sample_field.mask;
 
+% mask = single_sample_field.mask;
 % Calculate the Euler characteristic
-L0 = EulerChar(mask, 0.5, D);
+% L0 = EulerChar(mask, 0.5, D);
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
@@ -61,11 +55,40 @@ end
 
 % Set the default do_spm value
 if ~exist('version', 'var')
-   version = 'conv'; 
+    if D < 3
+        version = true(ones(1,D));
+    elseif D == 3
+        version = [true, true, false];
+    end
 end
 
 if ~exist('npeaks', 'var')
     npeaks = 3;
+end
+
+% Determine whether to use fixed random subsets in advance instead of a
+% given number of subjects
+if iscell(sample_size)
+    %Obtain the subsets
+    subsets = sample_size;
+    
+    % Determine the sample size to use
+    sample_size = length(subsets{1});
+    
+    % Calculate the number of subsets stored
+    sample_niters = length(subsets);
+    
+    % Ensure that the number of iterations is the same as the number of
+    % samples provided
+    if sample_niters ~= niters
+        error('The number of subsets must be the same as the number of iterations\n')
+    end
+    
+    % Define an indicator that shows you're using random subsets
+    use_subsets = 1;
+else
+    % Define an indicator that shows you're not using random subsets
+    use_subsets = 0;
 end
 
 %%  Main Function Loop
@@ -87,22 +110,23 @@ storeLKCs = zeros( D, niters );
 
 allmaxima = zeros( npeaks, niters );
 
+% Initialize the coverage structure
+coverage = struct();
+
 % Main
 for b = 1:niters
     %Display b if mod(b,100) = 0
     modul(b,10)
     
-    % Calculate data
-    if direct_field == 1
-        lat_data = spfn(sample_size);
+    % Obtain the data
+    if use_subsets
+        lat_data = spfn(subsets{b});
     else
-        tmp = spfn(sample_size);
-        lat_data = tmp.lat_data;
+        lat_data = spfn(sample_size);
     end
     
     lat_data = Mask(lat_data);
     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
-%     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, 3, L0);
     storeLKCs(:,b) = L';
     if any(isnan(L))
         warning('NAN LKC recorded')
@@ -138,6 +162,7 @@ coverage.latmaxima  = latmaxima;
 coverage.convmaxima = convmaxima;
 coverage.allmaxima  = allmaxima;
 coverage.thresholds = thresholds;
+
 coverage.maxabovethreshold = maxabovethreshold;
 
 coverage.storeLKCs = storeLKCs;
