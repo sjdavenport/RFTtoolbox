@@ -20,7 +20,9 @@ function spfn = getUKBspfn( RSfolder, do_gaussianize, mask )
 % %% Resting State Data example
 % mask = imgload('MNImask');
 % spfn = getUKBspfn( 'RS_2Block', 1, mask );
-% a = spfn(20)
+% random_subset = spfn(4)
+% subset = [1,3,5]; spec_subset = spfn(subset);
+% subs = loadUKB([1,3,5]);
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -72,7 +74,7 @@ function lat_data = get_sample_fields_nifti_intersect(subset2use, do_gaussianize
     intersection_mask = prod(mask_fields.field,4);
     
     % Obtain the lattice data (including bounding the mask
-    lat_data = loadUKB( subset2use, RSfolder, 'cope', drawset, intersection_mask);
+    lat_data = loadUKB( subset2use, RSfolder, 'cope', drawset, intersection_mask, RSfolder);
     if do_gaussianize
         lat_data = Gaussianize(lat_data);
     end
