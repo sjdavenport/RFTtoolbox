@@ -46,14 +46,15 @@ end
 %--------------------------------------------------------------------------
 % Compute the convolution fields
 cfields    = cell( [ 1 3 ] );
-cfields{1} = convfield( lat_data, params, 0 );
-cfields{2} = convfield( lat_data, params, 1 );
+[ tmp, ss ] = convfield( lat_data, params, 0 );
+cfields{1} = tmp ./ ss;
+cfields{2} = convfield( lat_data, params, 1 )./ ss;
 cfields{3} = Field();
 
 % Compute the LKCs
 if lat_data.D == 3
     if LKCversion(3) == 1
-        cfields{3} = convfield( lat_data, params, 2 );
+        cfields{3} = convfield( lat_data, params, 2 )./ ss;
         [ L, L0, nonstatInt ]  = LKC_voxmfd_est( cfields{1}, cfields{2},...
                                                  cfields{3}, version );
     else
