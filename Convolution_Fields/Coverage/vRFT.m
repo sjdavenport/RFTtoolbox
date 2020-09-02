@@ -1,4 +1,4 @@
-function [ output_image, threshold, maximum, LKCs, minimum ] = vRFT(...
+function [ output_image, threshold, maximum, L, minimum ] = vRFT(...
     lat_data, params, ninitpeaks, do2sample, version, alpha, L0 )
 % VRFT( lat_data, params, L0, ninitpeaks, alpha, version ) runs voxelwise
 % RFT inference on a set of images to detect areas of activation using a
@@ -206,7 +206,7 @@ if do2sample == 1
         [~, min_tfield_at_lms] = findconvpeaks(-lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
         min_tfield_at_lms = -min_tfield_at_lms;
         minimum.conv = min(min_tfield_at_lms);
-        minimum.allmaxima = min_tfield_at_lms;
+        minimum.allminima = min_tfield_at_lms;
         
         % There are some residual mismatches in 1D between convfield and
         % applyconvfield that need to be resolved.
@@ -215,7 +215,7 @@ if do2sample == 1
         end
     else
         minimum.conv = minimum.finelat;
-        minimum.allmaxima = minimum.finelat;
+        minimum.allminima = minimum.finelat;
     end
 else
     minimum = NaN;
