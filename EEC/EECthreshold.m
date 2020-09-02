@@ -55,7 +55,7 @@ end
 
 if strcmp(option, 'standard')
     EECminusalpha = @(x) EEC( x, LKC, LKC0, type, df, 0 ) - FWER;
-    u_FWER = fzero( EECminusalpha, [ 2, 200 ] );
+    u_FWER = fzero( EECminusalpha, [ 1, 200 ] );
 elseif strcmp(option, 'poisson') || strcmp(option, 'Poisson') || strcmp(option, 'P') || strcmp(option, 'p')
     possionprob = @(x) 1-exp(-EEC( x, LKC, LKC0, type, df, 0 )) - FWER;
     u_FWER = fzero( possionprob, [ 2, 200 ] );

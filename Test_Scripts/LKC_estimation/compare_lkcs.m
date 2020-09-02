@@ -194,8 +194,8 @@ T = 5;
 D = 3;
 Dim = T * ones( [ 1 D ] );
 FWHM = 5;
-resadd = 3;
-nsubj = 200; % FT:for pad= 0 change nsubj to see that negative values appear more often for small sample sizes
+resadd = 9;
+nsubj = 100; % FT:for pad= 0 change nsubj to see that negative values appear more often for small sample sizes
 pad   = 0; %ceil( 4 * FWHM2sigma( FWHM ) ); %  for non-stationarity 
 
 % Change to false to see that everything works well in stationary approach

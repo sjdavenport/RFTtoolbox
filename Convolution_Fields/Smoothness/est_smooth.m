@@ -1,4 +1,4 @@
-function [ fwhm_est, Lambda_est, sigma_est ] = est_smooth( data, mask )
+function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth( data, mask )
 % EST_SMOOTH estimates the smoothness of a process. NEED TO DO THE
 % CROSS TERMS!! Would be good to study exactly how biased this is.
 %--------------------------------------------------------------------------
@@ -91,7 +91,7 @@ data = data/sqrt(var_est);
 
 %% Estimate Lambda Matrix and FWHMs
 Lambda_est = zeros(nDim);
-fwhm_est = zeros(1,nDim);
+fwhm_est_kiebel = zeros(1,nDim);
 
 Xderivmate = diff(data,1,1);
 tmp = ~isnan(Xderivmate(index{:}, 1));
@@ -104,24 +104,27 @@ denom = sum(tmp(:))*(nsubj-1); %The first half of this
 %derivation works to make things unbiased.
 
 Lambda_est(1,1) = sum(Xderivmate(~isnan(Xderivmate)).^2)/denom;
-fwhm_est(1) = sqrt(4*log(2)/Lambda_est(1,1));
+fwhm_est_kiebel(1) = sqrt(4*log(2)/Lambda_est(1,1));
 
 if nDim > 1
     Yderivmate = diff(data,1,2);
     tmp = ~isnan(Yderivmate(index{:}, 1));
     denom = sum(tmp(:))*(nsubj-1); %The number of non-nans
     Lambda_est(2,2) = sum(Yderivmate(~isnan(Yderivmate)).^2)/denom;
-    fwhm_est(2) = sqrt(4*log(2)/Lambda_est(2,2));
+    fwhm_est_kiebel(2) = sqrt(4*log(2)/Lambda_est(2,2));
 end
 if nDim > 2
     Zderivmate = diff(data,1,3);
     tmp = ~isnan(Zderivmate(index{:}, 1));
     denom = sum(tmp(:))*(nsubj-1);  
     Lambda_est(3,3) = sum(Zderivmate(~isnan(Zderivmate)).^2)/denom;
-    fwhm_est(3) = sqrt(4*log(2)/Lambda_est(3,3));
+    fwhm_est_kiebel(3) = sqrt(4*log(2)/Lambda_est(3,3));
 end
 
-sigma_est = fwhm_est/(sqrt(8*log(2)));
+sigma_est = fwhm_est_kiebel/(sqrt(8*log(2)));
+
+sigma_est_forman = sqrt(-1./4./log(1-diag(Lambda_est)/2));
+fwhm_est_forman = sigma2FWHM(sigma_est_forman);
 
 end
 

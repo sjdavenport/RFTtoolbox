@@ -1,13 +1,16 @@
 function [ curve, x ] = maxECcurve( maxima, alpha_percentile, increm )
-% maxECcurve( maxima ) estiamtes the tail of the EC curve from the
+% maxECcurve( maxima ) estimates the tail of the EC curve from the
 % distribution of observed maxima over many iid iterations
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
+%  maxima
+%  alpha_percentile
 % Optional
+%  increm
 %--------------------------------------------------------------------------
 % OUTPUT
-% curve     the Euler characteristic curve
+%  curve     the Euler characteristic curve
 %--------------------------------------------------------------------------
 % EXAMPLES
 % 
