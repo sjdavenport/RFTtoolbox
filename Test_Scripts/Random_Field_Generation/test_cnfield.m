@@ -9,7 +9,7 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% %% 1D Examples
-%% Simple 1D example
+% Simple 1D example
 dim = [50 1];
 voxmap = 1:dim
 tmp2 = mod( voxmap, 6);
