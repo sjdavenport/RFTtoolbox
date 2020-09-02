@@ -13,6 +13,7 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 %            - HPE filled with a logical for normalize from LKC_HP_est()    
 %            - bHPE filled with a 1 x 2 cell containing Mboot, normalize 
 %              from LKC_HP_est()
+%            - warpE filled with the normalize variable
 %   params   an object of type ConvFieldParams
 %
 % Optional
@@ -83,6 +84,11 @@ if isfield( methods, "bHPE" )
     Mboot         = methods.bHPE(1);
 end
 
+if isfield( methods, "warpE" )
+    L_warp_ests    = NaN * ones( [ Msim D ] );
+    normalizewarp = methods.warpE;
+end
+
 tic
 for m = 1:Msim
     if isa( data_gen, 'function_handle' )
@@ -94,14 +100,15 @@ for m = 1:Msim
     end
 
     % Generate convolution fields from lattice data
-    cfield = convfield( lat_data, params, 0 );
+    [ cfield, ss ] = convfield( lat_data, params, 0 );
+    cfield = ss .* cfield;
 
     % Compute derivatives if convE is used in this simulation
     if isfield( methods, "convE" )
-        dcfield  = convfield( lat_data, params, 1 );
+        dcfield  = ss .* convfield( lat_data, params, 1 );
         if dcfield.D == 3
             if version(3) == 1
-                d2cfield = convfield( lat_data, params, 2 );
+                d2cfield = ss .* convfield( lat_data, params, 2 );
             else
                 d2cfield = Field();
             end
@@ -132,6 +139,15 @@ for m = 1:Msim
         tmp = LKC_HP_est( Mask(cfield), Mboot, normalizebHPE );
         L_bHP_ests(m,:)  = tmp.hatL;
     end
+    
+    if isfield( methods, "warpE" )
+        tmp = Mask(cfield);
+        s = sqrt( length(tmp.field(tmp.field~=0))/tmp.fibersize);
+        cfield = Field( true( [ s s ] ) );
+        cfield.field = reshape( tmp.field(tmp.field~=0), [s s tmp.fibersize] );
+        
+        L_warp_ests(m,:) = LKC_warp_est( Mask(cfield), normalizewarp);
+    end
 end
 simtime = toc;
 
@@ -154,6 +170,10 @@ end
 
 if isfield( methods, "bHPE" )
     results.bHPE = L_bHP_ests;
+end
+
+if isfield( methods, "warpE" )
+    results.warpE = L_warp_ests;
 end
 
 return
