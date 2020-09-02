@@ -82,7 +82,7 @@ LKC5 = LKC_voxmfd_est( cfield, dcfield );
 %% %% D = 2 
 %% % Parameters for the field
 D      = 2
-T      = 49;
+T      = 50;
 nsubj  = 100;
 FWHM   = sigma2FWHM(5);
 pad = ceil( 4*FWHM2sigma( FWHM ) );
@@ -102,9 +102,13 @@ lat_data = wnfield( mask, nsubj );
 % approximate continuous field
 params = ConvFieldParams( FWHM * ones([1 D]), 1 );
 params.lat_masked = false;
+params.enlarge = 0;
 cfield   = convfield( lat_data, params, 0 );
 dcfield  = convfield( lat_data, params, 1 );
 LKC1 = LKC_voxmfd_est( cfield, dcfield );
+
+params.resadd = 5
+LKC_wncfield_theory( mask, params )
 
 params = ConvFieldParams( FWHM * ones([1 D]), 3 );
 params.lat_masked = false;
@@ -215,8 +219,8 @@ LKC5_HPE = LKC_HP_est( cfield, Mboot, 1 );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ contL; theoryL; LKC1; LKC3; LKC5 ]'
-[ contL; theoryL; LKC1_HPE.hatL'; LKC3_HPE.hatL'; LKC5_HPE.hatL' ]'
+convE = [ contL; theoryL; LKC1; LKC3; LKC5 ]'
+HPE = [ contL; theoryL; LKC1_HPE.hatL'; LKC3_HPE.hatL'; LKC5_HPE.hatL' ]'
 
 %% Sphere domain example
 % Generate sphere mask with a padded zero collar 
@@ -303,7 +307,7 @@ LKC5_HPE = LKC_HP_est( cfield, Mboot, 1 );
 ConvE = [ theoryL; LKC1; LKC3; LKC5 ]'
 HPE = [ theoryL; LKC1_HPE.hatL'; LKC3_HPE.hatL'; LKC5_HPE.hatL' ]'
 
-imagesc(cfield(:,20,:,1))
+imagesc(cfield(:,20,:,1));
 
 %% Sphere domain example (highly non stationary data, L1 estimated using
 % both integrals)
