@@ -235,7 +235,7 @@ xvals  = cell( 1, D );
 
 for d = 1:D
     xvals{d} = ( ( 1 - enlarge*dx ):dx:( sM(d) + enlarge*dx ) )...
-        + Kernel.adjust(d);
+                + Kernel.adjust(d);
 end
 
 % Create a voxmanifold with the computed metric
@@ -243,7 +243,7 @@ tmp = g;
 g   = Field( mask );
 g.field = tmp;
 g.xvals = xvals;
-voxmfd = VoxManifold( g );
+voxmfd  = VoxManifold( g );
            
 LKC = LKC_est( voxmfd );
 
