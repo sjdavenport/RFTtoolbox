@@ -293,7 +293,7 @@ struct( 'theory',    sphereL, ...
 %               bHPE: [1.5806 11.6767 3.6200]
 %           std_bHPE: [0.1300 0.6733 1.0845]
 
-% current implementation:    
+% current implementation: resadd = 1
 %             theory: [2.4977 17.6753 7.0693]
 %              convE: [1.5166 12.8532 3.2137]
 %          std_convE: [0.1708 0.9250 0.3408]
@@ -303,3 +303,72 @@ struct( 'theory',    sphereL, ...
 %            std_HPE: [0.1560 0.8508 1.0461]
 %               bHPE: [1.5168 12.0942 3.1890]
 %           std_bHPE: [0.1832 1.0002 0.9589]
+
+% current implementation: resadd = 1
+%             theory: [2.4977 17.6753 7.0693]
+%              convE: [1.5166 12.8532 3.2137]
+%          std_convE: [0.1708 0.9250 0.3408]
+%         L1_locstat: NaN
+%     std_L1_locstat: NaN
+%                HPE: [1.4789 10.6890 2.3206]
+%            std_HPE: [0.1560 0.8508 1.0461]
+%               bHPE: [1.5168 12.0942 3.1890]
+%           std_bHPE: [0.1832 1.0002 0.9589]
+
+% resadd = 1
+% nsubj = 100
+% 
+% nsubj =
+% 
+%    100
+% 
+% 
+% ans = 
+% 
+%   struct with fields:
+% 
+%             theory: [2.4977 17.6753 7.0693]
+%              convE: [1.4682 11.8680 2.8374]
+%          std_convE: [0.0247 0.2284 0.0750]
+%         L1_locstat: NaN
+%     std_L1_locstat: NaN
+%                HPE: [1.4626 11.6357 2.3297]
+%            std_HPE: [0.0357 0.2178 0.4184]
+%               bHPE: [1.5370 11.5182 2.8463]
+%           std_bHPE: [0.1008 0.3329 0.9010]
+% 
+% resadd = 3
+% 
+% resadd =
+% 
+%      3
+% 
+% 
+% ans = 
+% 
+%   struct with fields:
+% 
+%             theory: [2.4977 17.6753 7.0693]
+%              convE: [0.7385 12.1046 1.4692]
+%          std_convE: [0.0148 0.1873 0.0310]
+%         L1_locstat: NaN
+%     std_L1_locstat: NaN
+%                HPE: [0.7853 11.8981 1.7900]
+%            std_HPE: [0.0376 0.1851 0.4965]
+%               bHPE: [0.7841 12.1355 2.2171]
+%           std_bHPE: [0.1135 0.3288 1.0025]
+% 
+% 
+% ans = 
+% 
+%   struct with fields:
+% 
+%             theory: [6.2442 12.9965 9.0169]
+%              convE: [5.5809 10.5171 6.4517]
+%          std_convE: [0.0757 0.1886 0.2483]
+%         L1_locstat: 5.5776
+%     std_L1_locstat: 0.4942
+%                HPE: [5.5980 10.2809 5.6518]
+%            std_HPE: [0.0597 0.2190 0.4811]
+%               bHPE: [5.6222 10.4451 6.3282]
+%           std_bHPE: [0.0893 0.4189 0.8415]
