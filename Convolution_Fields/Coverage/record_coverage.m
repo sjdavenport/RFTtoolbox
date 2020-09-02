@@ -1,4 +1,4 @@
- function coverage = record_coverage( spfn, sample_size, params, niters, npeaks, version )
+ function [maxnmin, LKCs, alphathresholds] = record_coverage( spfn, sample_size, params, niters, npeaks, version )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -93,29 +93,31 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-
-% Initialize the counters to check the coverage
-nabovethresh = 0;
-nabovethresh_lat = 0;
-nabovethresh_finelat = 0;
-
 % Initialize vectors to store the maxima
 latmaxima     = zeros( 1, niters );
 finelatmaxima = zeros( 1, niters );
 convmaxima    = zeros( 1, niters );
-thresholds    = zeros( 1, niters );
-maxabovethreshold = zeros( 1, niters );
 
-storeLKCs = zeros( D, niters );
+% Initialize vectors to store the minima
+latminima     = zeros( 1, niters );
+finelatminima = zeros( 1, niters );
+convminima    = zeros( 1, niters );
 
+% Initialize matrices to store the alpha thresholds and the LKCs
+alphathresholds = zeros( 1, niters );
+LKCs.L = zeros( D, niters );
+LKCs.L0 = zeros(1, niters);
+
+% Initialize matrices to store all of the high maxima and low minima
 allmaxima = zeros( npeaks, niters );
+allminima = zeros( npeaks, niters );
 
 % Initialize the coverage structure
-coverage = struct();
+maxnmin = struct();
 
 % Main
 for b = 1:niters
-    %Display b if mod(b,100) = 0
+    %Display b if mod(b,10) = 0
     modul(b,10)
     
     % Obtain the data
@@ -126,88 +128,44 @@ for b = 1:niters
     end
     
     lat_data = Mask(lat_data);
-    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
-    storeLKCs(:,b) = L';
+    [ ~, threshold, maximum, L, minimum ] = vRFT(lat_data, params, npeaks, 1, version);
+    LKCs.L(:,b) = L.L';
+    LKCs.L0(b) = L.L0;
     if any(isnan(L))
         warning('NAN LKC recorded')
     end
     
-    if maximum.conv > threshold
-        nabovethresh = nabovethresh + 1;
-    end
-    if  maximum.lat > threshold
-        nabovethresh_lat = nabovethresh_lat + 1;
-    end
-    if  maximum.finelat > threshold
-        nabovethresh_finelat = nabovethresh_finelat + 1;
-    end
+    % Record the maxima 
     latmaxima(b) = maximum.lat;
     finelatmaxima(b) = maximum.finelat;
     convmaxima(b) = maximum.conv;
-    allmaxima(1:length(maximum.allmaxima),b) = maximum.allmaxima';
-    thresholds(b) = threshold;
-    maxabovethreshold(b) = sum( maximum.allmaxima > threshold );
+    allmaxima(1:npeaks,b) = maximum.allmaxima';
+    alphathresholds(b) = threshold;
+    
     % Error checking loop 
     if maximum.finelat > maximum.conv + 10^(-2)
         a = 1
     end
+    
+    % Record the minima
+    latminima(b) = minimum.lat;
+    finelatminima(b) = minimum.finelat;
+    convminima(b) = minimum.conv;
+    allminima(1:npeaks,b) = minimum.allmminima';
 end
 
-coverage.conv = nabovethresh/niters;
-coverage.lat =  nabovethresh_lat/niters;
-coverage.finelat =  nabovethresh_finelat/niters;
+maxnmin.nsubj = sample_size;
 
-coverage.finelatmaxima = finelatmaxima;
-coverage.latmaxima  = latmaxima;
-coverage.convmaxima = convmaxima;
-coverage.allmaxima  = allmaxima;
-coverage.thresholds = thresholds;
+% Assign the maxima
+maxnmin.finelatmaxima = finelatmaxima;
+maxnmin.latmaxima  = latmaxima;
+maxnmin.convmaxima = convmaxima;
+maxnmin.allmaxima  = allmaxima;
 
-coverage.maxabovethreshold = maxabovethreshold;
-
-coverage.storeLKCs = storeLKCs;
+% Assign the minima
+maxnmin.finelatminima = finelatminima;
+maxnmin.latminima  = latminima;
+maxnmin.convminima = convminima;
+maxnmin.allminima  = allminima;
 
 end
-
-% % 
-% nabovethresh_spm = 0;
-% nabovethresh_lat_spm = 0;
-% nabovethresh_finelat_spm = 0;
-% % The spm loop needs redoing!
-% if do_spm
-%     orig_lattice_locs{D+1} = ':';
-%     smooth_data_lat = cfields.field(orig_lattice_locs{:});
-%     
-%     % Calculate the resels under the assumption of stationarity
-%     if D == 3
-%         lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
-%         spm_resel_vec = spm_resels_vol(double(mask),lat_FWHM_est);
-%     elseif (D == 2 && isequal( mask, ones(Dim))) || (D == 1 && isequal( mask, ones([Dim, 1])))
-%         warning('This only works for a box!')
-%         lat_FWHM_est = est_smooth(smooth_data_lat, mask); %At the moment this is a biased estimate of course, could use a better convolution estimate of the FWHM and see how that did might be okay for a convolution field?? Would be intersting to see how well it did!
-%         spm_resel_vec = spm_resels(lat_FWHM_est,Dim, 'B');
-%     end
-%     
-%     threshold_spm = spm_uc_RF_mod(0.05,[1,sample_size-1],'T',spm_resel_vec,1);
-%     
-%     % Since the threshold
-%     if isempty(peak_est_locs) && (peakvals(1) > (threshold_spm - gap))
-%         [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, Kernel, peak_est_locs(:,1), 'T', mask);
-%     else
-%         max_tfield_at_lms = max_tfield_finelat;
-%     end
-%     if max_tfield_at_lms > threshold_spm
-%         nabovethresh_spm = nabovethresh_spm + 1;
-%     end
-%     if  max_tfield_lat > threshold_spm
-%         nabovethresh_lat_spm = nabovethresh_lat_spm + 1;
-%     end
-%     if  max_tfield_finelat > threshold_spm
-%         nabovethresh_finelat_spm = nabovethresh_finelat_spm + 1;
-%     end
-% end
-% if do_spm
-%     coverage.convspm = nabovethresh_spm/niters;
-%     coverage.latspm =  nabovethresh_lat_spm/niters;
-%     coverage.finelatspm =  nabovethresh_finelat_spm/niters;
-% end
