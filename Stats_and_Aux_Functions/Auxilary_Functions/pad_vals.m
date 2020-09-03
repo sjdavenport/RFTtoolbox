@@ -110,4 +110,8 @@ end
 % Set the inner locations to be the data
 pad_data( locs{:} ) = data;
 
+if islogical( val )
+    pad_data = logical( pad_data );
+end
+
 return
