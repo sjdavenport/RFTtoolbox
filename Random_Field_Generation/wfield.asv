@@ -1,20 +1,21 @@
-function obj = wlfield( varmask, fibersize, scale, xvals )
-% wlfield( varmask, fibersize, df, xvals ) constructs a Fields object of
-% white Laplacian noise
+function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
+% WFIELD( varmask, fibersize, xvals ) constructs a Fields object having
+% white noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
 %  varmask     Possible values are
 %              - a 1 x D vector containing the size of the mask. The field
-%                'mask' is then set to true( varmask ). 
+%                'mask' is then set to true( varmask ).
 %              - a T_1 x ... x T_D logical array containing the mask.
+%  fibersize   the number of 
+%  field_type  a string giving the type of 
 %
 % Optional
 %  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
 %  xvals       a 1 x D cell array containing the xvals.
 %              Default { 1:masksize(1), ..., 1:masksize(D) }.
-%
 %--------------------------------------------------------------------------
 % OUTPUT
 % obj  an object of class Fields representing white noise, which is not
@@ -42,7 +43,7 @@ function obj = wlfield( varmask, fibersize, scale, xvals )
 % imagesc( lat_data )
 % title( 'masked field' )
 %--------------------------------------------------------------------------
-% Author: Fabian Telschow, Samuel Davenport
+% Author: Fabian Telschow
 %--------------------------------------------------------------------------
 
 %% Check mandatory input
@@ -69,6 +70,10 @@ if ~exist( 'fibersize', 'var')
     fibersize = 1;
 end
 
+if ~exist( 'field_type', 'var')
+    field_type = 'normal';
+end
+
 % Check the optional inputs
 if  ~isnumeric( fibersize )
     error( 'The fibersize must be a 1xK or Kx1 numerical vector.' )
@@ -84,12 +89,16 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-if islogical( varmask)
-    obj = Field( varmask );
-    obj.field = rlap( scale, [ obj.masksize(1:obj.D) fibersize ] );    
+% @Fabian this loop is unecessary right?
+obj = Field( varmask );
+if strcmp(field_type, 'normal') || strcmp(field_type, 'N')
+    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );
+elseif strcmp(field_type, 't') || strcmp(field_type, 'T')
+    obj.field = trnd( field_params, [ obj.masksize(1:obj.D) fibersize ] );    
+elseif strcmp(field_type, 'l') || strcmp(field_type, 'L')
+    obj.field = rlap( field_params, [ obj.masksize(1:obj.D) fibersize ] );
 else
-    obj = Field( varmask );
-    obj.field = rlap( scale, [ obj.masksize(1:obj.D) fibersize ] );
+    error('This field type has not been implemented')
 end
 
 if exist( 'xvals', 'var' )

@@ -1,4 +1,4 @@
- function [maxnmin, LKCs, alphathresholds] = record_coverage( spfn, sample_size, params, niters, npeaks, version )
+ function [maxnmin, LKCs, alphathresholds] = record_coverage_new( spfn, sample_size, params, subsets, npeaks, version )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -115,32 +115,28 @@ allminima = zeros( npeaks, niters );
 % Initialize the coverage structure
 maxnmin = struct();
 
-% Main
-for b = 1:niters
-    %Display b if mod(b,10) = 0
-    modul(b,10)
+tic
+for I = 1:niters
+    %Display I if mod(I,10) = 0
+    modul(I,10)
     
     % Obtain the data
-    if use_subsets
-        lat_data = spfn(subsets{b});
-    else
-        lat_data = spfn(sample_size);
-    end
-    
+    lat_data = spfn(subsets{I});
+
     lat_data = Mask(lat_data);
     [ ~, threshold, maximum, L, minimum ] = vRFT(lat_data, params, npeaks, 1, version);
-    LKCs.L(:,b) = L.L';
-    LKCs.L0(b) = L.L0;
-    if any(isnan(L))
+    LKCs.L(:,I) = L.L';
+    LKCs.L0(I) = L.L0;
+    if any(isnan(L.L))
         warning('NAN LKC recorded')
     end
     
     % Record the maxima 
-    latmaxima(b) = maximum.lat;
-    finelatmaxima(b) = maximum.finelat;
-    convmaxima(b) = maximum.conv;
-    allmaxima(1:npeaks,b) = maximum.allmaxima';
-    alphathresholds(b) = threshold;
+    maxnmin.latmaxima(I) = maximum.lat;
+    maxnmin.finelatmaxima(I) = maximum.finelat;
+    maxnmin.convmaxima(I) = maximum.conv;
+    maxnmin.allmaxima(1:npeaks,I) = maximum.allmaxima';
+    maxnmin.alphathresholds(I) = threshold;
     
     % Error checking loop 
     if maximum.finelat > maximum.conv + 10^(-2)
@@ -148,24 +144,16 @@ for b = 1:niters
     end
     
     % Record the minima
-    latminima(b) = minimum.lat;
-    finelatminima(b) = minimum.finelat;
-    convminima(b) = minimum.conv;
-    allminima(1:npeaks,b) = minimum.allmminima';
+    maxnmin.latminima(I) = minimum.lat;
+    maxnmin.finelatminima(I) = minimum.finelat;
+    maxnmin.convminima(I) = minimum.conv;
+    maxnmin.allminima(1:npeaks,I) = minimum.allmminima';
+    
+    save(savefileloc, 'maxnmin', 'LKCs', 'subsets')
 end
 
-maxnmin.nsubj = sample_size;
+timing = toc;
+save(savefileloc, 'maxnmin', 'LKCs', 'subsets', 'timing')
 
-% Assign the maxima
-maxnmin.finelatmaxima = finelatmaxima;
-maxnmin.latmaxima  = latmaxima;
-maxnmin.convmaxima = convmaxima;
-maxnmin.allmaxima  = allmaxima;
-
-% Assign the minima
-maxnmin.finelatminima = finelatminima;
-maxnmin.latminima  = latminima;
-maxnmin.convminima = convminima;
-maxnmin.allminima  = allminima;
 
 end

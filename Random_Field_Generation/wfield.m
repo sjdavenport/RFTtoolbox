@@ -1,5 +1,5 @@
-function obj = wfield( varmask, fibersize, fieldtype, fieldparams, xvals )
-% wnfield( varmask, fibersize, xvals ) constructs a Fields object having
+function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
+% WFIELD( varmask, fibersize, xvals ) constructs a Fields object having
 % white noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -8,39 +8,48 @@ function obj = wfield( varmask, fibersize, fieldtype, fieldparams, xvals )
 %              - a 1 x D vector containing the size of the mask. The field
 %                'mask' is then set to true( varmask ).
 %              - a T_1 x ... x T_D logical array containing the mask.
-%  fibersize   the number of 
-%
 % Optional
 %  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
+%  field_type  a string giving the type of field. 'N': normal, 'T': tfield
+%              'L': Laplacian field. Default is 'N' i.e. a white Gaussian
+%              field.
+%  field_params   if field_type is not 'N', then if it is 'T' field_params
+%                 is the degrees of freedom of the t-statistic, if it is 'L' 
+%                 then field_params is the scale of the Laplacian
 %  xvals       a 1 x D cell array containing the xvals.
 %              Default { 1:masksize(1), ..., 1:masksize(D) }.
 %--------------------------------------------------------------------------
 % OUTPUT
 % obj  an object of class Fields representing white noise, which is not
 %      masked. 
-%
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% % Simple example with whole domain mask
 % %% scalar field
-% lat_data = wnfield( [4 2 3] )
+% lat_data = wfield( [4 2 3] )
 %
 % %% many subjects field
-% lat_data = wnfield( [4 2 3], 100 )
+% lat_data = wfield( [4 2 3], 100 )
 %
 % %% Simple example with mask
 % mask = true( [ 4, 12 ] )
 % mask = logical( pad_vals( mask ) )
-% lat_data = wnfield( mask, 1 )
+% lat_data = wfield( mask, 1 )
 % figure, clf,
 % imagesc( lat_data ), colorbar
 % title( 'not masked field' )
 % % Generate masked data
-% lat_data = Mask( wnfield( mask, 1 ) )
+% lat_data = Mask( wfield( mask, 1 ) )
 % figure, clf,
 % imagesc( lat_data )
 % title( 'masked field' )
+%
+% % Degree 3 t-field
+% wfield( [5,5], 10, 'T', 3)
+%
+% % Scale 1 Laplacian field
+% wfield( [5,5], 10, 'L', 1)
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -69,6 +78,10 @@ if ~exist( 'fibersize', 'var')
     fibersize = 1;
 end
 
+if ~exist( 'field_type', 'var')
+    field_type = 'normal';
+end
+
 % Check the optional inputs
 if  ~isnumeric( fibersize )
     error( 'The fibersize must be a 1xK or Kx1 numerical vector.' )
@@ -84,12 +97,16 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-if islogical( varmask)
-    obj = Field( varmask );
-    obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );    
-else
-    obj = Field( varmask );
+% @Fabian this loop is unecessary right?
+obj = Field( varmask );
+if strcmp(field_type, 'normal') || strcmp(field_type, 'N')
     obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );
+elseif strcmp(field_type, 't') || strcmp(field_type, 'T')
+    obj.field = trnd( field_params, [ obj.masksize(1:obj.D) fibersize ] );    
+elseif strcmp(field_type, 'l') || strcmp(field_type, 'L')
+    obj.field = rlap( field_params, [ obj.masksize(1:obj.D) fibersize ] );
+else
+    error('This field type has not been implemented')
 end
 
 if exist( 'xvals', 'var' )

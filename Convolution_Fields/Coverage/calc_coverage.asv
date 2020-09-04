@@ -1,13 +1,11 @@
-function [voxcoverage, clustercoverage] = calc_coverage( maxnmin, LKCs, do2tail, alpha)
+function [voxcoverage, clustercoverage] = calc_coverage( maxnmin, LKCs, do2sample, alpha)
 % CALC_COVERAGE( maxnmin, LKC_vec, alpha ) calculates the coverage that
 % results from doing alpha level coverage. 
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  maxnmin   a structure containing the maxima and minima information. This 
-%            is obtained by running record_coverage
 % Optional
-%  do2tail   0/1 whether to do a one sample or a two sample test. Default
+%  do2sample   0/1 whether to do a one sample or a two sample test. Default
 %              is 1, i.e. to do a 2 sample test
 %  alpha     the alpha level at which to threshold. Default is 0.05.
 %--------------------------------------------------------------------------
@@ -25,9 +23,9 @@ function [voxcoverage, clustercoverage] = calc_coverage( maxnmin, LKCs, do2tail,
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'do2tail', 'var' )
+if ~exist( 'do2sample', 'var' )
    % default option of opt1
-   do2tail = 1;
+   do2sample = 1;
 end
 
 if ~exist( 'alpha', 'var' )
@@ -37,10 +35,10 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-niters = length(maxnmin.alphathresholds);
+niters = length(LKCs.L0);
 thresholds = zeros(1, niters);
 
-if do2tail
+if do2sample
     alpha = alpha/2;
 end
 
@@ -54,13 +52,11 @@ peak_types = {'finelat','lat','conv'};
 
 % Obtain the voxelwise coverage
 for J = 1:3
-    setofmaxima = maxnmin.([peak_types{J},'maxima']);
-    voxcoverage.(peak_types{J}) = sum(setofmaxima(1:niters) > thresholds);
+    voxcoverage.(peak_types{J}) = sum(maxnmin.([peak_types{J},'maxima']) > thresholds);
 end
-if do2tail
+if do2sample
     for J = 1:3
-        setofminima = maxnmin.([peak_types{J},'minima']);
-        voxcoverage.(peak_types{J}) = voxcoverage.(peak_types{J}) + sum(setofminima(1:niters) < -thresholds);
+        voxcoverage.(peak_types{J}) = voxcoverage.(peak_types{J}) + sum(maxnmin.([peak_types{J},'minima']) < -thresholds);
     end
 end
 
@@ -70,14 +66,14 @@ for J = 1:3
 end
 
 % Obtain the clusterwise coverage
-largerthanthresh = maxnmin.allmaxima(:,1:niters) > thresholds;
+largerthanthresh = maxnmin.allmaxima > thresholds;
 clustercoverage = sum(largerthanthresh(:));
-if do2tail
-    lowerthanthresh = maxnmin.allminima(:,1:niters) < -thresholds;
+if do2sample
+    lowerthanthresh = maxnmin.allminima > -thresholds;
     clustercoverage = clustercoverage + sum(lowerthanthresh(:));
 end
 
-% Scale by the number of iterations
+%Sc
 clustercoverage = clustercoverage/niters;
 
 end
