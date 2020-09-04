@@ -21,7 +21,10 @@ lat_data = 10*wnfield(nvox, nsubj) + signal;
 [im, threshold, ~, xvals] = vRFT_orig( lat_data, FWHM );
 
 % Permutation thresholidng
-[im_perm, threshold_perm] = perm_thresh(lat_data.field, 'T', FWHM, NaN, 0);
+% [im_perm, threshold_perm] = perm_thresh(lat_data, 'T', FWHM);
+
+[im_perm, threshold_perm] = perm_thresh(lat_data.field, 'T', FWHM, NaN);
+
 % threshold_perm = perm_thresh(lat_data.field, 'T', FWHM, NaN, 1);
 % im_perm = mvtstat( lat_data.field ) > threshold_perm;
 

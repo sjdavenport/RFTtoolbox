@@ -21,8 +21,12 @@ function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, ma
 %                   lattice fields for each permutation
 %--------------------------------------------------------------------------
 % EXAMPLES
-% data = normrnd(0,1, 100, 5);
-% threshold = perm_thresh(data)
+% data = normrnd(0,1,20,100);
+% [~, threshold] = perm_thresh(data, 'T');
+%
+% lat_data = wfield([5,5], 10);
+% tic; [~,threshold] = perm_thresh_new(lat_data, 'T'); toc
+% tic; [~,threshold] = perm_thresh(lat_data.field, 'T');toc
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -102,6 +106,7 @@ random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
 % Main loop
 for iter = start:niters
 %     modul(iter,1000);
+    modul(iter, 100);
     random_berns_for_iter = random_berns(:, iter);
     random_sample = find(random_berns_for_iter < 0);
     data2 = data;
