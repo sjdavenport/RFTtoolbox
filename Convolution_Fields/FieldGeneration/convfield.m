@@ -28,6 +28,14 @@ function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 %% Check mandatory input
 %--------------------------------------------------------------------------
 
+% Allow for non field input
+if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
+    temp_lat_data = lat_data;
+    lat_data = Field(true(size(lat_data)));
+    lat_data.field = temp_lat_data;
+    clear temp_lat_data;
+end
+
 % Check the lat_data input
 if ~iscompletefield( lat_data )
     error( "lat_data must be a complete object of class Field." )

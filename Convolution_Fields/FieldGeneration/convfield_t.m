@@ -30,18 +30,31 @@ function [tcfield, cfields] = convfield_t( lat_data, params )
 % ylabel('t field')
 % 
 % %% 2D convolution field
-
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
+% Allow for non field input
+if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
+    temp_lat_data = lat_data;
+    s_lat_data = size(lat_data);
+    s_lat_data = s_lat_data(1:end-1);
+    if length(s_lat_data) == 1
+        s_lat_data = [s_lat_data, 1];
+    end
+    lat_data = Field(true(s_lat_data));
+    lat_data.field = temp_lat_data;
+    clear temp_lat_data;
+end
+
 % Get the dimensions of the data
 Dim = lat_data.masksize;
 D = lat_data.D;
 
-%%  main function
+
+%%  Main function
 %--------------------------------------------------------------------------
 % Obtain the convolution fields for each subject
 cfields  = convfield( lat_data, params, 0 );
