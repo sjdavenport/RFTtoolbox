@@ -183,13 +183,16 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     % Calculate the field on the lattice
     resadd = 0; % Initialize with no points between the original points
     if strcmp(field_type, 'Z')
-        lat_eval = convfield( lat_data.*mask, FWHM, resadd, D );
+        lat_data_field = Field(mask);
+        lat_data_field.field = lat_data;
+        params = ConvFieldParams(repmat(FWHM, 1, D), resadd);
+        lat_eval = convfield( lat_data_field, params );
     elseif strcmp(field_type, 'T')
         lat_eval = convfield_t( lat_data.*mask, FWHM, resadd );
     end
     
     % Find the top local maxima of the field on the lattice
-    max_indices = lmindices(lat_eval, numberofmaxima2find, mask); 
+    max_indices = lmindices(lat_eval.field, numberofmaxima2find, mask); 
     
     % In D = 1 you need to transpose (CHECK THIS) Note the transpose here! 
     % It's necessary for the input to other functions.
