@@ -66,11 +66,7 @@ dx = 1 / ( resadd + 1 );
 % Get mask on higher resolution and the weights of each voxel for the
 % volume computation.
 if resadd ~= 0
-    [ mask, weights ] = mask_highres( mask, resadd, enlarge );
-    % Reduce weights matrix only to active voxels for speed up
-    weights = weights( mask );
-else
-    weights = ones( [ sum( mask(:) ), 1 ] );
+    [ mask, ~ ] = mask_highres( mask, resadd, enlarge );
 end
 
 % Get the size of the resolution increased domain
