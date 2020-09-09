@@ -14,6 +14,7 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 %            - bHPE filled with a 1 x 2 cell containing Mboot, normalize 
 %              from LKC_HP_est()
 %            - warpE filled with the normalize variable
+%            - kiebelE filled with the k variable
 %   params   an object of type ConvFieldParams
 %
 % Optional
@@ -39,7 +40,7 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 D = length( params.kernel.adjust );
 
 if islogical( data_gen )
-    data_gen = @(n) wnfield( data_gen, n );
+    data_gen = @(n) wfield( data_gen, n );
 end
 
 if isa( data_gen, 'function_handle' )
@@ -87,6 +88,16 @@ end
 if isfield( methods, "warpE" )
     L_warp_ests    = NaN * ones( [ Msim D ] );
     normalizewarp = methods.warpE;
+end
+
+if isfield( methods, "kiebelE" )
+    L_kiebel_ests    = NaN * ones( [ Msim D ] );
+    k = methods.kiebelE;
+end
+
+if isfield( methods, "formanE" )
+    L_forman_ests    = NaN * ones( [ Msim D ] );
+    k = methods.formanE;
 end
 
 tic
@@ -148,6 +159,14 @@ for m = 1:Msim
         
         L_warp_ests(m,:) = LKC_warp_est( Mask(cfield), normalizewarp);
     end
+    
+    if isfield( methods, "kiebelE" )
+        L_kiebel_ests(m,:) = LKC_kiebel_est( field, k );
+    end
+    
+    if isfield( methods, "formanE" )
+        L_forman_ests(m,:) = LKC_forman_est( field, k );
+    end
 end
 simtime = toc;
 
@@ -174,6 +193,14 @@ end
 
 if isfield( methods, "warpE" )
     results.warpE = L_warp_ests;
+end
+
+if isfield( methods, "kiebelE" )
+    results.warpE = L_kiebel_ests;
+end
+
+if isfield( methods, "formanE" )
+    results.warpE = L_forman_ests;
 end
 
 return
