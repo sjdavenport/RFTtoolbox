@@ -531,7 +531,13 @@ classdef Field
            out = Field( obj.mask );
            out.xvals = obj.xvals;
            out.field = mean( obj.field, obj.D + D );
-       end    
+       end
+       % Redefine sum()
+       function out = sum( obj, var )
+           out = Field( obj.mask );
+           out.xvals = obj.xvals;
+           out.field = mean( obj.field, var );
+       end 
        
        %% Algebra Functions for class Field
        %-------------------------------------------------------------------     
