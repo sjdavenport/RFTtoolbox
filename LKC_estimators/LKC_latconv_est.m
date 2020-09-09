@@ -53,7 +53,7 @@ cfields{3} = Field();
 
 % Compute the LKCs
 if lat_data.D == 3
-    if LKCversion(3) == 1
+    if version(3) == 1
         cfields{3} = convfield( lat_data, params, 2 )./ ss;
         [ L, L0, nonstatInt ]  = LKC_voxmfd_est( cfields{1}, cfields{2},...
                                                  cfields{3}, version );
