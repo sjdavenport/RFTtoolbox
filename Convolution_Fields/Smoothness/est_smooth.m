@@ -1,4 +1,4 @@
-function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth( data, mask )
+function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth( data, mask, df )
 % EST_SMOOTH estimates the smoothness of a process. NEED TO DO THE
 % CROSS TERMS!! Would be good to study exactly how biased this is.
 %--------------------------------------------------------------------------
@@ -76,17 +76,23 @@ mask = zero2nan(mask);
 
 % Index to remove cases for different dimensions
 index = repmat( {':'}, 1, nDim );
-%% Standardize and Mask
-mean_over_subjects = mean(data, length(size_of_data) );
-nVox = sum(~isnan(mask(:)));
+nVox  = sum( ~isnan( mask(:) ) );
 
-%Subtract the mean and multiply by the mask.
-for I = 1:nsubj
-    data(index{:}, I) = (data(index{:}, I) - mean_over_subjects).*mask;
+%% Standardize and Mask
+if ~exist('df', 'var')
+    mean_over_subjects = mean( data, length( size_of_data ) );
+
+    % Subtract the mean and multiply by the mask.
+    for I = 1:nsubj
+        data(index{:}, I) = (data(index{:}, I) - mean_over_subjects).*mask;
+    end
+    df = 1;
+else
+    % Mask the data
+    data = data .* mask;
 end
 
 var_est = sum(data(~isnan(data)).^2)/(nVox*(nsubj - 1));
-
 data = data/sqrt(var_est);
 
 %% Estimate Lambda Matrix and FWHMs
@@ -95,7 +101,7 @@ fwhm_est_kiebel = zeros(1,nDim);
 
 Xderivmate = diff(data,1,1);
 tmp = ~isnan(Xderivmate(index{:}, 1));
-denom = sum(tmp(:))*(nsubj-1); %The first half of this
+denom = sum(tmp(:))*(nsubj-df); %The first half of this
 % is the number of voxels in a given subject where Xderivmate is not nan.
 %Since we have nsubj subjects we have to multiply this by nsubj - 1 to get
 %the total number of voxels. Note its nsubj - 1 rather than nsubj since by
@@ -109,14 +115,14 @@ fwhm_est_kiebel(1) = sqrt(4*log(2)/Lambda_est(1,1));
 if nDim > 1
     Yderivmate = diff(data,1,2);
     tmp = ~isnan(Yderivmate(index{:}, 1));
-    denom = sum(tmp(:))*(nsubj-1); %The number of non-nans
+    denom = sum(tmp(:))*(nsubj-df); %The number of non-nans
     Lambda_est(2,2) = sum(Yderivmate(~isnan(Yderivmate)).^2)/denom;
     fwhm_est_kiebel(2) = sqrt(4*log(2)/Lambda_est(2,2));
 end
 if nDim > 2
     Zderivmate = diff(data,1,3);
     tmp = ~isnan(Zderivmate(index{:}, 1));
-    denom = sum(tmp(:))*(nsubj-1);  
+    denom = sum(tmp(:))*(nsubj-df);  
     Lambda_est(3,3) = sum(Zderivmate(~isnan(Zderivmate)).^2)/denom;
     fwhm_est_kiebel(3) = sqrt(4*log(2)/Lambda_est(3,3));
 end
@@ -127,7 +133,3 @@ sigma_est_forman = sqrt(-1./4./log(1-diag(Lambda_est)/2));
 fwhm_est_forman = sigma2FWHM(sigma_est_forman);
 
 end
-
-%     nZvox = sum(~isnan(Zderivmate(:)));
-%     Lambda_est(3,3) = sum(Zderivmate(:).^2)/((nVox-1)*(nsubj-1));
-%     Lambda_est(3,3) = sum(Zderivmate(~isnan(Zderivmate)).^2)/((nVox-1)*(nsubj-1));
