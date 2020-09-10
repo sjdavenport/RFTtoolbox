@@ -260,7 +260,7 @@ orientation = struct();
 % Compute the full boundary
 bndry.full = ( dilate_mask( ~larger_image, 1 ) ) & larger_image;
 % bndry.full = logical( imdilate( ~larger_image, ones( ones(1, D) * 3 ) ) ) & ... larger_image;
-                    
+
 % Compute parts of the boundary if neccessary
 if D == 2 || D == 3
     switch D
@@ -303,210 +303,150 @@ if D == 2 || D == 3
                 error( "Version must include 'full', 'x' or 'y'." );
             end
             
-        case 3            
-            if any( strcmp( type, "xy" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "z" ) )
-                % Dilate kernel
-                h = zeros( ones(1, D) * 3 );
-                h( :, :, 2 ) = 1;
-                
-                % First dilation removes the edges, which do not belong to
-                % a face in the specified plane. Second dilation recovers
-                % the edges in the plane which belonged to a face and have
-                % been removed
-                bndry.xy = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
-                
-                % Get logical field to obtain the orientation array
-                maskp = logical( pad_vals( mask ) );
-                tmp = zeros( s_mask + 2 );
-                tmp( :, :, 1:end-1 ) = bndry.xy( :, :, 1:end-1) &...
-                                                       maskp( :, :, 2:end);
-                tmp = tmp( locs{:} );
-                
-                % Reduce boundary to original size
-                bndry.xy = bndry.xy( locs{:} );
-                
-                % Orientation 1 if euclidean normal points outwards, -1 else
-                orientation.xy = zeros( s_mask );
-                orientation.xy( tmp == 0 ) = 1;
-                orientation.xy( tmp == 1 ) = -1;
-                orientation.xy( ~bndry.xy ) = 0;
-                
-                % Preallocate the weights array
-                weights.xy = zeros( s_mask );
-                % Find weights for integration
-                for z = 1:s_mask(3)
-                    weights.xy( :, :, z ) = getweights( bndry.xy( :, :, z ) );
-                end
-                weights.xy = weights.xy;
+        case 3
+            %%%%% Get the faces of the boundary and the weights for the
+            %%%%% points on the faces, i.e. to how many faces they
+            %%%%% belong
+            bndry.xy   = false( size(larger_image) );
+            weights.xy = zeros( size(larger_image) );
+            for z = 1:(s_mask(3)+2)
+                weights.xy(:,:,z) = getweights( bndry.full(:,:,z) );
+                bndry.xy(:,:,z)   = weights.xy(:,:,z) >0;                    
             end
-                
-            if any( strcmp( type, "xz" ) ) || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "y" ) ) || any( strcmp( type, "z" ) )
-                % Dilate kernel
-                h = zeros( ones(1, D) * 3 );
-                h( :, 2, : ) = 1;
-                
-                % First dilation removes the edges, which do not belong to
-                % a face in the specified plane. Second dilation recovers
-                % the edges in the plane which belonged to a face and have
-                % been removed
-                bndry.xz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
-                
-                % Get logical field to obtain the orientation array
-                maskp = logical( pad_vals( mask ) );
-                tmp = zeros( s_mask + 2 );
-                tmp( :, 1:end-1, : ) = bndry.xz( :, 1:end-1, :) &...
-                                                       maskp( :, 2:end, : );
-                tmp = tmp( locs{:} );
-                
-                % Reduce boundary to original size
-                bndry.xz = bndry.xz( locs{:} );
-                
-                % Orientation 1 if euclidean normal points outwards, -1 else
-                orientation.xz = zeros( s_mask );
-                orientation.xz( tmp == 0  ) = 1;
-                orientation.xz( tmp == 1  ) = -1;
-                orientation.xz( ~bndry.xz ) = 0;
-                
-                % Preallocate the weights array
-                weights.xz = zeros( s_mask );
-                % Find weights for integration
-                for y = 1:s_mask(2)
-                    weights.xz( :, y, : ) = getweights( squeeze(...
-                                                    bndry.xz( :, y, : ) ) );
-                end
-                weights.xz = weights.xz;             
-            end
-                
-            if any( strcmp( type, "yz" ) ) || any( strcmp( type, "y" ) )...
-                    || any( strcmp( type, "z" ) ) || any( strcmp( type, "x" ) )
-                % Dilate kernel
-                h = zeros( ones(1, D) * 3 );
-                h( 2, :, : ) = 1;
-                
-                % First dilation removes the edges, which do not belong to
-                % a face in the specified plane. Second dilation recovers
-                % the edges in the plane which belonged to a face and have
-                % been removed
-                bndry.yz = imdilate( ~logical( imdilate( ~bndry.full, h ) ), h );
 
-                % Get logical field to obtain the orientation array
-                maskp = logical( pad_vals( mask ) );
-                tmp = zeros( s_mask + 2 );
-                tmp( 1:end-1, :, : ) = bndry.yz( 1:end-1, :, : ) &...
-                                                       maskp( 2:end, :, : );
-                tmp = tmp( locs{:} );
-                
-                % Reduce boundary to original size
-                bndry.yz = bndry.yz( locs{:} );
-                
-                % Orientation 1 if euclidean normal points outwards, -1 else
-                orientation.yz = zeros( s_mask );
-                orientation.yz( tmp == 0  ) = 1;
-                orientation.yz( tmp == 1  ) = -1;
-                orientation.yz( ~bndry.yz ) = 0;
-                
-                % Preallocate the weights array
-                weights.yz = zeros( s_mask );
-                % Find weights for integration
-                for x = 1:s_mask(1)
-                    weights.yz( x, :, : ) = getweights( squeeze(...
-                                                    bndry.yz( x, :, : ) ) );
-                end
-                weights.yz = weights.yz;
+            bndry.xz   = false( size(larger_image) );
+            weights.xz = zeros( size(larger_image) );
+            for y = 1:(s_mask(2)+2)
+                weights.xz(:,y,:) = getweights( squeeze( bndry.full(:,y,:) ) );
+                bndry.xz(:,y,:)   = weights.xz(:,y,:) >0;                    
             end
+
+            bndry.yz   = false( size(larger_image) );
+            weights.yz = zeros( size(larger_image) );
+            for x = 1:(s_mask(1)+2)
+                weights.yz(x,:,:) = getweights( squeeze( bndry.full(x,:,:) ) );
+                bndry.yz(x,:,:)   = weights.yz(x,:,:) >0;                    
+            end
+
+            %%%%% Get the edges of the boundary and its weights
+            bndry.y = bndry.xy & bndry.yz;
+            bndry.x = bndry.xy & bndry.xz;
+            bndry.z = bndry.xz & bndry.yz;
+
+            weights.x = bndry.x + bndry.y + bndry.z;
+            weights.x( ~bndry.x ) = 0;
+            weights.x( weights.x == 3 ) = 1/2;
+
+            weights.y = bndry.x + bndry.y + bndry.z;
+            weights.y( ~bndry.y ) = 0;
+            weights.y( weights.y == 3 ) = 1/2;
+
+            weights.z = bndry.x + bndry.y + bndry.z;
+            weights.z( ~bndry.z ) = 0;
+            weights.z( weights.z == 3 ) = 1/2;
+
+            %%%%% Get the orientations of the faces
+            %%% yz face
+            % Get logical field to obtain the orientation array
+            maskp = logical( pad_vals( mask ) );
+            tmp = zeros( s_mask + 2 );
+            tmp( 1:end-1, :, : ) = bndry.yz( 1:end-1, :, : ) &...
+                                                   maskp( 2:end, :, : );
+            tmp = tmp( locs{:} );
+
+            % Reduce boundary to original size
+            bndry.yz = bndry.yz( locs{:} );
+            weights.yz = weights.yz( locs{:} );
+
+            % Orientation 1 if euclidean normal points outwards, -1 else
+            orientation.yz = zeros( s_mask );
+            orientation.yz( tmp == 0  ) = 1;
+            orientation.yz( tmp == 1  ) = -1;
+            orientation.yz( ~bndry.yz ) = 0;
+
+            %%% xz face
+            % Get logical field to obtain the orientation array
+            maskp = logical( pad_vals( mask ) );
+            tmp = zeros( s_mask + 2 );
+            tmp( :, 1:end-1, : ) = bndry.xz( :, 1:end-1, :) &...
+                                                   maskp( :, 2:end, : );
+            tmp = tmp( locs{:} );
+
+            % Reduce boundary to original size
+            bndry.xz = bndry.xz( locs{:} );
+            weights.xz = weights.xz( locs{:} );
+
+            % Orientation 1 if euclidean normal points outwards, -1 else
+            orientation.xz = zeros( s_mask );
+            orientation.xz( tmp == 0  ) = 1;
+            orientation.xz( tmp == 1  ) = -1;
+            orientation.xz( ~bndry.xz ) = 0;
+
+            %%% xy face
+            % Get logical field to obtain the orientation array
+            maskp = logical( pad_vals( mask ) );
+            tmp = zeros( s_mask + 2 );
+            tmp( :, :, 1:end-1 ) = bndry.xy( :, :, 1:end-1) &...
+                                                   maskp( :, :, 2:end);
+            tmp = tmp( locs{:} );
+
+            % Reduce boundary to original size
+            bndry.xy = bndry.xy( locs{:} );
+            weights.xy = weights.xy( locs{:} );
+
+            % Orientation 1 if euclidean normal points outwards, -1 else
+            orientation.xy = zeros( s_mask );
+            orientation.xy( tmp == 0 )  = 1;
+            orientation.xy( tmp == 1 )  = -1;
+            orientation.xy( ~bndry.xy ) = 0;
+
+            %%%%% Get euclidean angles at the edges
+            % Note that the opening angle is either 3/4 or 1/4
+            %%% Get angles for x-edges
+            bndry.x   = bndry.x( locs{:} );
+            weights.x = weights.x( locs{:} );  
+
+            h = zeros([3 3 3]);
+            h(2,:,:)= 1;
+            angle.x = convn( larger_image, h, 'same');
+            angle.x = angle.x( locs{:} );
+            tmp1 = angle.x < 8;
+            tmp2 = angle.x >= 8;
+            angle.x( tmp1 )  = 2 * pi / 4;
+            angle.x( tmp2 ) = 2 * pi * 3 / 4;
+            angle.x( ~bndry.x ) = 0;
+
+            %%% Get angles for y-edges
+            bndry.y   = bndry.y( locs{:} );
+            weights.y = weights.y( locs{:} );  
+
+            h = zeros([3 3 3]);
+            h(:,2,:)= 1;
+            angle.y = convn( larger_image, h, 'same');
+            angle.y = angle.y( locs{:} );
+            tmp1 = angle.y < 8;
+            tmp2 = angle.y >= 8;
+            angle.y( tmp1 )  = 2 * pi / 4;
+            angle.y( tmp2 ) = 2 * pi * 3 / 4;
+            angle.y( ~bndry.y ) = 0;
+
+            %%% Get angles for z-edges
+            bndry.z   = bndry.z( locs{:} );
+            weights.z = weights.z( locs{:} );  
+
+            h = zeros([3 3 3]);
+            h(:,:,2)= 1;
+            angle.z = convn( larger_image, h, 'same');
+            angle.z = angle.z( locs{:} );
+            tmp1 = angle.z < 8;
+            tmp2 = angle.z >= 8;
+            angle.z( tmp1 ) = 2 * pi / 4;
+            angle.z( tmp2 ) = 2 * pi * 3 / 4;
+            angle.z( ~bndry.z ) = 0;
             
-            % Cut full weights and boundary down to correct size
-            bndry.full = bndry.full( locs{:} );
-            
-            % Get overall weights
+            % Get overall weights and shrink bndry.full
             weights.full = getweights( mask );
-            
-            if any( strcmp( type, "x" ) )
-                % Get the x edges
-                bndry.x = bndry.xy & bndry.xz;
- 
-                % Get the angle of the edge in euclidean space.
-                % Note that the openeing angle is either 3/4 or 1/4
-                angle.x = zeros( s_mask + 2);
-                for x = 1:(s_mask(1)+2)
-                    angle.x( x, :, : ) = getweights( squeeze(...
-                                                    larger_image( x, :, : ) ) );
-                end
-                angle.x = angle.x( locs{:} );
-                angle.x( ~bndry.x ) = 0;
-                angle.x( angle.x == 0.5 | angle.x == 0.25 ) = 2 * pi / 4;
-                angle.x( angle.x == 1   | angle.x == 0.75 ) = 2 * pi * 3 / 4;
-
-                % Get the integration weights
-                weights.x = zeros( s_mask );
-                weights.x( bndry.x ) = 1;
-                % Find the corners of each edge and halft its weight
-                weights.x( bndry.xy & bndry.xz & bndry.yz ) = ...
-                weights.x( bndry.xy & bndry.xz & bndry.yz ) / 2;
-            end
-            
-            if any( strcmp( type, "y" ) )
-                % Get the y edges
-                bndry.y = bndry.xy & bndry.yz;
-                
-                % Get the angle of the edge in euclidean space.
-                % Note that the openeing angle is either 3/4 or 1/4
-                angle.y = zeros( s_mask + 2);
-                for y = 1:( s_mask(2) + 2 )
-                    angle.y( :, y, : ) = getweights( squeeze(...
-                                                    larger_image( :, y, : ) ) );
-                end
-                angle.y = angle.y( locs{:} );
-                angle.y( ~bndry.y ) = 0;
-                
-                % Get the integration weights
-                weights.y = zeros( s_mask );
-                weights.y( bndry.y ) = 1;              
-                % Find the corners of each edge and halft its weight
-                weights.y( bndry.xy & bndry.xz & bndry.yz ) = ...
-                weights.y( bndry.xy & bndry.xz & bndry.yz ) / 2;
-            
-                angle.y( angle.y == 0.5 | angle.y == 0.25 ) = 2 * pi / 4;
-                angle.y( angle.y == 1   | angle.y == 0.75 ) = 2 * pi * 3 / 4;
-            end
-            
-            if any( strcmp( type, "z" ) )
-                % Get the z edges
-                bndry.z = bndry.yz & bndry.xz;
-                 
-                % Get the angle of the edge in euclidean space.
-                % Note that the openeing angle is either 3/4 or 1/4
-                angle.z = zeros( s_mask + 2);
-                for z = 1:(s_mask(3)+2)
-                    angle.z( :, :, z ) = getweights( squeeze(...
-                                                larger_image( :, :, z ) ) );
-                end
-                angle.z = angle.z( locs{:} );
-                angle.z( ~bndry.z ) = 0;
-                angle.z( angle.z == 0.5 | angle.z == 0.25 ) = 2 * pi / 4;
-                angle.z( angle.z == 1   | angle.z == 0.75 ) = 2 * pi * 3 / 4;
-
-                % Get the integration weights
-                weights.z = zeros( s_mask );
-                weights.z( bndry.z ) = 1;
-                % Find the corners of each edge and halft its weight
-                weights.z( bndry.xy & bndry.xz & bndry.yz ) = ...
-                weights.z( bndry.xy & bndry.xz & bndry.yz ) / 2;
-            end
-            
-            % Check whether the user entered at least on appropriate
-            % type input
-            if ~( any( strcmp( type, "full" ) )...
-                    || any( strcmp( type, "xy" ) )...
-                    || any( strcmp( type, "xz" ) )...
-                    || any( strcmp( type, "yz" ) )...
-                    || any( strcmp( type, "x" ) )...
-                    || any( strcmp( type, "y" ) )...
-                    || any( strcmp( type, "z" ) ) )
-                error( "'Type' must be chosen according to description." );
-            end     
+            bndry.full = bndry.full( locs{:} );
     end
 else
     bndry.full = bndry.full( locs{:} );
