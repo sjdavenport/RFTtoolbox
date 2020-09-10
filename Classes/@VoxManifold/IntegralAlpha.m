@@ -109,7 +109,7 @@ for type = ["x", "y", "z"]
     % Concave edges have a negative sign
     angle.field( greater_pi ) = -angle.field( greater_pi );
     angle2.field( greater_pi ) = -angle2.field( greater_pi );
-    angles.(type) = angle2.field;
+    angles.(type) = angle.field;
 end
 
 return
