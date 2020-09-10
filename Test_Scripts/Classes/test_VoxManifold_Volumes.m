@@ -29,10 +29,10 @@ end
 
 % Mask
 mask = true( dim );
-mask = logical( pad_vals( mask, pad, 0 ) );
+mask = pad_vals( mask, pad, false );
 mask( 1, 1 ) = false;
 %mask = logical( pad_vals( mask, pad) );
-%mask(:,2:4) = 0;
+mask(:,2:4) = 0;
 
 vol = NaN * ones( length( resadd ), D );
 
