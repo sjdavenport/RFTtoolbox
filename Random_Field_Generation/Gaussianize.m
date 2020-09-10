@@ -27,20 +27,23 @@ function lat_data = Gaussianize( lat_data )
 %  lat_data    the Gaussianized field of data
 %--------------------------------------------------------------------------
 % EXAMPLES
-% lat_data = wtfield( [20,20], 100, 3 )
+% lat_data = wfield( [20,20], 100, 'T', 3 )
 % gaussianized_data = Gaussianize( lat_data )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
-%%  Check mandatory input and get important constants
-%--------------------------------------------------------------------------
-
-%%  Add/check optional values
-%--------------------------------------------------------------------------
-if ~exist( 'opt1', 'var' )
-   % default option of opt1
-   opt1 = 0;
+% Allow for non field input
+if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
+    temp_lat_data = lat_data;
+    s_lat_data = size(lat_data);
+    s_lat_data = s_lat_data(1:end-1);
+    if length(s_lat_data) == 1
+        s_lat_data = [s_lat_data, 1];
+    end
+    lat_data = Field(true(s_lat_data));
+    lat_data.field = temp_lat_data;
+    clear temp_lat_data;
 end
 
 %%  Main Function Loop

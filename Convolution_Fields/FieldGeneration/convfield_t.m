@@ -16,6 +16,10 @@ function [tcfield, cfields] = convfield_t( lat_data, params )
 %          the lat_data
 %--------------------------------------------------------------------------
 % EXAMPLES
+% lat_data = wfield([50,50],10); FWHM = 3;
+% smooth_data = convfield_t(lat_data, FWHM);
+% % compare to mvtstat
+%
 % %% 1D convolution t field
 % nvox = 10; nsubj = 20; resadd = 20; FWHM = 2;
 % lat_data = normrnd(0,1,[nvox,nsubj]);
@@ -28,7 +32,7 @@ function [tcfield, cfields] = convfield_t( lat_data, params )
 % legend('Convolution field', 'Lattice Evaluation')
 % xlabel('voxels')
 % ylabel('t field')
-% 
+%
 % %% 2D convolution field
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
@@ -49,27 +53,42 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     clear temp_lat_data;
 end
 
+% If params is numeric take it to be the FWHM and choose resadd = 0,
+% enlarge = 1 and lat_masked equal to 1.
+do_smooth = 1;
+if isnumeric(params)
+    if params == 0 
+        do_smooth = 0;
+    else
+        params = ConvFieldParams( repmat(params,1,lat_data.D), 0 );
+    end
+end
+
 % Get the dimensions of the data
 Dim = lat_data.masksize;
 D = lat_data.D;
 
-
 %%  Main function
 %--------------------------------------------------------------------------
-% Obtain the convolution fields for each subject
-cfields  = convfield( lat_data, params, 0 );
-
 % Generate an empty Field with the given mask
-tcfield = Field( cfields.mask );
+tcfield = Field( lat_data.mask );
 
-% Calculate the t-statistic
-if D > 1
-    tcfield.field = mvtstat( cfields.field, spacep( Dim, params.resadd ) + 2* params.enlarge );
+if do_smooth == 1
+    % Obtain the convolution fields for each subject
+    cfields  = convfield( lat_data, params, 0 );
+    
+    % Calculate the t-statistic
+    if D > 1
+        tcfield.field = mvtstat( cfields.field, spacep( Dim, params.resadd ) + 2* params.enlarge );
+    else
+        tcfield.field = mvtstat( cfields.field );
+    end
+    
+    tcfield.xvals = cfields.xvals;
 else
-    tcfield.field = mvtstat( cfields.field );
+    tcfield.field = mvtstat(lat_data.field);
+    tcfield.xvals = lat_data.xvals;
 end
-
-tcfield.xvals = cfields.xvals;
 tcfield = Mask(tcfield);
 end
 

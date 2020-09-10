@@ -52,6 +52,10 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
+% See test_findconvpeaks and test_findconvpeaks_t.
+%--------------------------------------------------------------------------
+% TODO: Change it so that the default input into findconvpeaks is of Field
+% type.
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -183,12 +187,10 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     % Calculate the field on the lattice
     resadd = 0; % Initialize with no points between the original points
     if strcmp(field_type, 'Z')
-        lat_data_field = Field(mask);
-        lat_data_field.field = lat_data;
         params = ConvFieldParams(repmat(FWHM, 1, D), resadd);
-        lat_eval = convfield( lat_data_field, params );
+        lat_eval = convfield( lat_data, params );
     elseif strcmp(field_type, 'T')
-        lat_eval = convfield_t( lat_data.*mask, FWHM, resadd );
+        lat_eval = convfield_t( lat_data.*mask, FWHM );
     end
     
     % Find the top local maxima of the field on the lattice
