@@ -1,4 +1,4 @@
-function [ L, Lambda, FWHM ] = LKC_forman_est( field, df )
+function [ L_forman, L_kiebel, FWHM_f, FWHM_k ] = LKC_forman_est( field, df )
 % LKC_forman_est( field ) estimates the LKCs assuming isotropy according
 % to the article CITE.
 %--------------------------------------------------------------------------
@@ -21,22 +21,18 @@ function [ L, Lambda, FWHM ] = LKC_forman_est( field, df )
 
 %% Check mandatory input
 %--------------------------------------------------------------------------
-% Get the important variables from the Field object
-Y    = field.field;
-mask = zero2nan( field.mask );
-
-% check that method is implemented for dimension D
-if( D > 4 )
-    error('The method is currently only implemented for field domains of dimension D<5.')
-end
 
 %% Main function
 %--------------------------------------------------------------------------
 % Riemannian metric estimated using Forman's formula
-[ FWHM, ~, Lambda, ~] = est_smooth( Y, mask );
+[ FWHM_f, FWHM_k, Lambda_k, ~] =  est_smooth_field( field, df );
 
-% Generate the voxel manifold
-voxmfd  = VoxManifold( constfield( Lambda, field.mask, field.xvals ) );
+Lambda_f = 4*log(2) * diag( 1 ./ FWHM_f.^2 );
 
-% Obtain the LKCs
-L = LKC_est( voxmfd );
+% Obtain the LKCs from Forman FWHM
+voxmfd  = VoxManifold( constfield( Lambda_f, field.mask, field.xvals ) );
+L_forman = LKC_est( voxmfd );
+
+% Obtain the LKCs from Forman FWHM
+voxmfd  = VoxManifold( constfield( Lambda_k, field.mask, field.xvals ) );
+L_kiebel = LKC_est( voxmfd );
