@@ -96,7 +96,8 @@ if isfield( methods, "kiebelE" )
 end
 
 if isfield( methods, "formanE" )
-    L_forman_ests    = NaN * ones( [ Msim D ] );
+    L_forman_ests  = NaN * ones( [ Msim D ] );
+    L_kiebel2_ests = NaN * ones( [ Msim D ] );
     k = methods.formanE;
 end
 
@@ -161,11 +162,13 @@ for m = 1:Msim
     end
     
     if isfield( methods, "kiebelE" )
-        L_kiebel_ests(m,:) = LKC_kiebel_est( field, k );
+        L_kiebel_ests(m,:) = LKC_kiebel_est( cfield, k );
     end
     
     if isfield( methods, "formanE" )
-        L_forman_ests(m,:) = LKC_forman_est( field, k );
+       [L_f, L_k] = LKC_forman_est( cfield, k );
+       L_forman_ests(m,:)  = L_f;
+       L_kiebel2_ests(m,:) = L_k;
     end
 end
 simtime = toc;
@@ -196,11 +199,12 @@ if isfield( methods, "warpE" )
 end
 
 if isfield( methods, "kiebelE" )
-    results.warpE = L_kiebel_ests;
+    results.kiebelE = L_kiebel_ests;
 end
 
 if isfield( methods, "formanE" )
-    results.warpE = L_forman_ests;
+    results.formanE = L_forman_ests;
+    results.kiebel2E = L_kiebel2_ests;
 end
 
 return
