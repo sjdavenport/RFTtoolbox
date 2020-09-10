@@ -1,9 +1,9 @@
 function sample_vec = vec_ecdf( sample_vec, dist_vec )
-% NEWFUN serves as a function template.
+% Evaluation of an emperical cumulative distribution function
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  sample_vec   a vector of sample data to fnd the quantiles of
+%  sample_vec   a vector of sample data to find the quantiles of
 %  dist_vec     a vector given the data from the distribution that you
 %               would like to compare the quantiles of
 %--------------------------------------------------------------------------
