@@ -18,7 +18,7 @@ field    = convfield( lat_data, params );
 % Estimate LKCs, Riemannian metric and FWHM using Kiebel 1999, Note that if
 % we would subtract the mean the second input would be 1.
 [ Lkiebel, Lambda, FWHM ] = LKC_kiebel_est( field, 0 );
-
+LKC_forman_est( field, 0 )
 % Estimate LKCs using convolution approach
 Lconv = LKC_latconv_est( lat_data, params );
 
@@ -35,12 +35,15 @@ field    = convfield( lat_data, params );
 % Estimate LKCs, Riemannian metric and FWHM using Kiebel 1999, Note that if
 % we would subtract the mean the second input would be 1.
 [ Lkiebel, Lambda, FWHM ] = LKC_kiebel_est( field, 0 );
+[ Lforman, Lkiebel2 ] = LKC_forman_est( field, 0 );
+
 
 % Estimate LKCs using convolution approach
 Lconv = LKC_latconv_est( lat_data, params );
 
 % mostly Kiebel is slightly below convolution estimator all the time
 [ Lkiebel; Lconv ]
+FWHM
 
 
 %% %% 3D example
@@ -53,6 +56,7 @@ field    = convfield( lat_data, params );
 % Estimate LKCs, Riemannian metric and FWHM using Kiebel 1999, Note that if
 % we would subtract the mean the second input would be 1.
 [ Lkiebel, Lambda, FWHM ] = LKC_kiebel_est( field, 0 );
+LKC_forman_est( field, 0 )
 
 % Estimate LKCs using convolution approach
 Lconv = LKC_latconv_est( lat_data, params );
