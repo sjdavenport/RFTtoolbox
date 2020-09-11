@@ -14,9 +14,9 @@ legend('Original T-stat', 'Gaussianized T-stat', 'Location', 'Best')
 
 %%
 clf
-N = 1000;
-FWHM = 8;
-field_type = 'L'; 
+N = 100;
+FWHM = 6;
+field_type = 'T'; 
 field_params = 3; % Only relevant if field_type is 'T' or 'L'
 Y = Sd'.*(wfield(xdim,N, field_type, field_params).field) + Mn';
 [smoothtstat, smooth_Y] = convfield_t(Y, FWHM);

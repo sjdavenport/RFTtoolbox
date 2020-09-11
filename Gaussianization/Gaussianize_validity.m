@@ -13,10 +13,10 @@ histogram(1 - tcdf(mvtstat(G_Y.field), N-1), 'BinWidth', 0.05)
 title('Pvalues - Gaussianized')
 
 %% Testing under the null with smoothing
-N = 100;
+N = 50;
 FWHM = 3;
-field_type = 'L'; 
-nvox = 100000;
+field_type = 'T'; 
+nvox = 10000;
 field_params = 3; % Only relevant if field_type is 'T' or 'L'
 Y = wfield( nvox, N, field_type, field_params );
 [smoothtstat, smooth_Y] = convfield_t(Y, FWHM);
