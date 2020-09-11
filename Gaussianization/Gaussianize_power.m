@@ -1,6 +1,6 @@
 N = 500;
 xdim = 1000;
-Mn = [zeros(1,xdim/2), linspace(-2,2,xdim/2)]; % Mean 
+Mn = [zeros(1,xdim/2), linspace(-2,2,xdim/2)]/5; % Mean 
 Sd = repmat([fliplr(linspace(0.1,2,xdim/4)),linspace(0.1,2,xdim/4)],1,2); % Standard deviation
 
 %%
@@ -14,9 +14,9 @@ legend('Original T-stat', 'Gaussianized T-stat', 'Location', 'Best')
 
 %%
 clf
-N = 100;
-FWHM = 10;
-field_type = 'T'; 
+N = 1000;
+FWHM = 8;
+field_type = 'L'; 
 field_params = 3; % Only relevant if field_type is 'T' or 'L'
 Y = Sd'.*(wfield(xdim,N, field_type, field_params).field) + Mn';
 [smoothtstat, smooth_Y] = convfield_t(Y, FWHM);
