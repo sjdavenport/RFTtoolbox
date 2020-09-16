@@ -527,16 +527,55 @@ classdef Field
        %% Stats Functions for class Field
        %-------------------------------------------------------------------            
        % Redefine mean()
-       function out = mean( obj, D )
-           out = Field( obj.mask );
-           out.xvals = obj.xvals;
-           out.field = mean( obj.field, obj.D + D );
-       end
+       function out = mean( varargin )
+           if nargin == 1
+               if isa( varargin{1}, "Field")
+                   out = varargin{1};
+                   out.field = mean( out.field, out.D + out.fiberD );
+               end
+           elseif nargin == 2
+               if isa( varargin{1}, "Field")
+                   D = varargin{2};
+                   if isnumeric( D )
+                      if D > 0
+                        out = varargin{1};
+                        out.field = mean( out.field, out.D + D );
+                      else
+                        error( "Second inout must be a positive integer." )
+                      end
+                   end
+               else
+                   error( "First input must be an object of class Field." )
+               end
+           else
+              error( "Up to two inputs are supported." )
+           end
+       end 
+       
        % Redefine sum()
-       function out = sum( obj, var )
-           out = Field( obj.mask );
-           out.xvals = obj.xvals;
-           out.field = mean( obj.field, var );
+       function out = sum( varargin )
+           if nargin == 1
+               if isa( varargin{1}, "Field")
+                   out = varargin{1};
+                   out.field = sum( out.field, out.D + out.fiberD );
+               end
+           elseif nargin == 2
+               if isa( varargin{1}, "Field")
+                   D = varargin{2};
+                   if isnumeric( D )
+                      if D > 0
+                        out = varargin{1};
+                        out.field = sum( out.field, out.D + D );
+                      else
+                        error( "Second inout must be a positive integer." )
+                      end
+                   end
+               else
+                   error( "First input must be an object of class Field." )
+               end
+           else
+              error( "Up to two inputs are supported." )
+           end
        end 
        
        %% Algebra Functions for class Field
