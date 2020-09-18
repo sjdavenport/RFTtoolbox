@@ -100,7 +100,7 @@ end
 % enlarge = 1 and lat_masked equal to 1.
 do_smooth = 1;
 if isnumeric(params)
-    if params == 0 
+    if params == 0
         do_smooth = 0;
     else
         params = ConvFieldParams( repmat(params,1,lat_data.D), 0 );
