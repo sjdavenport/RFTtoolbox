@@ -29,12 +29,21 @@ function sample_vec = vec_ecdf( sample_vec, dist_vec )
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
+
+% Sort the vector with the value from the reference distribution
 dist_vec = sort(dist_vec);
+
+% Sort the samples from the data and record the sort index
 [sample_vec, sort_index] = sort(sample_vec);
+
+% Obtain the inverse sort index so you can put things back in the order
+% they came in
 sort_index = invPerm(sort_index);
 
+% Calculate the number of samples
 nsamples = length(sample_vec);
 
+% Main loop: compare the sample and reference distributions
 counter = 1;
 for I = 1:nsamples
     found = 0;

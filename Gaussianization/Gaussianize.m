@@ -33,7 +33,10 @@ function lat_data = Gaussianize( lat_data )
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
-% Allow for non field input
+% if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
+%     
+% end
+% % Allow for non field input
 if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     temp_lat_data = lat_data;
     s_lat_data = size(lat_data);

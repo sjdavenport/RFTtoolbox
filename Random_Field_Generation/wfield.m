@@ -105,6 +105,14 @@ elseif strcmp(field_type, 't') || strcmp(field_type, 'T')
     obj.field = trnd( field_params, [ obj.masksize(1:obj.D) fibersize ] );    
 elseif strcmp(field_type, 'l') || strcmp(field_type, 'L')
     obj.field = rlap( field_params, [ obj.masksize(1:obj.D) fibersize ] );
+elseif strcmp(field_type, 'skew') || strcmp(field_type, 'S') || strcmp(field_type, 's')
+    obj.field = (randn( [ obj.masksize(1:obj.D) fibersize ] ).^2-1)/sqrt(2);
+elseif strcmp(field_type, 's2') || strcmp(field_type, 'S2')
+    obj.field = (randn( [ obj.masksize(1:obj.D) fibersize ] ).^2-1)/sqrt(2) - (randn( [ obj.masksize(1:obj.D) fibersize ] ).^2-1)/sqrt(2);
+elseif strcmp(field_type, 'uniform') || strcmp(field_type, 'U') || strcmp(field_type, 'u')
+    obj.field = rand( [ obj.masksize(1:obj.D) fibersize ] ) - 1/2;
+elseif strcmp(field_type, 'p') || strcmp(field_type, 'pearson') || strcmp(field_type, 'P')
+    obj.field = pearsrnd(0,1,1,4, obj.masksize(1:obj.D),fibersize);
 else
     error('This field type has not been implemented')
 end

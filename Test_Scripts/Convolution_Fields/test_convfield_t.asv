@@ -58,10 +58,8 @@ title('2D convolution t field')
 xlabel('x'); ylabel('y'); zlabel('t field')
 
 %% 3D convolution t field
-Dim = [11,11,11]; nsubj = 50; resadd = 3; FWHM = 3;
+Dim = [11,11,11]; nsubj = 50; resadd = 10; FWHM = 3;
 params = ConvFieldParams([FWHM, FWHM, FWHM], resadd);
 mask = true(Dim);
-lat_data = wfield(mask, nsubj);
-tcf = convfield_t( lat_data, params );
-surf(tcf.field(:,:,30))
-title('3D convolution t field slice')
+lat_data = normrnd(0,1,[Dim,nsubj]).*mask; 
+convfield_t( lat_data, FWHM, resadd );
