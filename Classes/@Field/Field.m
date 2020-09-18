@@ -310,7 +310,7 @@ classdef Field
           % FWHM = [3 2 6];
           % gaussK = SepKernel( D, FWHM )
           %
-          % % create an isotropic Gaussian kernel object
+          % % create an isotropic Gaussianfsu kernel object
           % D = 3;
           % gaussK = SepKernel( D, 6 )
           %
@@ -526,19 +526,11 @@ classdef Field
 
        %% Stats Functions for class Field
        %-------------------------------------------------------------------            
-       % Redefine mean()
-       function out = mean( obj, D )
-           out = Field( obj.mask );
-           out.xvals = obj.xvals;
-           out.field = mean( obj.field, obj.D + D );
-       end
        % Redefine sum()
-       function out = sum( obj, var )
-           out = Field( obj.mask );
-           out.xvals = obj.xvals;
-           out.field = mean( obj.field, var );
-       end 
+       out = sum( varargin)
        
+       % Redefine mean()
+       out = mean( varargin)
        %% Algebra Functions for class Field
        %-------------------------------------------------------------------     
        % Redefine matrix multiplication
