@@ -19,7 +19,7 @@ function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth
 %--------------------------------------------------------------------------
 % EXAMPLES
 % Dim = 160; nsubj = 20;
-% noise = noisegen(Dim, nsubj, 3);
+% noise = noisegen(Dim, nsubj, 2);
 % % Without variance pooling 
 % [ fwhm_est_forman, fwhm_est_kiebel] = est_smooth(noise); 
 % % With variance pooling

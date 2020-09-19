@@ -12,8 +12,8 @@ function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
 %  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
 %  field_type  a string giving the type of field. 'N': normal, 'T': tfield
-%              'L': Laplacian field. Default is 'N' i.e. a white Gaussian
-%              field.
+%              'L': Laplacian field, 'S': skew, 'S2': symmetric skew.
+%              Default is 'N' i.e. a white Gaussian field.
 %  field_params   if field_type is not 'N', then if it is 'T' field_params
 %                 is the degrees of freedom of the t-statistic, if it is 'L' 
 %                 then field_params is the scale of the Laplacian

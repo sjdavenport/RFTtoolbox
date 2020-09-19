@@ -117,10 +117,13 @@ fwhm_est_kiebel = zeros(1,D);
 Xderivmate = diff(data,1,1);
 tmp = ~isnan(Xderivmate(index{:}, 1));
 
+% note that the degrees of freedom is nsubj - 1 because you're subtracting
+% the mean!!
 if combine_var
-    denom = sum(tmp(:))*(nsubj-df);   
+    denom = sum(tmp(:))*(nsubj-1);   
 else
-    denom = sum(tmp(:))*nsubj*(nsubj-2)/(nsubj-3);
+%     denom = sum(tmp(:))*(nsubj-1)*(nsubj-2)/(nsubj-3);
+    denom = sum(tmp(:))*(nsubj-1);
 end
 % denom = sum(tmp(:))*(nsubj-df); %The first half of this
 % is the number of voxels in a given subject where Xderivmate is not nan.
