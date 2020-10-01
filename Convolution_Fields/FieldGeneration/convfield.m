@@ -30,10 +30,17 @@ function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 
 % Allow for non field input
 if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
-    temp_lat_data = lat_data;
-    lat_data = Field(true(size(lat_data)));
-    lat_data.field = temp_lat_data;
-    clear temp_lat_data;
+    D = mask_dim(lat_data);
+    if D == 1 && size(lat_data, 1) == 1
+        lat_data = lat_data';
+    end
+    lat_data = Field(lat_data, true(size(lat_data)));
+    clear len_lat_data;
+end
+
+% Allow for default FWHM input
+if isnumeric(params)
+    params = ConvFieldParams( repmat(params,1,lat_data.D), 0 );
 end
 
 % Check the lat_data input

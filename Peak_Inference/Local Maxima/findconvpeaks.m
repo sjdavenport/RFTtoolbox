@@ -66,6 +66,8 @@ if ~exist('field_type', 'var')
     field_type = 'Z';
 end
 
+field_type = upper(field_type); % Allows for 'z' and 't' input
+
 % Ensure that field_type is of the right input
 if ~ischar(field_type) || (~(strcmp(field_type, 'Z') || strcmp(field_type, 'T')))
     error('The only fields supported are mean and t fields')

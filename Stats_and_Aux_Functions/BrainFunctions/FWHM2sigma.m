@@ -1,5 +1,5 @@
 function sigma = FWHM2sigma( FWHM )
-% NEWFUN serves as a function template.
+% FWHM2sigma( FWHM ) converts the FWHM to std deviation
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % 

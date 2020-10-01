@@ -1,5 +1,5 @@
-function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array, rimFWHM )
-% NOISEGEN( Dim, nSubj, FWHM, shape_of_array ) generates an array of N(0,1) 
+function [ data, RawNoise, TrnInd ] = noisegen( Dim, nsubj, FWHM, shape_of_array )
+% NOISEGEN( Dim, nsubj, FWHM, shape_of_array ) generates an array of N(0,1) 
 % noise smoothes this with a gaussian kernel with a certain FWHM and scales 
 % so that the resulting field has variance 1. By default this array is Dim 
 % by nSubj, but this can be changed using the shape_of_array parameter.
@@ -9,7 +9,7 @@ function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array
 % nSubj     The number of subjects.
 % FWHM      The FWHM of the kernel
 % shape_of_array   0/1/2, default is 0. Determines the shape of the array.
-%           If 0 data is Dim by nSubj,
+%           If 0 data is Dim by nsubj,
 %           If 1 data is nSubj by Dim,
 %           If 2 data is prod(Dim) by nSubj instead of
 %           nSubj by Dim. 
@@ -39,35 +39,45 @@ function [ data, RawNoise, TrnInd ] = noisegen( Dim, nSubj, FWHM, shape_of_array
 % %Resulting variance is 1:
 % noise = noisegen([300,300],100, 4, 0);
 % [~, ~, std_est] = mvtstat( noise );
-% mean(std_est)
+% mean(std_est(:))
 %
 % % 3D example
 % tic; noise = noisegen([100,100,100],100, 4, 0); toc
+%
+% %Resulting variance is 1:
+% noise = noisegen([91,109,91],50, 4, 0);
+% [~, ~, std_est] = mvtstat( noise );
+% mean(std_est(:))
 %--------------------------------------------------------------------------
 % AUTHORS: Samuel Davenport and Thomas E. Nichols
 %--------------------------------------------------------------------------
-if nargin < 2
-    nSubj  = 20; 
+
+%%  Set important constants
+%--------------------------------------------------------------------------
+D = length(Dim); %The number of dimensions.
+
+rimFWHM = 1.7; %The number of standard deviations or something like that in either direction.
+wDim  = Dim + 2*ceil(rimFWHM*FWHM)*ones(1,D);  %The increased dimension, needed to deal with the edge effect.
+
+%%  Add/check optional values
+%--------------------------------------------------------------------------
+if ~exist('nsubj', 'var')
+    nsubj  = 20; 
 end
-if nargin < 4
+if ~exist('shape_of_array', 'var')
     shape_of_array = 0;
 end
 
-nDim    = length(Dim); %The number of dimensions.
-
-if nargin < 5
-    rimFWHM = 1.7; %The number of standard deviations or something like that in either direction.
-%     rimFWHM  = 4;
-end
-wDim    = Dim + 2*ceil(rimFWHM*FWHM)*ones(1,nDim);  %The increased dimension, needed to deal with the edge effect.
+%%  Main Function Loop
+%--------------------------------------------------------------------------
 
 %The Trunc variables describe the subset that corresponds to the image 
 %rather than the surrounding voxels that we have added on.
 Trunc_x = {(ceil(rimFWHM*FWHM)+1):(ceil(rimFWHM*FWHM)+Dim(1))}; %The size of the image in the x direction.
 
-if nDim == 1
+if D == 1
     TrnInd = cat(2, Trunc_x);
-elseif nDim==2
+elseif D == 2
     %Concatenates Trunc_x and Trunc_y into one array. Why is this necessary?
     Trunc_y = {(ceil(rimFWHM*FWHM)+1):(ceil(rimFWHM*FWHM)+Dim(2))}; %The size of the image in the y direction.
     TrnInd = cat(2, Trunc_x, Trunc_y); %Note cat(2,A,B) == [A,B]
@@ -78,25 +88,25 @@ else
 end
 
 %Initializes an array to store the noise
-RawNoise = zeros([wDim nSubj]);
+RawNoise = zeros([wDim nsubj]);
 
 %Initialize Data Matrix. This allows for some special cases.
 if shape_of_array == 2
-    data = zeros( prod(Dim), nSubj );
+    data = zeros( prod(Dim), nsubj );
 elseif shape_of_array == 3
-    data = zeros(  nSubj, prod(Dim) );
+    data = zeros(  nsubj, prod(Dim) );
 elseif shape_of_array == 1
-    data   = zeros( [nSubj Dim] );
+    data   = zeros( [nsubj Dim] );
 else
-    data   = zeros( [Dim nSubj] );
+    data   = zeros( [Dim nsubj] );
 end
 
 %Loop over subjects and generate noise for each one.
-for subj = 1:nSubj
-    %Set the noise to be iid N(0,1).
-    if nDim == 1
+for subj = 1:nsubj
+    %Set the noise to be i.i.d N(0,1).
+    if D == 1
         RawNoise(:, subj)       = randn([1,wDim]);
-    elseif nDim == 2
+    elseif D == 2
         RawNoise(:,:,subj)      = randn(wDim);
     else
         RawNoise(:,:,:, subj)   = randn(wDim);
@@ -104,32 +114,31 @@ for subj = 1:nSubj
     
     % Smooth noise
     if FWHM == 0 %Ie if no smoothing is to be applied.
-        if (nDim==1)
+        if (D == 1)
             Noises    = RawNoise(:,subj);
-        elseif (nDim==2)
+        elseif (D == 2)
             Noises    = RawNoise(:,:,subj);
         else
             Noises    = RawNoise(:,:,:,subj);
         end
     else
-        Noises    = zeros(wDim);
-        %Smooths the noise and divides by tt which is the sum of squares of
-        %the kernel. This ensures that noise is unit variance.
-        if nDim == 1
+%         [Noises,tt] = fconv(RawNoise(:,:,:,subj),FWHM, D);
+        if D == 1
+%             [Noises,tt] = fconv(RawNoise(:,:,:,subj),FWHM, 3);
             [Noises,tt] = spm_conv_mod(RawNoise(:,subj),FWHM,FWHM);
-        elseif nDim == 2
+        elseif D == 2
             [Noises,tt] = spm_conv_mod(RawNoise(:,:,subj),FWHM,FWHM);
         else
 %             tt       = spm_smooth_mod(RawNoise(:,:,:,subj),Noises,FWHM);
-            [Noises,tt] = fconv(RawNoise(:,:,:,subj),FWHM);
+            [Noises,tt] = fconv(RawNoise(:,:,:,subj),FWHM, 3);
         end
-        Noises    = Noises/sqrt(tt); %Done to standardize.
+        Noises = Noises/sqrt(tt); %Done to standardize.
     end
   
     % Truncate to avoid edge effects
-    if nDim == 1 
+    if D == 1 
         trunNoises    = Noises(TrnInd{1});
-    elseif nDim == 2
+    elseif D == 2
         trunNoises    = Noises(TrnInd{1},TrnInd{2});
     else
         trunNoises    = Noises(TrnInd{1},TrnInd{2},TrnInd{3});
@@ -141,17 +150,17 @@ for subj = 1:nSubj
     elseif shape_of_array == 3
         data(subj,:) = trunNoises(:);
     elseif shape_of_array == 0
-        if nDim == 1
+        if D == 1
             data(:,subj) = trunNoises;
-        elseif nDim == 2
+        elseif D == 2
             data(:,:,subj) = trunNoises;
         else
             data(:,:,:,subj) = trunNoises;
         end
     elseif shape_of_array == 1
-        if nDim == 1
+        if D == 1
             data(subj,:) = trunNoises;
-        elseif nDim == 2
+        elseif D == 2
             data(subj,:,:) = trunNoises;
         else
             data(subj,:,:,:) = trunNoises;

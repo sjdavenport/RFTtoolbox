@@ -1,6 +1,7 @@
 function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % lmindices( Y, top, CC, mask ) finds the top local maxima of an image,
 % given a conectivity criterion CC, that lie within a specified mask.
+% NEED TO REWRITE SO THAT IT TAKES IN A FIELD OBJECT!!!
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Y      a 3 dimensional array of real values

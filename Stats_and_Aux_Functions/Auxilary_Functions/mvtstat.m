@@ -8,6 +8,9 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 %--------------------------------------------------------------------------
 % OUTPUT
 % tstat         the one sample t-statistic at each voxel.
+% xbar
+% std_dev       the standard deviation at each voxel (calculated using the
+%               unbiased estimate of the variance)
 %--------------------------------------------------------------------------
 % EXAMPLES
 % mvtstat(normrnd(0,1,1,100))

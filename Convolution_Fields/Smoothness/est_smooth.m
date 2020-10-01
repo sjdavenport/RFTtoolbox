@@ -1,15 +1,22 @@
-function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth( data, mask, combine_var, df )
+function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est, ...
+    fwhm_est_forman_unscaled, fwhm_est_kiebel_unscaled, Lambda_est_unscaled]...
+                    = est_smooth( data, mask, combine_var, lat_spacing, df )
 % EST_SMOOTH estimates the smoothness of a process. NEED TO DO THE
 % CROSS TERMS!! Would be good to study exactly how biased this is.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% data      Dim by nsubj, data which has nan where there is missing data.
-% mask      A mask of the data which is made of 1s and 0s. 1s for where
+% Mandatory
+%  data      Dim by nsubj, data which has nan where there is missing data.
+% Optional
+%  mask      A mask of the data which is made of 1s and 0s. 1s for where
 %           there is data and nans for where there is no data. Default is
 %           taken to be the mask with 1s everywhere.
-% combine_var  0/1 whether or not to combine the pool across all subjects
+%  combine_var  0/1 whether or not to combine the pool across all subjects
 %              to estimate the variance. Only valid if the data has the
-%              same variance at each voxel (so not for fMRI data!).
+%              same variance at each voxel (so not for fMRI data!). If
+%              combine_var is -1, then no variance scaling is done at all.
+%  lat_spacing   the distance between adjacent voxels. Default is 1. Taking
+%                smaller values allows for fine lattice input.
 %--------------------------------------------------------------------------
 % OUTPUT
 % fwhm_est      An estimate of the fwhm in each of the directions.
@@ -26,15 +33,15 @@ function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth
 % [ fwhm_est_forman_pv, fwhm_est_kiebel_pv] = est_smooth(noise, ones(Dim, 1), 1);
 % fwhm_est_forman, fwhm_est_kiebel, fwhm_est_forman_pv, fwhm_est_kiebel_pv
 % 
-% Dim = [250,250];
+% Dim = [50,50];
 % nsubj = 1;
 % noise = noisegen(Dim, nsubj, 20);
 % est_smooth(noise)
 % 
 % Dim = [250,250];
-% nsubj = 20;
-% noise = noisegen(Dim, nsubj, 4);
-% est_smooth(noise)
+% nsubj = 100;
+% noise = noisegen(Dim, nsubj, 20);
+% [ fwhm_est_forman, fwhm_est_kiebel]  = est_smooth(noise)
 % 
 % Dim = [250,250];
 % nsubj = 100;
@@ -56,8 +63,14 @@ function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est] = est_smooth
 % AUTHORS: Samuel Davenport and Fabian Telschow
 %--------------------------------------------------------------------------
 
+%%  Add/check optional values
+%--------------------------------------------------------------------------
 if ~exist('combine_var', 'var')
     combine_var = 0;
+end
+
+if ~exist('lat_spacing', 'var')
+    lat_spacing = 1;
 end
 
 %% Setup
@@ -102,13 +115,19 @@ else
     data = data .* mask;
 end
 
-if combine_var
-    var_est = sum(data(~isnan(data)).^2)/(nVox*(nsubj - 1));
-    data = data/sqrt(var_est);
-else
-    std_dev = std(data, 0, D + 1);
-    data = data./std_dev;
+if combine_var > -1 %Outer loop allows for removing variance scaling completely
+    if combine_var  % Assumes that the variance is the same at each voxel 
+                    % and pools over voxels to estimate it
+        var_est = sum(data(~isnan(data)).^2)/(nVox*(nsubj - 1));
+        data = data/sqrt(var_est);
+    else % Assumes that the variance is different at each voxel
+        std_dev = std(data, 0, D + 1);
+        data = data./std_dev;
+    end
 end
+
+% Allow for estimation where the lattice is finer than 1 point
+data = data/lat_spacing;
 
 %% Estimate Lambda Matrix and FWHMs
 Lambda_est = zeros(D);
@@ -155,5 +174,15 @@ sigma_est = fwhm_est_kiebel/(sqrt(8*log(2)));
 
 sigma_est_forman = abs(sqrt(-1./4./log(1-diag(Lambda_est)/2))); % This can be negative for low FWHM
 fwhm_est_forman = sigma2FWHM(sigma_est_forman);
+
+if ~combine_var
+    Lambda_est_unscaled = Lambda_est*(nsubj-2)/(nsubj-3);
+    fwhm_est_kiebel_unscaled = sqrt(4*log(2)./diag(Lambda_est_unscaled));
+    sigma_est_forman_unscaled = abs(sqrt(-1./4./log(1-diag(Lambda_est_unscaled)/2))); % This can be negative for low FWHM
+    fwhm_est_forman_unscaled = sigma2FWHM(sigma_est_forman_unscaled);
+else
+    fwhm_est_kiebel_unscaled = NaN;
+    fwhm_est_forman_unscaled = NaN;
+end
 
 end
