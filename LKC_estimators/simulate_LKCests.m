@@ -103,6 +103,7 @@ end
 
 tic
 for m = 1:Msim
+    % Get a function handle for data generation or load data from .mat
     if isa( data_gen, 'function_handle' )
         lat_data = data_gen( nsubj );
     elseif isa( data_gen, 'Field' )
