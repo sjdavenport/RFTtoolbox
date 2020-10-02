@@ -28,11 +28,12 @@ end
 
 
 % Mask
-mask = true( dim );
-mask = pad_vals( mask, pad, false );
-mask( 1, 1 ) = false;
-%mask = logical( pad_vals( mask, pad) );
-mask(:,2:4) = 0;
+
+    mask = true( dim );
+    mask = pad_vals( mask, pad, false );
+    mask( 1, 1 ) = false;
+    %mask = logical( pad_vals( mask, pad) );
+    mask(2,1) = false;
 
 vol = NaN * ones( length( resadd ), D );
 
