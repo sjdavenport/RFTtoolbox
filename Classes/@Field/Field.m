@@ -464,6 +464,9 @@ classdef Field
        % Function for masking data
        obj = Mask( obj, val, mask )
        
+       % Function for cutting a Field class to a mask
+       cobj = cut2mask( obj )
+       
        % Function for obtaining the private complete field
        function val = iscomplete( obj )
            val = obj.complete;
