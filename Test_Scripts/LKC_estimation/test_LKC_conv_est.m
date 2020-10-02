@@ -45,7 +45,7 @@ LKC5   = LKC_latconv_est( lat_data, params );
 %% Example with recangular mask without enlargement
 % Generate mask
 mask = pad_vals( true( [ T, 1 ] ), pad, false );
-FWHM = 12;
+FWHM = 3;
 
 % Generate params object for convfields
 params = ConvFieldParams( FWHM, 101, 0, false );
@@ -97,12 +97,21 @@ LKC5   = LKC_latconv_est( lat_data, params );
 [ theoryL; LKC1; LKC3; LKC5 ]'
 
 %% D = 1 non-stationary sphere example
+FWHM = 6;
+% Dimension of domain
+dim   = [ 100 1 ];
+
 % Generate mask
-mask = pad_vals( true( [ T, 1 ] ), pad, false );
-mask(11:90) = false;
+pad         = ceil( 4 * FWHM2sigma(FWHM) );
+mask        = true( dim );
+mask(20:80) = false;
+mask        = logical( pad_vals( mask, pad) );
+
+% Mask the lattice data
+lat_mask = false % switch to true for non-stationarity
 
 % Generate params object for convfields
-params = ConvFieldParams( FWHM, 21, ceil(21/2), false );
+params = ConvFieldParams( FWHM, 21, 0, lat_mask );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, T  );
@@ -112,13 +121,13 @@ theoryL  = LKC_wncfield_theory( mask, params );
 lat_data = wnfield( mask, nsubj );
 
 % Estimate across different resadd
-params = ConvFieldParams( FWHM, 1, ceil(1/2), false );
+params = ConvFieldParams( FWHM, 1, 0, lat_mask );
 LKC1   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( FWHM, 3, ceil(3/2), false );
+params = ConvFieldParams( FWHM, 3, 0, lat_mask );
 LKC3   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( FWHM, 5, ceil(5/2), false );
+params = ConvFieldParams( FWHM, 5, 0, lat_mask );
 LKC5   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( FWHM, 15, ceil(15/2), false );
+params = ConvFieldParams( FWHM, 15, 0, lat_mask );
 LKC15   = LKC_latconv_est( lat_data, params );
 
 % Values are stable accross different resadd increases. Note that resadd
@@ -222,7 +231,7 @@ pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
 %% Rectangular domain example
 % Generate rectangular mask with a padded zero collar 
-mask = pad_vals( ones( [ T T T ] ), pad, false );
+mask = pad_vals( ones( [ T T T ] ), [2 1 3], false );
 
 % Get theoretical LKC
 params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), false );
@@ -263,7 +272,7 @@ mask = true([T+2*pad T+2*pad T+2*pad]);
 
 % Get theoretical LKC
 theoryL = LKC_wncfield_theory( mask, FWHM, 3, 0 );
-contL = LKC_isogauss_theory( FWHM, [ T T T] );
+contL   = LKC_isogauss_theory( FWHM, [ T T T] );
 
 % Generate test data
 lat_data = randn( [ T+2*pad T+2*pad T+2*pad nsubj ] );
