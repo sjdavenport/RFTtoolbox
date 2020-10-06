@@ -1,4 +1,4 @@
-function [ curve, x ]  = ECcurve( lat_data, limits, increm, version)
+function [ curve, x ]  = ECcurve_alternatve( lat_data, limits, increm, version)
 % ECcurve( lat_data, limits, ninter )
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -71,16 +71,13 @@ x = limits(1):increm:limits(2);
 % Initialize the storage curve
 curve = zeros(1, length(x));
 
-% Obtain the curves!
-for I = 1:length(x)
-    x_position = sum(ECchanges <= x(I));
-    if x_position == 0
-        % Here before any critical points the excursion set is just 1
-        % connected component.
-        curve(I) = ECvals(1);
-    else
-        curve(I) = ECvals(x_position+1);
-    end
+% Obtain the curves, this is slow and can be improved by setting all values
+% between change areas to the correct value.
+xlocofchange_new = 1;
+for I = 1:length(ECchanges)
+    xlocofchange_old = xlocofchange_new;
+    xlocofchange_new = find(abs(x - ECchanges(I)) < increm/2, 1, 'last');
+    curve(xlocofchange_old:xlocofchange_new) = ECvals(I);
 end
 
 end

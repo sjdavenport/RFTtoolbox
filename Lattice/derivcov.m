@@ -1,16 +1,12 @@
-function [ curve, x ] = maxECcurve( maxima, alpha_percentile, increm )
-% maxECcurve( maxima ) estimates the tail of the EC curve from the
-% distribution of observed maxima over many iid iterations
+function [ Delta, Lambda, Omega ] = derivcov( fields, lag )
+% NEWFUN serves as a function template.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  maxima
-%  alpha_percentile
 % Optional
-%  increm
 %--------------------------------------------------------------------------
 % OUTPUT
-%  curve     the Euler characteristic curve
+% 
 %--------------------------------------------------------------------------
 % EXAMPLES
 % 
@@ -23,27 +19,27 @@ function [ curve, x ] = maxECcurve( maxima, alpha_percentile, increm )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'increm', 'var' )
-   % default option of increm
-   increm = 0.01;
-end
-
-if ~exist( 'alpha_percentile', 'var')
-    alpha_percentile = 0.05;
+if ~exist( 'opt1', 'var' )
+   % default option of opt1
+   opt1 = 0;
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-limits = [prctile(maxima(:), 100*(1-alpha_percentile) ), max(maxima(:))];
+N = size(fields,2);
+deriv = diff(fields,1);
+deriv2 = diff(deriv,1);
 
-x = limits(1):increm:limits(2);
-n_maxima = size(maxima,2);
+deriv = deriv - mean(deriv,2);
+Lambda = var(deriv,0,2);
+Omega = var(deriv2,0,2);
 
-curve = zeros(1, length(x));
-for I = 1:length(x)
-    curve(I) = sum(maxima(:)>x(I));
+if lag > 0
+    Delta = mean(deriv(1:end-lag,:).*deriv2(lag:end, :), 2)*(N-1)/N;
+else
+    lag = -lag;
+    Delta = mean(deriv((lag+1):end,:).*deriv2(1:end-lag+1,:), 2)*(N-1)/N;
 end
-curve = curve/n_maxima;
 
 end
 
