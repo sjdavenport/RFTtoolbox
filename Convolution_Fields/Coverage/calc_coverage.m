@@ -1,4 +1,4 @@
-function [voxcoverage, clustercoverage] = calc_coverage( maxnmin, LKCs, do2tail, alpha)
+function [voxcoverage, clustercoverage, thresholds] = calc_coverage( maxnmin, LKCs, do2tail, alpha)
 % CALC_COVERAGE( maxnmin, LKC_vec, alpha ) calculates the coverage that
 % results from doing alpha level coverage. 
 %--------------------------------------------------------------------------

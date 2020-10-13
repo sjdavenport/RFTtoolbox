@@ -1,4 +1,4 @@
-function [ interval, std_error ] = bernstd( p, N, alpha )
+function [ interval, std_error ] = bernstd( p, N, level )
 % BERNSTD( p, N, sigma ) generates the bernouilli standard error confidence
 % intervals that arise from the central limit theorem.
 %--------------------------------------------------------------------------
@@ -20,14 +20,14 @@ function [ interval, std_error ] = bernstd( p, N, alpha )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'alpha', 'var' )
-   % default option of opt1
-   alpha = 0.95;
+if ~exist( 'level', 'var' )
+   % default option of alpha
+   level = 0.95;
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-std_error = (p*(1-p))^(1/2)*norminv( 1-(1-alpha)/2 )/sqrt(N);
+std_error = (p*(1-p))^(1/2)*norminv( 1-(1-level)/2 )/sqrt(N);
 interval = [ p - std_error, p + std_error ];
 
 end

@@ -40,6 +40,8 @@ plot(im_perm); title('Permutation Discoveries')
 
 threshold
 threshold_perm
+
+
 %% Test Power (1D)
 niters = 1000;
 signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
@@ -124,3 +126,44 @@ subplot(1,3,2)
 imagesc(fconv(signal, FWHM));title('Smoothed Signal');
 subplot(1,3,3)
 imagesc(im_perm); title('Permutation Discoveries')
+
+%% Simple 1D example - With Gaussianized fields!
+signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
+nvox = length(signal); nsubj = 150; FWHM = 1;
+lat_data = 10*wfield(nvox, nsubj, 'T', 3) + signal;
+G_lat_data = Gaussianize(lat_data);
+
+[im, threshold, ~, xvals] = vRFT_orig( lat_data, FWHM );
+
+% Permutation thresholidng
+% [im_perm, threshold_perm] = perm_thresh(lat_data, 'T', FWHM);
+
+[im_perm, threshold_perm] = perm_thresh(lat_data.field, 'T', FWHM, NaN);
+
+% RFT thresholding
+[im_G, threshold, ~, xvals] = vRFT_orig( G_lat_data, FWHM );
+
+% Permutation thresholidng
+% [im_perm, threshold_perm] = perm_thresh(lat_data, 'T', FWHM);
+
+[im_perm_G, threshold_perm] = perm_thresh(G_lat_data.field, 'T', FWHM, NaN);
+
+% threshold_perm = perm_thresh(lat_data.field, 'T', FWHM, NaN, 1);
+% im_perm = mvtstat( lat_data.field ) > threshold_perm;
+
+% Plot results
+subplot(4,1,1)
+plot(xvals{1}, im); title('RFT Discoveries - No Gauss')
+xlim(vec2lim(xvals{1}))
+subplot(4,1,2)
+plot(im_perm); title('Permutation Discoveries - No Gauss')
+xlim(vec2lim(xvals{1}))
+subplot(4,1,3)
+plot(xvals{1}, im_G); title('RFT Discoveries')
+xlim(vec2lim(xvals{1}))
+subplot(4,1,4)
+plot(im_perm_G); title('Permutation Discoveries')
+xlim(vec2lim(xvals{1}))
+
+threshold
+threshold_perm
