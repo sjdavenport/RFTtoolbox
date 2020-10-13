@@ -21,23 +21,7 @@ function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 %  ss       numeric to multiply the field by to make it variance 1.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %% 1D 
-% nvox = 10; FWHM = 2;
-% lat_data = wfield(nvox); resadd = 0; enlarge = 0;
-% params = ConvFieldParams( FWHM, resadd, enlarge);
-% latcfield = convfield(lat_data, params);
-% plot(latcfield.xvals{1}, latcfield.field, 'o-')
-% hold on
-% params.resadd = 10;
-% cfield = convfield( lat_data, params);
-% plot(cfield.xvals{1},cfield.field)
-%
-% %% 2D
-% Dim = [10,10]; FWHM_x = 5; FWHM_y = 20;
-% lat_data = wfield(Dim); resadd = 5; enlarge = 0;
-% params = ConvFieldParams( [FWHM_x, FWHM_y], resadd, enlarge);
-% latcfield = convfield(lat_data, params);
-% imagesc(latcfield.field)
+% FW
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow, Samuel Davenport                                            
 %--------------------------------------------------------------------------
