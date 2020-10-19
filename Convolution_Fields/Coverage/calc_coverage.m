@@ -1,4 +1,4 @@
-function [voxcoverage, clustercoverage, thresholds] = calc_coverage( maxnmin, LKCs, do2tail, alpha)
+function [voxcoverage, clustercoverage, thresholds] = calc_coverage( maxnmin, LKCs, do2tail, alpha, option)
 % CALC_COVERAGE( maxnmin, LKC_vec, alpha ) calculates the coverage that
 % results from doing alpha level coverage. 
 %--------------------------------------------------------------------------
@@ -35,9 +35,13 @@ if ~exist( 'alpha', 'var' )
    alpha = 0.05;
 end
 
+if ~exist('option', 'var')
+    option = 'standard';
+end
+
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-niters = length(maxnmin.alphathresholds);
+niters = min(length(maxnmin.alphathresholds),  size(LKCs.L,2));
 thresholds = zeros(1, niters);
 
 if do2tail
@@ -47,7 +51,7 @@ end
 df = maxnmin.nsubj - 1;
 
 for I = 1:niters
-    thresholds(I) = EECthreshold( alpha, LKCs.L(:,I)', LKCs.L0(I), "T", df );
+    thresholds(I) = EECthreshold( alpha, LKCs.L(:,I)', LKCs.L0(I), "T", df, option );
 end
 
 peak_types = {'finelat','lat','conv'};

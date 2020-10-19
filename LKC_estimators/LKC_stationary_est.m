@@ -1,4 +1,4 @@
-function [ L, L0, nonstatInt ] = LKC_stationary_est( field, dfield, version )
+function [ L, L0, Lambda ] = LKC_stationary_est( field, dfield, version, scale )
 % LKC_stationary_est( cfield, dcfield, version ) estimates the LKCs assuming
 % stationarity.
 %--------------------------------------------------------------------------
@@ -18,7 +18,6 @@ function [ L, L0, nonstatInt ] = LKC_stationary_est( field, dfield, version )
 %          - D = 3, logical of length 3. version(1), indicates whether L2
 %          should be estimated, version(2) whether the first integral is
 %          used in L1 and version(3) whether the second integral is used.
-%
 %--------------------------------------------------------------------------
 % EXAMPLES
 % 
@@ -34,22 +33,34 @@ if ~exist( 'version', 'var' )
     if field.D < 3
         version = true;
     else
-        version = true( [ 1 3 ] );
+        version = [true,true,false];
     end
 end
 
+if ~exist('scale', 'var')
+   scale = 0; 
+end
 %% Main function
 %--------------------------------------------------------------------------
-
 % Construct VoxManifold object by providing Riemannian metric
 g = Riemmetric_est( field, dfield );
 g = Mask( g );
 G = reshape( g.field, [ prod( g.masksize ), D, D ] );
-G = constfield( squeeze( mean( G( g.mask(:), :, : ) ) ), g.masksize );
+
+% Calculate the Lambda matrix as the average
+Lambda = squeeze( mean( G( g.mask(:), :, : ) ) );
+
+% Adjust by the scaling factor
+if scale == 1
+    Lambda = Lambda*(g.fibersize-3)/(g.fibersize-2);
+end
+
+% Obtain a constant field
+G = constfield( Lambda, g.masksize );
 g.field =  G.field;
 voxmfd  = VoxManifold( g );
 
 % Obtain the LKCs
-[ L, L0, nonstatInt ] = LKC_est( voxmfd, version );
+[ L, L0 ] = LKC_est( voxmfd, version );
 
 return

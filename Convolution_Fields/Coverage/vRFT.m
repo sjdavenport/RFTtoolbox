@@ -221,6 +221,9 @@ else
     minimum = NaN;
 end
 
+% %% Stationary LKC estimation (for comparison if desired!)
+
+
 end
 
 % DEPRECATED

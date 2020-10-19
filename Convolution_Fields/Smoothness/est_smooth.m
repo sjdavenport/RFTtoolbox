@@ -141,6 +141,7 @@ tmp = ~isnan(Xderivmate(index{:}, 1));
 if combine_var
     denom = sum(tmp(:))*(nsubj-1);   
 else
+    % Include the scaling factor for unbiased estimation
     denom = sum(tmp(:))*(nsubj-1)*(nsubj-2)/(nsubj-3);
 %     denom = sum(tmp(:))*(nsubj-1);
 end

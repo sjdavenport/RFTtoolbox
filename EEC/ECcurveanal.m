@@ -1,4 +1,4 @@
-function [max_coverage, cluster_coverage, L] = ECcurveanal( coverage, mask, sample_size, quantile, top, L )
+function [max_coverage, cluster_coverage, x] = ECcurveanal( coverage, sample_size, L, L0, quantile, top )
 % ECcurveanal( coverage, mask, sample_size, quantile, L ) plots the upper
 % tail of the EC curves.
 %--------------------------------------------------------------------------
@@ -17,13 +17,6 @@ function [max_coverage, cluster_coverage, L] = ECcurveanal( coverage, mask, samp
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-D = length(size(mask));
-if D == 2
-    if (size(mask,1) == 1) || (size(mask,2) == 1)
-        D = 1;
-    end
-end
-
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
@@ -42,7 +35,6 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-L0 = EulerChar(mask, 0.5, D);
 
 if quantile > 0
     [ curve, x ] = maxECcurve( coverage.convmaxima, quantile );
