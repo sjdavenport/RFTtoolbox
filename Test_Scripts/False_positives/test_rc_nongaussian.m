@@ -12,7 +12,7 @@ close all
 %% %% 1D examples
 %% 1D white t  example
 FWHM = 3; sample_size = 20; nvox = 100; resadd = 3; df = 3;
-spfn = @(nsubj) wtfield( nvox, nsubj, df ); niters = 1000;
+spfn = @(nsubj) wfield( nvox, nsubj, 'T', df ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 coverage = record_coverage( spfn, sample_size, params, niters)
 % ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
@@ -35,8 +35,8 @@ params = ConvFieldParams( FWHM, resadd );
 coverage = record_coverage( spfn, sample_size, params, niters)
 
 %% 1D white Laplacian example
-FWHM = 3; sample_size = 20; nvox = 20; resadd = 1; scale = 2;
-spfn = @(nsubj) wlfield( nvox, nsubj, scale ); niters = 1000;
+FWHM = 3; sample_size = 20; nvox = 20; resadd = 1; scale = 3;
+spfn = @(nsubj) wfield( nvox, nsubj, 'L', scale ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 coverage = record_coverage( spfn, sample_size, params, niters)
 % ECcurveanal(coverage, true(nvox,1), sample_size, 0.1)
@@ -81,8 +81,8 @@ coverage = record_coverage( spfn, sample_size, params, niters)
 
 %% small 2D white Laplacian example
 %(Note that on a small domain conv and finelat are similar even for reasonable resadd)
-Dim = [30,30]; FWHM = 3; resadd = 1; scale = 0.01; sample_size = 100;
-spfn = @(nsubj) wlfield(Dim, nsubj, scale); niters = 1000;
+Dim = [30,30]; FWHM = 3; resadd = 1; scale = 0.01; sample_size = 50;
+spfn = @(nsubj) wfield(Dim, nsubj, 'L', scale); niters = 1000;
 params = ConvFieldParams( [FWHM, FWHM], resadd );
 coverage = record_coverage( spfn, sample_size, params, niters)
 % ECcurveanal(coverage, true(Dim), sample_size, 0.1)

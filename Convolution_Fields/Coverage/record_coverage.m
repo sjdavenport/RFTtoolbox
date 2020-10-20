@@ -127,8 +127,8 @@ for b = 1:niters
     
     lat_data = Mask(lat_data);
     [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
-    storeLKCs(:,b) = L';
-    if any(isnan(L))
+    storeLKCs(:,b) = L.L';
+    if any(isnan(L.L))
         warning('NAN LKC recorded')
     end
     

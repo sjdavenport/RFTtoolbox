@@ -51,7 +51,7 @@ function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
 % % Scale 1 Laplacian field
 % wfield( [5,5], 10, 'L', 1)
 %--------------------------------------------------------------------------
-% Author: Fabian Telschow
+% Author: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
 %% Check mandatory input
