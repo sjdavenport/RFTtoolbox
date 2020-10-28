@@ -530,10 +530,16 @@ classdef Field
        %% Stats Functions for class Field
        %-------------------------------------------------------------------            
        % Redefine sum()
-       out = sum( varargin)
+       out = sum( varargin )
        
        % Redefine mean()
-       out = mean( varargin)
+       out = mean( varargin )
+       
+       % Redefine std()
+       out = std( varargin )
+       
+       % Redefine var()
+       out = var( varargin )
        %% Algebra Functions for class Field
        %-------------------------------------------------------------------     
        % Redefine matrix multiplication
