@@ -12,7 +12,7 @@ close all
 %% % Field parameters
 T      = 100;
 nsubj  = 120;
-FWHM   = 1;
+FWHM   = 2;
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
 %% Example with recangular mask
@@ -20,7 +20,8 @@ pad    = ceil( 4*FWHM2sigma( FWHM ) );
 mask = pad_vals( true( [ T, 1 ] ), pad, false );
 
 % Generate params object for convfields
-params = ConvFieldParams( FWHM, 101, ceil(101/2), false );
+resThy = 301;
+params = ConvFieldParams( FWHM, resThy, ceil(resThy/2), false );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, T  ); % This is for continuous fields
@@ -48,7 +49,8 @@ mask = pad_vals( true( [ T, 1 ] ), pad, false );
 FWHM = 3;
 
 % Generate params object for convfields
-params = ConvFieldParams( FWHM, 101, 0, false );
+resThy = 101
+params = ConvFieldParams( FWHM, resThy, 0, false );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, T  ); % This is for continuous fields
@@ -75,7 +77,8 @@ LKC2   = LKC_latconv_est( lat_data, params );
 mask = true( [ T, 1 ] );
 
 % Generate params object for convfields
-params = ConvFieldParams( FWHM, 11, ceil(11/2), true );
+resThy = 301
+params = ConvFieldParams( FWHM, resThy, ceil(resThy/2), false );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, T  );
@@ -97,25 +100,28 @@ LKC5   = LKC_latconv_est( lat_data, params );
 [ theoryL; LKC1; LKC3; LKC5 ]'
 
 %% D = 1 non-stationary sphere example
-FWHM = 6;
+FWHM = 3;
 % Dimension of domain
 dim   = [ 100 1 ];
 
 % Generate mask
 pad         = ceil( 4 * FWHM2sigma(FWHM) );
 mask        = true( dim );
-mask(20:80) = false;
+mask(5:95) = false;
 mask        = logical( pad_vals( mask, pad) );
 
 % Mask the lattice data
 lat_mask = false % switch to true for non-stationarity
 
 % Generate params object for convfields
-params = ConvFieldParams( FWHM, 21, 0, lat_mask );
+resThy = 101
+params = ConvFieldParams( FWHM, resThy, 0, lat_mask );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, T  );
 theoryL  = LKC_wncfield_theory( mask, params );
+
+theoryL
 
 % Generate test data
 lat_data = wnfield( mask, nsubj );
@@ -138,7 +144,7 @@ LKC15   = LKC_latconv_est( lat_data, params );
 %% % Parameters for the field
 T      = 49;
 nsubj  = 100;
-FWHM   = sigma2FWHM(5);
+FWHM   = sigma2FWHM(1.2);
 pad = ceil( 4*FWHM2sigma( FWHM ) );
 
 %% Example with recangular mask

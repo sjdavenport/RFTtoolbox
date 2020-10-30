@@ -82,19 +82,15 @@ switch D
     case 1
         %%% Calculate LKC1        
         % Voxel size
-        xvec = xvals{1};
         dx = diff( xvals{1} );
         dx = dx(1);
         
         % Get the volume form
         vol_form = sqrt( max( g(:,1), 0 ) );
-        
-        % Restrict vol_form and dx to mask
-        vol_form = vol_form( mask );     
 
         % Estimate of L1 by integrating volume form over the domain using
         % the trapezoid rule
-        L(1) = sum( dx * ( vol_form( 1:end-1 ) + vol_form( 2:end ) ) / 2 );
+        L(1) = sum( dx * weights * vol_form( mask ) );
         
     case 2
         % Get the voxel grid dimensions after resolution increase
