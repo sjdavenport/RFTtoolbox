@@ -29,6 +29,10 @@ if ~exist( 'L', 'var')
     L = mean(coverage.storeLKCs,2)';
 end
 
+if ~exist( 'L0', 'var')
+    L0 = 1;
+end
+
 if ~exist( 'top', 'var')
     top = size(coverage.allmaxima,1);
 end

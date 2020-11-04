@@ -61,7 +61,7 @@ title('Pvalues - Gaussianized - Smoothing After')
 
 
 %% Skewed testing
-N = 50000;
+N = 50;
 xdim = 1000;
 field_type = 's2';
 % Y = -(wfield(xdim,N, field_type).field);

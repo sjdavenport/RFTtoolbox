@@ -57,7 +57,7 @@ std_dev = std(lat_data.field, 0, lat_data.D + 1);
 mean_dev = mean(lat_data.field, lat_data.D + 1);
 
 standard_data = lat_data.field./std_dev; 
-nonnanlocs = ~isnan(standard_data);
+nonnanlocs = ~isnan(standard_data); % This step excludes voxels outside of the mask!
 standardized_field = (lat_data.field-mean_dev)./std_dev; 
 
 normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);

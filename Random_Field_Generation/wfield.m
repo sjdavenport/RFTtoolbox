@@ -121,4 +121,7 @@ if exist( 'xvals', 'var' )
     obj.xvals = xvals;
 end
 
+% Mask the field
+% obj = Mask(obj);
+
 return
