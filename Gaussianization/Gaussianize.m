@@ -1,4 +1,4 @@
-function lat_data = Gaussianize( lat_data )
+function [lat_data, standardized_field] = Gaussianize( lat_data )
 % GAUSSIANIZE( lat_data ) takes in a field of data on a lattice and 
 % Gaussianizes it demeans. To do this it takes the data and demeans and 
 % standardizes it voxelwise and combines over voxels to obtain a null
