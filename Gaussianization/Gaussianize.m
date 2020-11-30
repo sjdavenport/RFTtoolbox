@@ -1,4 +1,4 @@
-function [lat_data, standardized_field] = Gaussianize( lat_data )
+function [lat_data, standardized_field] = Gaussianize( lat_data, stdsmo, usetrans )
 % GAUSSIANIZE( lat_data ) takes in a field of data on a lattice and 
 % Gaussianizes it demeans. To do this it takes the data and demeans and 
 % standardizes it voxelwise and combines over voxels to obtain a null
@@ -33,6 +33,15 @@ function [lat_data, standardized_field] = Gaussianize( lat_data )
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
+if ~exist('stdsmo', 'var')
+    stdsmo = 0;
+end
+
+if ~exist('usetrans', 'var')
+    usetrans = 0;
+end
+
+%%
 % if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
 %     
 % end
@@ -53,14 +62,40 @@ end
 %--------------------------------------------------------------------------
 
 % Standardize
-std_dev = std(lat_data.field, 0, lat_data.D + 1);
+% std_dev = std(lat_data.field, 0, lat_data.D + 1);
+std_dev = std(lat_data);
+if stdsmo > 0 
+    params = ConvFieldParams(repmat(stdsmo, 1, lat_data.D), 0, 0);
+    std_dev = Mask(convfield(std_dev, params));
+    onefield = std_dev./std_dev.field;
+    twofield = Mask(convfield(onefield, params));
+    std_dev = std_dev./twofield;
+end
 mean_dev = mean(lat_data.field, lat_data.D + 1);
 
-standard_data = lat_data.field./std_dev; 
+standard_data = lat_data.field./std_dev.field; 
 nonnanlocs = ~isnan(standard_data); % This step excludes voxels outside of the mask!
-standardized_field = (lat_data.field-mean_dev)./std_dev; 
+standardized_field = (lat_data.field-mean_dev)./std_dev.field; 
 
-normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);
+% normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);
+
+% This loop corrects for the fact that you have subtracted the mean and
+% ensures that normal input gives normal output.
+if usetrans == 1
+    if lat_data.fibersize == 1
+        return
+    else
+        data_vc = vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) );
+        load(['C:\Users\12SDa\davenpor\Data\RestingStateData\EklundData\Gaussianize_transmutes\vc2_nsubj_', ...
+            num2str(lat_data.fibersize)], 'vc_dist')
+    end
+    normalized_data = norminv(vec_ecdf( data_vc, vc_dist ), 0, 1);
+elseif usetrans == 0
+    normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);
+elseif usetrans == 2
+    normalized_data = abs(standard_data(nonnanlocs)).^(1/2).*sign(standard_data(nonnanlocs));
+end
+
 lat_data.field(nonnanlocs) = normalized_data;
 
 end

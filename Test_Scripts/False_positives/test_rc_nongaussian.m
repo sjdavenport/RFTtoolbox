@@ -9,6 +9,13 @@ clear all
 close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% 1D example: Gaussianizing Gaussian data
+FWHM = 3; sample_size = 20; nvox = 50; resadd = 1;
+spfn = @(nsubj) Gaussianize(wfield( nvox, nsubj)); niters = 1000;
+params = ConvFieldParams( FWHM, resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+
+
 %% %% 1D examples
 %% 1D white t  example
 FWHM = 3; sample_size = 20; nvox = 100; resadd = 3; df = 3;
@@ -56,6 +63,12 @@ params = ConvFieldParams( repmat(FWHM,1,D), resadd );
 record_coverage( spfn, sample_size, params, niters)
 
 %% %% 2D examples
+%% 2D example: Gaussianizing Gaussian data
+FWHM = 3; sample_size = 50; Dim = [50,50]; resadd = 1;
+spfn = @(nsubj) Gaussianize(wfield( Dim, nsubj)); niters = 1000;
+params = ConvFieldParams( [FWHM, FWHM], resadd );
+coverage = record_coverage( spfn, sample_size, params, niters)
+
 %% small 2D white t example
 %(Note that on a small domain conv and finelat are similar even for reasonable resadd)
 Dim = [10,10]; FWHM = 3; resadd = 1; sample_size = 100;

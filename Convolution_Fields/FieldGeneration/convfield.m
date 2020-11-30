@@ -50,9 +50,12 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     D = mask_dim(lat_data);
     if D == 1 && size(lat_data, 1) == 1
         lat_data = lat_data';
+        lat_data = Field(lat_data, true(size(lat_data,1),1) );
+    else
+        lat_data = Field(lat_data, true(size(lat_data)));
     end
-    lat_data = Field(lat_data, true(size(lat_data)));
-    clear len_lat_data;
+    warning('PRobably should not enable this as can lead to errors?')
+%     error('Need to sort the mask in one D here!')
 end
 
 % Allow for default FWHM input
@@ -145,8 +148,10 @@ cfield.kernel    = Kernel;
 cfield.enlarge   = enlarge;
 cfield.resadd    = resadd;
 cfield.derivtype = derivtype;
+
 cfield.mask      = mask_highres( lat_data.mask, resadd, enlarge );
 xvals2 = cell( [ 1, D ] );
+
 for d = 1:D
     xvals2{d} = ( xvals{d}(1) - enlarge * dx_hr(d) ) : dx_hr(d) : ...
                                     ( xvals{d}(end) + enlarge * dx_hr(d) );

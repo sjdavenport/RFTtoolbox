@@ -1,6 +1,6 @@
 function [ derivs, derivs2 ] = lat_derivs( data, points )
 % LAT_DERIVS( lat_data, points ) takes a lattice of data and estimates the
-% derivative the the specified points
+% derivative at the specified pointsn (Only 1D for now!)
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory

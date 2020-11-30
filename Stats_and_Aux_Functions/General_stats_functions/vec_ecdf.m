@@ -1,5 +1,5 @@
 function sample_vec = vec_ecdf( sample_vec, dist_vec )
-% Evaluation of an emperical cumulative distribution function
+% Evaluation of an empirical cumulative distribution function
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory

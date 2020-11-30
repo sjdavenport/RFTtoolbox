@@ -45,14 +45,14 @@ legend('ratio', 'mean', 'Location', 'NW')
 
 %% t random variables
 df = 3;
-nvals = 1000000;
+nvals = 10000;
 mu = 0:0.02:1;
-mu = 0.:0.001:0.01;
+% mu = 0.:0.001:0.01;
 % X = normrnd(0,1,length(mu),nvals);
 X = trnd(df,length(mu),nvals);
 
-f = @(x) norminv(tcdf(x, df));
-% f = @(x) (abs(x).^(1)).*sign(x);
+% f = @(x) norminv(tcdf(x, df));
+f = @(x) (abs(x).^(1/2)).*sign(x);
 
 mX = mean(f(X+ mu'), 2);
 sX = std(f(X+mu'), 0, 2);
