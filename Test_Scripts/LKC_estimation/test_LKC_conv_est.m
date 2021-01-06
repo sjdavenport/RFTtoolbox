@@ -230,7 +230,7 @@ LKC5   = LKC_latconv_est( lat_data, params );
 
 %% %% D = 3 
 % Parameters for the field
-T      = 8;
+T      = 5;
 nsubj  = 10;
 FWHM   = sigma2FWHM(1.5);
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
@@ -240,7 +240,7 @@ pad    = ceil( 4*FWHM2sigma( FWHM ) );
 mask = pad_vals( ones( [ T T T ] ), [2 1 3], false );
 
 % Get theoretical LKC
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), false );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), false );
 theoryL  = LKC_wncfield_theory( mask, params );
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
