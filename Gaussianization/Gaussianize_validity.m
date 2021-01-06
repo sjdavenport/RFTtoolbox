@@ -91,7 +91,8 @@ N = 50;
 xdim = 1000;
 field_type = 's2';
 % Y = -(wfield(xdim,N, field_type).field);
-Y = wfield(xdim,N, field_type).field;
+f = wfield(xdim,N, field_type)
+Y = f.field;
 G_Y = Gaussianize(Y);
 
 subplot(2,1,1)
