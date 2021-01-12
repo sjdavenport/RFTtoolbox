@@ -109,7 +109,7 @@ for m = 1:Msim
     elseif isa( data_gen, 'Field' )
         lat_data = Field( data_gen.mask );
         lat_data.field = data_gen.field( index{:},...
-                        randsample( data_gen.fibersize, nsubj ) );
+                                         randsample( data_gen.fibersize, nsubj ) );
     end
 
     % Generate convolution fields from lattice data
