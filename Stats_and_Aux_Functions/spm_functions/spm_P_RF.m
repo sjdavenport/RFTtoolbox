@@ -72,6 +72,8 @@ Ec  = sum(EM);          % <maxima>
 EN  = P(1)*R(D);        % <resels>
 Ek  = EN/EM(D);         % Ek = EN/EM(D);
 
+% P is essentially not used
+
 
 %-Get P{n > k}
 %==========================================================================
@@ -106,7 +108,11 @@ elseif STAT == 'F'
 
 end
 
-
 %-Poisson clumping heuristic {for multiple clusters}
 %==========================================================================
-P        = 1 - spm_Pcdf(c - 1,(Ec + eps)*p);  %When c = 0, this is 1 - exp((Ec + eps)*p).
+P        = 1 - spm_Pcdf(c - 1,(Ec + eps)*p);  
+%When c = 1, this is 1 - exp(-(Ec + eps)*p) because spm_Pcdf is the cdf of
+%the poisson distribution with lambda = (Ec + eps)*p, and if X \sim
+%Po(Lambda) then P(X = k) = lambda^k *e^(-lambda)/k! so 
+% P(X \leq 0) = P(X = 0) = e^(-lambda)!
+

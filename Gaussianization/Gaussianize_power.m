@@ -29,7 +29,6 @@ G_Y = Gaussianize(Y);
 G_Y_smoothbeforeG = Gaussianize(smooth_Y);
 [~,G_smoothafterG] = convfield_t(G_Y, FWHM);
 
-%@Sam: def_col not defined. Maybe you forgot to push it?
 subplot(3,1,1)
 plot(smoothtstat);hold on;plot(mvtstat(G_Y_smoothbeforeG.field));
 legend('Original T-stat', 'Gaussianized T-stat - Smoothed Before Gaussianization', 'Location', 'NW')

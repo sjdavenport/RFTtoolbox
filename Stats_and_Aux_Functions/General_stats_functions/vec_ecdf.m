@@ -8,7 +8,7 @@ function sample_vec = vec_ecdf( sample_vec, dist_vec )
 %               would like to compare the quantiles of
 %--------------------------------------------------------------------------
 % OUTPUT
-% sample_vec
+% sample_vec    the ecdf 
 %--------------------------------------------------------------------------
 % EXAMPLES
 % sample_vec = normrnd(0,1,1,10000); dist_vec = normrnd(0,1,1,100000);
