@@ -1,3 +1,4 @@
+%% Simple example with normal data (i.e. not heavy tailed)
 nvals = 100000;
 mu = 0:0.02:1;
 X = normrnd(0,1,length(mu),nvals);
@@ -12,7 +13,7 @@ hold on
 plot(mu, mu)
 legend('ratio', 'mean', 'Location', 'NW')
 
-%%
+%% Another example with normal data but where there seems to be a power gain
 nvals = 100000;
 mu = 0:0.1:1;
 X = normrnd(0,1,length(mu),nvals);
@@ -27,7 +28,7 @@ hold on
 plot(mu, mu)
 legend('ratio', 'mean', 'Location', 'NW')
 
-%% Other functions
+%% Again there seems to be a power gain at high enough Cohen's d
 nvals = 100000;
 mu = 0:0.02:1;
 X = normrnd(0,1,length(mu),nvals); 
@@ -43,7 +44,7 @@ hold on
 plot(mu, mu)
 legend('ratio', 'mean', 'Location', 'NW')
 
-%% t random variables
+%% t random variables: there seems to be a clear power gain! 
 df = 3;
 nvals = 10000;
 mu = 0:0.02:1;

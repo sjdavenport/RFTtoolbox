@@ -54,7 +54,7 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     else
         lat_data = Field(lat_data, true(size(lat_data)));
     end
-    warning('PRobably should not enable this as can lead to errors?')
+%     warning('PRobably should not enable this as can lead to errors?')
 %     error('Need to sort the mask in one D here!')
 end
 

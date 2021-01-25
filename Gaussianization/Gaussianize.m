@@ -1,27 +1,39 @@
-function [lat_data, standardized_field] = Gaussianize( lat_data, stdsmo, usetrans )
+function [lat_data, standardized_field, standard_data] = ...
+                                  Gaussianize( lat_data, stdsmo, usetrans )
 % GAUSSIANIZE( lat_data ) takes in a field of data on a lattice and 
-% Gaussianizes it demeans. To do this it takes the data and demeans and 
+% Gaussianizes it. To do this it takes the data and demeans and 
 % standardizes it voxelwise and combines over voxels to obtain a null
-% marginal distribution (it makes the assumption that the marginal 
-% distribution a condition that is of course much weaker than Gaussianity).
-% It then compares the original, standardized but not demeaned, data
-% to this null marginal distribution calculates a quantile and Gaussianizes
-% it via comparison to the Gaussian pdf. The effect of this is to ensure
-% marginal Gaussian distributions at each voxel (note however that the
-% field transformed this way are not necessarily Gaussian). One of the 
-% benefits of this transformation is to ensure that the tails do not overly
-% influence the data. This is especially important in fMRI where due to
-% artefacts in the data it is common that some voxels of some subjects have 
-% very high tails so that an indivdiual subject can dominate the distribution
+% marginal distribution. It then compares the original, standardized 
+% but not demeaned, data to this null marginal distribution calculates a 
+% quantile and Gaussianizes it via comparison to the Gaussian pdf. 
+% The aim of this is to aim Gaussian distributions at each voxel (note 
+% however that the field transformed this way are only approximately Gaussian
+% given a finite number of subjects.). One of the benefits of this 
+% transformation is to ensure that the tails do not overly influence the data.
+% This is especially important in fMRI where due to artefacts in the data 
+% it is common that some voxels of some subjects have very high tails so 
+% that an indivdiual subject can dominate the distribution
 % at a given voxel. This transformation increases the power to detect
 % activation and ensures that the assumptions of multiple testing methods
 % hold. Note that it is helpful for both the assumptions of permutation and 
 % random field theory.
+%
+% In small samples the data is only approximately Gaussian as
+% (X-muhat)/sigmahat has a slightly different distribution from X/sigmahat.
+% This is typically only an issue in data that has an extreme amount of
+% weight near zero as then values of muhat are highly variable. 
+%
+% If test-statistics are being used then Gaussianity can further be ensured
+% by the central limit theorem. See Davenport (2021) for details.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
 %  lat_data    a field of data on a lattice. For best performance this
 %              field should be made up of at least 10 subjects. 
+% Optional
+%  stdsmo      a smoothing parameter for the standard deviation. Default is
+%              not to smooth, i.e. to set stdsmo = 0.
+%  usetrans    different transformation options (to be specified!)
 %--------------------------------------------------------------------------
 % OUTPUT
 %  lat_data    the Gaussianized field of data
@@ -33,6 +45,8 @@ function [lat_data, standardized_field] = Gaussianize( lat_data, stdsmo, usetran
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 
+%%  Add/check optional values
+%--------------------------------------------------------------------------
 if ~exist('stdsmo', 'var')
     stdsmo = 0;
 end
@@ -41,11 +55,7 @@ if ~exist('usetrans', 'var')
     usetrans = 0;
 end
 
-%%
-% if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
-%     
-% end
-% % Allow for non field input
+%% Allow for non field input
 if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     temp_lat_data = lat_data;
     s_lat_data = size(lat_data);
@@ -58,30 +68,43 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
     clear temp_lat_data;
 end
 
+% Ensure that the field is masked
+lat_data = Mask(lat_data);
+
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 
 % Standardize
 % std_dev = std(lat_data.field, 0, lat_data.D + 1);
 std_dev = std(lat_data);
+
+% Smooth the standard deviation if that is included as an option
+% Need to work on this and explore it further it doesn't work atm
 if stdsmo > 0 
-    params = ConvFieldParams(repmat(stdsmo, 1, lat_data.D), 0, 0);
+    params = ConvFieldParams(repmat(stdsmo, 1 , lat_data.D), 0, 0);
     std_dev = Mask(convfield(std_dev, params));
     onefield = std_dev./std_dev.field;
     twofield = Mask(convfield(onefield, params));
     std_dev = std_dev./twofield;
+    error('Weird things happen when you try to smooth the MNI mask, sum(nonanlocs(:)) is way too small!')
 end
+
+% Calculate the mean at each voxel
 mean_dev = mean(lat_data.field, lat_data.D + 1);
 
+% Standardize without demeaning
 standard_data = lat_data.field./std_dev.field; 
-nonnanlocs = ~isnan(standard_data); % This step excludes voxels outside of the mask!
+
+% Obtain the locations of the data that lies within the mask
+nonnanlocs = ~isnan(standard_data);
+
+% Standardize after demeaing to get the null distribution
 standardized_field = (lat_data.field-mean_dev)./std_dev.field; 
 
-% normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);
 
-% This loop corrects for the fact that you have subtracted the mean and
-% ensures that normal input gives normal output.
 if usetrans == 1
+    % Work in progress: this loop corrects for the fact that you have 
+    % subtracted the mean and ensures that normal input gives normal output.
     if lat_data.fibersize == 1
         return
     else
@@ -91,11 +114,19 @@ if usetrans == 1
     end
     normalized_data = norminv(vec_ecdf( data_vc, vc_dist ), 0, 1);
 elseif usetrans == 0
+    % Default loop
+    % vec_ecdf calculates the empirical cdf of the standard_data based
+    % on the standardized_data then norminv is applied to convert the
+    % quantiles to normal ones and thus Gaussianize the data
     normalized_data = norminv(vec_ecdf( standard_data(nonnanlocs), standardized_field(nonnanlocs) ), 0, 1);
 elseif usetrans == 2
+    % Use the square root transform rather than the estimated one. The
+    % utility of this and other transformations needs to be investigated as
+    % it gives good performance despite being quite simple.
     normalized_data = abs(standard_data(nonnanlocs)).^(1/2).*sign(standard_data(nonnanlocs));
 end
 
+% Set the data within the mask to be the Gaussianized data
 lat_data.field(nonnanlocs) = normalized_data;
 
 end

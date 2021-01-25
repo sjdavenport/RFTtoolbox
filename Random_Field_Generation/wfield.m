@@ -1,4 +1,4 @@
-function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
+ function obj = wfield( varmask, fibersize, field_type, field_params, xvals )
 % WFIELD( varmask, fibersize, xvals ) constructs a Fields object having
 % white noise in the fiber.
 %--------------------------------------------------------------------------

@@ -35,6 +35,10 @@ function [tstat, xbar, std_dev, cohensd] = mvtstat( data, Dim, nansaszeros )
 % sigmatilde = std(noise_at_vox)
 % sqrt(nsubj)*mu/sigmatilde
 % tstat(vox)
+%
+% % For comparison to python code:
+% a = reshape(1:12,4,3)
+% [tstat, xbar, std_dev] = mvtstat(data)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
