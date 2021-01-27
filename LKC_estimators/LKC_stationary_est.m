@@ -40,6 +40,8 @@ end
 if ~exist('scale', 'var')
    scale = 0; 
 end
+
+
 %% Main function
 %--------------------------------------------------------------------------
 % Construct VoxManifold object by providing Riemannian metric
