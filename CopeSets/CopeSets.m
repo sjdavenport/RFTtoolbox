@@ -1,6 +1,7 @@
-function [thresh, quantiles, hatdelta, hatsigma, len_bdry] = CopeSets( field, c, lvls, quantEstim,...
+function [ thresh, quantiles, hatdelta, hatsigma, len_bdry ] = CopeSets( field, c, lvls, quantEstim,...
                                                         bdry_type, center, normalize, delta )
-% Computes CoPe all ingredients for CoPe sets.
+% CopeSets( field, c, lvls, quantEstim, bdry_type, center, normalize,
+% delta ) computes CoPe sets for the mean of a random field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -84,24 +85,19 @@ sF    = field.masksize;
 %% Main function
 %--------------------------------------------------------------------------
 % Compute mean curve and variance
-hatdelta = mean( field ); 
-hatsigma =  std( field );
-
-% ensure there are values above the threshold!
-if sum( hatdelta(:) >= c ) == 0
-    error( "The threshold c is to high. There are now values exceeding it!" )
-end
+hatdelta = mean( field );
+hatsigma = std( field );
 
 %%% Compute the process on the boundary and its mask
 switch bdry_type
     case 'linear'
-        F_bdry = linBdryEstim( field, c, hatdelta );
+        F_bdry = BdryEst_linear( field, c );
         mask   = ones( [ size( F_bdry, 1 ) 1 ] );
     case 'erodilation'
-        F_bdry = erodedilateBdryEstim( field, c, delta );
+        F_bdry = BdryEst_erodedilate( field, c );
         mask   = ones( [ size( F_bdry, 1 ) 1 ] );
     case 'true'
-        F_bdry = linBdryEstim( field, c, delta );
+        F_bdry = BdryEst_linear( field, c, delta );
         mask   = ones( [ size( F_bdry, 1 ) 1 ] );
 end
 
@@ -135,11 +131,11 @@ thresh = ones( [ sF( 1:end ) length( lvls ) 2 ] );
 thresh( index{:}, 1 ) = c - repmat( shiftdim(  quantiles,...
                                               -D + 1 ),...
                                     [ sF 1 ] )...
-                        .* repmat( hatsigma,...
+                        .* repmat( hatsigma.field,...
                                    [ 1 1 length( lvls ) ] ) / sqrt( N );
 % Upper threshold
 thresh( index{:}, 2 ) = c + repmat( shiftdim(  quantiles,...
                                               -D+1),...
                                               [ sF 1 ] )...
-                        .* repmat( hatsigma,...
+                        .* repmat( hatsigma.field,...
                                    [ 1 1 length( lvls ) ] ) / sqrt( N );
