@@ -9,7 +9,7 @@ close all
 D = 2;
 % sample size
 N = 20;
-% dimension of domain
+% size of domain
 dim    = 100 * ones( [ 1 D ] );
 % FWHM first smoothing
 FWHM_1 = 3;
