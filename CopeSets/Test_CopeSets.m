@@ -63,7 +63,6 @@ lvls = 0.90;
 % Get the Cope Set thresholds etc
 [ thresh, quantiles, hatdelta, hatsigma, len_bdry ] = CopeSets( field, c, lvls );
 
-
 %% Quick and dirty plots
 %--------------------------------------------------------------------------
 switch D
