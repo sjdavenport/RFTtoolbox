@@ -97,7 +97,6 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-% @Fabian this loop is unecessary right?
 obj = Field( varmask );
 if strcmp(field_type, 'normal') || strcmp(field_type, 'N')
     obj.field = randn( [ obj.masksize(1:obj.D) fibersize ] );
