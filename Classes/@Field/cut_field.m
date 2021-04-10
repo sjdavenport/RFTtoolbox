@@ -48,7 +48,6 @@ cut_field.field = lat_data.field(remaining_voxels, :);
 
 end
 
-
 % error('Not finished yet!')
 % 
 % % Initialize the subset field

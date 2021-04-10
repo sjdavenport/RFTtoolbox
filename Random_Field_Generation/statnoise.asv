@@ -9,8 +9,6 @@ function stat_field = statnoise( Dim, nsubj, params, truncmult )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% params = ConvFieldParams(
-%
 % stat_field = statnoise( 100, 10, 3, 11 )
 %
 % global PIloc; load([PIloc, 'Variance/storevars']); FWHM = 20;
@@ -52,11 +50,9 @@ if smooth_field.D == 1
     stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut);
 elseif smooth_field.D == 2
     stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut,...
-            (number2cut+1):bigger_mask(2) - number2cut);
+            (number2cut+1):bigger_mask(1) - number2cut);
 elseif smooth_field.D == 3
-    stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut,...
-            (number2cut+1):bigger_mask(2) - number2cut, ...
-            (number2cut+1):bigger_mask(3) - number2cut);
+    stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut);
 end
 % stat_field = cut_field(smooth_field, cutoff);
 

@@ -1,12 +1,6 @@
 function Sig = gensig( Mag, Rad, Smo, Dim, centre_locs )
-% GENSIG( Mag, Rad, Smo, Dim, centre_locs ) generates signal with peaks 
-% (let npeaks denote the number of peaks) at locations within an image of 
-% dimension Dim. The nth peak is created by generating a spheroid 
-% (with dimension according to the dimension of the image) of signal of 
-% height 1 with radius Rad(n) and then smoothing this with a Gaussian kernel 
-% with FWHM: Smo(n). This is then scaled so that the peak has height Mag(n) 
-% and is centred at a location in the output image Sig with indices given 
-% by centre_locs(n).
+% GENSIGCONV( Mag, Rad, Smo, Dim, centre_locs ) generates signal with peaks 
+% that is defined everywhere (via convolution fields). WORK IN PROGRESS!!
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mag       is a vector of length npeaks giving the magnitude of the 
@@ -39,16 +33,14 @@ function Sig = gensig( Mag, Rad, Smo, Dim, centre_locs )
 % 
 % % 2D signal
 % Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
-% surf(Sig)
+% surf(Sig)%
 %
 % % 2D Single peak plus noise
-% Sig = gensig(1, 10, 8, [90,90]);
+% Sig = gensig(1, 10, 8, [90,90]); nsubj = 20;
 % surf(Sig)
 % lat_data = randn([90,90,nsubj]) + Sig;
-% surf(lat_data)
+% surf(mean(lat_data,3))
 %--------------------------------------------------------------------------
-% SEE ALSO
-% SimDemo
 
 %Set to sum(100*clock) to ensure that this is different each time.
 randn('seed',sum(100*clock));   %-Random number generator initializaiton
