@@ -9,8 +9,16 @@ function stat_field = statnoise( Dim, nsubj, params, truncmult )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% params = ConvFieldParams(
+% % 1D 
+% FWHM = 3; resadd = 3; params = ConvFieldParams(FWHM, resadd);
+% Dim = 10; nsubj = 20; f = statnoise( Dim, nsubj, params )
 %
+% % 2D
+% FWHM = [3,3]; resadd = 3; params = ConvFieldParams(FWHM, resadd);
+% Dim = [10,10]; nsubj = 20; f = statnoise( Dim, nsubj, params )
+% % Note this has size 37x37 as (resadd+1)*10 - resadd = 37, i.e. 4
+% % associated with all except the final voxel point!
+% 
 % stat_field = statnoise( 100, 10, 3, 11 )
 %
 % global PIloc; load([PIloc, 'Variance/storevars']); FWHM = 20;
@@ -33,6 +41,7 @@ end
     
 %%  Add/check optional values
 %--------------------------------------------------------------------------
+params.enlarge = 0;
 if params.enlarge ~= 0
     error('The params enlarge parameter must be set to 0')
 end
@@ -41,22 +50,27 @@ end
 %--------------------------------------------------------------------------
 % params = ConvFieldParams(FWHM, resadd, 0);
 params.kernel.truncation = truncmult*params.kernel.truncation;
-cutoff = ceil(4*FWHM2sigma(FWHM));
+cutoff = params.kernel.truncation(1);
 
-lat_data = wfield(Dim(1)+2*cutoff, nsubj);
+lat_data = wfield(Dim + 2*cutoff, nsubj);
 smooth_field = convfield(lat_data, params);
-bigger_mask = smooth_field.mask;
+bigger_masksize = smooth_field.masksize;
 
-number2cut = cutoff*(kernel.resadd+1);
+number2cut = cutoff*(params.resadd+1);
 if smooth_field.D == 1
-    stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut);
+%     stat_field = cut_field(smooth_field, cutoff);
+    stat_field = smooth_field( (number2cut+1):bigger_masksize(1) - number2cut);
 elseif smooth_field.D == 2
-    stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut,...
-            (number2cut+1):bigger_mask(2) - number2cut);
+    stat_field = smooth_field( (number2cut+1):bigger_masksize(1) - number2cut,...
+            (number2cut+1):bigger_masksize(2) - number2cut);
 elseif smooth_field.D == 3
-    stat_field = smooth_field( (number2cut+1):bigger_mask(1) - number2cut,...
-            (number2cut+1):bigger_mask(2) - number2cut, ...
-            (number2cut+1):bigger_mask(3) - number2cut);
+    stat_field = smooth_field( (number2cut+1):bigger_masksize(1) - number2cut,...
+            (number2cut+1):bigger_masksize(2) - number2cut, ...
+            (number2cut+1):bigger_masksize(3) - number2cut);
+end
+stat_field.kernel = smooth_field.kernel;
+for I = 1:smooth_field.D
+    stat_field.xvals{I} = stat_field.xvals{I} - cutoff;
 end
 % stat_field = cut_field(smooth_field, cutoff);
 
