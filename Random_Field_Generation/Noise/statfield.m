@@ -1,4 +1,4 @@
-function stat_field = statnoise( Dim, nsubj, params, truncmult )
+function stat_field = statfield( Dim, nsubj, params, truncmult )
 % STATNOISE generates a stationary smooth noise field. (ATM only 1D.)
 %--------------------------------------------------------------------------
 % ARGUMENTS
