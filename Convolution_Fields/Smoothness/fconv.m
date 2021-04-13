@@ -278,7 +278,7 @@ if ~exist( 'adjust_kernel', 'var' ) || isnan( sum( adjust_kernel(:) ) )
     
 elseif length( adjust_kernel ) ~= D
     error( strcat( 'The kernel adjustment must be of the ',...
-                   'same dimension as the data' ) )
+                   'same dimension as the data, ensure that length(FWHM) = D!' ) )
 end
 
 %% Main function

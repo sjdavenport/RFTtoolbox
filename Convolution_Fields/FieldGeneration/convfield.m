@@ -1,5 +1,5 @@
 function [ cfield, ss ] = convfield( lat_data, params, derivtype )
-% CONVFIELD_FIELD( lat_data, params, derivtype )
+% CONVFIELD( lat_data, params, derivtype )
 % generates an object of class Field containing the convolution field
 % derived from lattice data smoothed with a seperable kernel.
 % The generated field is evaluated on an equidistant grid with resolution
@@ -57,6 +57,7 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
 %     warning('PRobably should not enable this as can lead to errors?')
 %     error('Need to sort the mask in one D here!')
 end
+
 
 % Allow for default FWHM input
 if isnumeric(params)

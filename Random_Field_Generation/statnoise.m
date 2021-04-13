@@ -49,6 +49,7 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 % params = ConvFieldParams(FWHM, resadd, 0);
+
 params.kernel.truncation = truncmult*params.kernel.truncation;
 cutoff = params.kernel.truncation(1);
 

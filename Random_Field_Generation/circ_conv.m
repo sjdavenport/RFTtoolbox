@@ -2,10 +2,11 @@ function smoothed_data = circ_conv(data, FWHM)
 % circ_conv(data, FWHM) performs circular convolution of a dataset 
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% 
+% data   a vector 
+% FWHM   the FWHM with which to smooth
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% smoothed_data   a vector giving the smooth data
 %--------------------------------------------------------------------------
 % EXAMPLES
 % circ_conv( 1:10, 2 ) 
