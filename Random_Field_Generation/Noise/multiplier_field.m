@@ -1,4 +1,4 @@
-function data = multiplier_field( base_fields, nsubj )
+function mfield = multiplier_field( base_fields, nsubj, normalize, multiplier )
 % multiplier_field( base_fields, nsubj ) generates samples from a mean zero
 % unit variance field given by the base_fields using Gaussian multipliers.
 %--------------------------------------------------------------------------
@@ -7,46 +7,89 @@ function data = multiplier_field( base_fields, nsubj )
 %               base_fields.
 % nsubj         The number of subjects to be drawn from the base_fields
 %               gaussian multiplier.
+% normalize     a boolean, if TRUE the field is normalized to
+%               have variance one. Default TRUE.
+% multiplier    
 %--------------------------------------------------------------------------
 % OUTPUT
 % data   an object of class Field containing the nsubj sample fields
 %--------------------------------------------------------------------------
 % EXAMPLES
+% % Grid for the domain
+% x = (0:50) / 50;
+% y = (0:50) / 50;
+% [X, Y] = meshgrid(x, y);
+% 
+% % Mask
+% mask = true(length(x), length(y));
+% 
+% % Subjects
+% nsubj = 1e3;
+% 
+% % Array containing polynomials up to order 2
+% Polynomials = cat(3, ones(length(x), length(y)), X, Y, X.*Y, X.*X, Y.*Y);
+% 
+% % Generate a Basis functions as polynomials 
+% PolyBase = Field(Polynomials, mask);
+% 
+% % Generate data with variance 1
+% mfields_const = multiplier_field(PolyBase, nsubj, true, "gaussian");
+% imagesc(mfields_const(:, :, 100));
+% 
+% % Plot the variance of the field
+% imagesc(var(mfields_const)); colorbar;
+% 
+% % Generate data with non constant variance given by the basis functions
+% mfields_nonconst = multiplier_field(PolyBase, 20, false, "gaussian");
+% imagesc(mfields_nonconst(:, :, 20))
+%
+% % Plot the variance of the field
+% var(mfields_nonconst)
+%
 %--------------------------------------------------------------------------
 % AUTHORS:
 % Fabian Telschow
 
+%% Check mandatory input
+%--------------------------------------------------------------------------
 
-data2 = base_fields;
-base_fields = data2.field;
-% get size of the base_fields and the number of base_fields.
-sBase = size(base_fields);
-nBase = sBase(end);
-
-% index structure to deal with different dimensions
-indexD  = repmat( {':'}, 1, length(sBase)-1 );
-D = length(sBase)-1;
-
-% Get weights for the multiplier bootstrap
-multiplier = normrnd( 0, 1, [ nBase, nsubj ] );
-
-% reshape and and standardize the field, such that it has unit variance
-base_fields = reshape( base_fields, prod( sBase(1:end-1) ), nBase );
-% normalize the residuals
-base_fields = ( base_fields - mean( base_fields, 2 ) ) ...
-                                       ./ sqrt( sum( base_fields.^2, 2 ) );
-
-data = zeros( [ sBase( 1:end-1 ), nsubj ] );
-
-for i = 1:nsubj
-    % get the bootstrapped process
-    if D>1
-        data( indexD{:}, i ) = reshape( base_fields * multiplier( :, i ),...
-                                        sBase( 1:end-1 ) );
-    else
-        data( indexD{:}, i ) = base_fields * multiplier( :, i );
-    end
+%% Check optional input
+%--------------------------------------------------------------------------
+% Fill the default for the normaliez option
+if ~exist( 'normalize', 'var')
+    normalize = true;
 end
 
-data2.field = data;
-data = data2;
+% Fill the default for the normalize option
+if ~exist( 'multiplier', 'var')
+    multiplier = "gaussian";
+end
+
+%% Main function
+%--------------------------------------------------------------------------
+% save the field paramters from the basis field into a temporary variable
+base_fiber = base_fields.field;
+
+% get size of the base_fields and the number of base_fields.
+sBase = base_fields.masksize;
+nBase = base_fields.fibersize;
+
+% Get weights for the multiplier bootstrap (atm only Gaussian implemented)
+if( multiplier == "gaussian" )
+    multiplier = normrnd( 0, 1, [ nBase, nsubj ] );
+end
+
+% reshape and and standardize the field, such that it has unit variance
+base_fiber = reshape( base_fiber, prod( sBase ), nBase );
+
+% normalize the basefields to yield variance one
+if( normalize )
+    base_fiber = ( base_fiber - mean( base_fiber, 2 ) ) ...
+                                       ./ sqrt( sum( base_fiber.^2, 2 ) );
+end
+
+% Get the random multiplier fields
+mfield = base_fields;
+mfield.field = reshape( base_fiber * multiplier, [ sBase, nsubj ] );
+
+return
