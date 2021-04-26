@@ -540,6 +540,7 @@ classdef Field
        
        % Redefine var()
        out = var( varargin )
+       
        %% Algebra Functions for class Field
        %-------------------------------------------------------------------     
        % Redefine matrix multiplication
