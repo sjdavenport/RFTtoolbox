@@ -12,7 +12,7 @@ close all
 %% % Field parameters
 T      = 100;
 nsubj  = 120;
-FWHM   = 2;
+FWHM   = 1;
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
 %% Example with recangular mask
@@ -41,7 +41,7 @@ LKC5   = LKC_latconv_est( lat_data, params );
 % Values are stable accross different resadd increases.
 % Note that resadd should be odd.Otherwise the underlying
 % manifold changes
-[ theoryL; LKC1; LKC3; LKC5 ]'
+[ theoryLt; theoryL; LKC1; LKC3; LKC5 ]'
 
 %% Example with recangular mask without enlargement
 % Generate mask
@@ -70,7 +70,7 @@ LKC2   = LKC_latconv_est( lat_data, params );
 % Values are stable accross different resadd increases.
 % Note that resadd should be odd.Otherwise the underlying
 % manifold changes
-[ theoryL; LKC0; LKC1; LKC2 ]'
+[ theoryLt; theoryL; LKC0; LKC1; LKC2 ]'
 
 %% D = 1 no pad vals example
 % Generate mask
@@ -144,15 +144,18 @@ LKC15   = LKC_latconv_est( lat_data, params );
 %% % Parameters for the field
 T      = 49;
 nsubj  = 100;
-FWHM   = sigma2FWHM(1.2);
+FWHM   = 3%sigma2FWHM(1.2);
 pad = ceil( 4*FWHM2sigma( FWHM ) );
 
 %% Example with recangular mask
 % Get mask
 mask = pad_vals( true( [ T T ] ), pad, false );
 
+% Mask the lattice before smoothing or not
+mask_lat = false;
+
 % Generate params object for convfields
-params = ConvFieldParams( [ FWHM, FWHM ], 21, ceil(21/2), false );
+params = ConvFieldParams( [ FWHM, FWHM ], 5, ceil(5/2), mask_lat );
 
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, [ T T ]  );
@@ -162,16 +165,16 @@ theoryL  = LKC_wncfield_theory( mask, params );
 lat_data = wnfield( mask, nsubj );
 
 % Estimate across different resadd
-params = ConvFieldParams( [ FWHM, FWHM ], 1, ceil(1/2), false );
+params = ConvFieldParams( [ FWHM, FWHM ], 1, ceil(1/2), mask_lat );
 LKC1   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( [ FWHM, FWHM ], 3, ceil(3/2), false );
+params = ConvFieldParams( [ FWHM, FWHM ], 3, ceil(3/2), mask_lat );
 LKC3   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( [ FWHM, FWHM ], 5, ceil(5/2), false );
+params = ConvFieldParams( [ FWHM, FWHM ], 5, ceil(5/2), mask_lat );
 LKC5   = LKC_latconv_est( lat_data, params );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ theoryL; LKC1; LKC3; LKC5 ]'
+[ theoryLt; theoryL; LKC1; LKC3; LKC5 ]'
 
 %% Example with recangular mask no enlargement
 % Get mask
