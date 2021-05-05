@@ -37,7 +37,7 @@ function mfield = multiplier_field( base_fields, nsubj, normalize, multiplier )
 % imagesc(mfields_const(:, :, 100));
 % 
 % % Plot the variance of the field
-% imagesc(var(mfields_const)); colorbar;
+% imagesc(std(mfields_const)); colorbar;
 % 
 % % Generate data with non constant variance given by the basis functions
 % mfields_nonconst = multiplier_field(PolyBase, 20, false, "gaussian");
@@ -84,8 +84,7 @@ base_fiber = reshape( base_fiber, prod( sBase ), nBase );
 
 % normalize the basefields to yield variance one
 if( normalize )
-    base_fiber = ( base_fiber - mean( base_fiber, 2 ) ) ...
-                                       ./ sqrt( sum( base_fiber.^2, 2 ) );
+    base_fiber = base_fiber ./ sqrt( sum( base_fiber.^2, 2 ) );
 end
 
 % Get the random multiplier fields
