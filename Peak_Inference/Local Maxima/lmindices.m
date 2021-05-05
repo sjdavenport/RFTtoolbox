@@ -10,10 +10,12 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % mask   a 0/1 mask
 %--------------------------------------------------------------------------
 % OUTPUT
-% lmarrayindices    an npeaks by D array of the peak locations
+% lmarrayindices    an D by npeaks array of the peak locations
 % lmind             an npeaks by 1 array where each value is the converted
 %                   peak location, converted according to the size of Y 
 %                   using convind
+% peakvals          an npeaks by 1 array each value of which is the value
+%                   the field takes at a given peak
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %3D example
@@ -91,5 +93,11 @@ end
 % Obtain the values at the peaks
 peakvals = Y(lmind);
 
-end
+% Return a column vector if the dimension is 1
+% if D == 1
+%     lmarrayindices = lmarrayindices';
+%     lmind = lmind';
+%     peakvals = peakvals';
+% end
 
+end
