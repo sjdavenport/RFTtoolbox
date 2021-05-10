@@ -13,10 +13,11 @@ close all
 Y = [1,2,1];
 findconvpeaks(Y, 3, 1)
 
-%% 1D with different xvals_vecs
+%% 1D with different xvals
 Y = [1,1,2,2,1,1];
-xvals_vecs = 11:(length(Y)+10);
-findconvpeaks(Y, 3, 1, 'Z', ones(1,length(Y)), xvals_vecs)
+xvals = 11:(length(Y)+10);
+Y = Field(Y', true(size(Y))'); Y.xvals{1} = xvals;
+findconvpeaks(Y, 3, 1)
 
 %% 1D multiple peaks
 Y = [1,2,1,1,1,1,2,1];
@@ -30,41 +31,46 @@ findconvpeaks(Y, 3, {4.5-0.00001}) %returns 4.5 which is not the max so watch
 %                                   won't occur in reality
 
 %% 1D with a mask
-Y = [1,2,1,2,1]; FWHM = 2; D = 1;
+Y = [1,2,1,2,1]; FWHM = 2;
 mask = logical([1,0,1,0,1]);
-[maxloc, maxval] = findconvpeaks(Y, FWHM, 1, 'Z', mask)
-resadd = 5;
-mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-[ cfield, xvals_vecs ]  = convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-cfield_masked = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-plot(xvals_vecs{1}, cfield_masked)
+f = Field(Y', mask');
+[maxloc, maxval] = findconvpeaks(f, FWHM, 1)
 
-% Using an initialization
-[maxloc, maxval] = findconvpeaks(Y, FWHM, {1.5}, 'Z', mask)
+%% Raised the issues here with Fabian!
+resadd = 10;
+params = ConvFieldParams(4, resadd);
+cfield  = convfield( f, params ); 
+cfield = Mask(cfield);
+plot(cfield.mask)
 
+[maxloc, maxval] = findconvpeaks(f, FWHM, {1.5})
 % Note that for a 1D convolution field the maximum can never lie on the
 % boundary.
 
 %% %% 2D Examples
 %% Simple 2D application
-Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1]; FWHM = 2; resadd = 10; D = 2;
+Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1]; FWHM = 2; resadd = 50;
 [maxloc, maxval] = findconvpeaks(Y, FWHM, 1)
-fine_eval = convfield(Y, FWHM, resadd, D);
-max(fine_eval(:))
-surf(fine_eval)
+params = ConvFieldParams([FWHM, FWHM], resadd);
+fine_eval = convfield(Y, params);
+max(fine_eval.field(:))
+imagesc(fine_eval)
 
 %% Finding peaks on the boundary
-FWHM = 3; D = 2;
-Y = [10,1,1;1,1,1;10,1,1]; %I.e. so the peak will be outside the mask!
+% An example where the peak will be outside the mask!
+FWHM = 3; Y = [10,1,1;1,1,1;10,1,1]; 
 mask = logical([1,1,1;0,1,1;1,1,1]);
-[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2]', 'Z', mask)
+f = Field(Y, mask);
+[peaklocs, peakvals] = findconvpeaks(f, FWHM, [2,2]')
 
+%%
 % View masked field:
-resadd = 9;
-mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-surf(cfield)
-max(cfield(:))
+resadd = 21; params = ConvFieldParams([FWHM, FWHM], resadd);
+cfield = Mask(convfield(Mask(f), params));
+surf(cfield.field)
+max(cfield.field(:))
+
+applyconvfield([2,1.5]', f.field, FWHM, mask)
 
 %% 2D multiple peaks
 Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]; resadd = 9;

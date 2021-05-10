@@ -56,6 +56,15 @@ if ~exist('field_type', 'var')
     field_type = 'Z';
 end
 
+% Turn the input data into a field (with mask of ones and the standard
+% xvals) if the input is not a field.
+if ~isa(lat_data, 'Field')
+    if length(size(lat_data)) == 2 && size(lat_data,1) == 1
+        lat_data = lat_data';
+    end
+    lat_data = Field(lat_data, true(size(lat_data)));
+end
+
 % Allow for 'z' and 't' input
 field_type = upper(field_type); 
 
@@ -67,16 +76,16 @@ end
 % Obtain the number of dimensions
 D = lat_data.D;
 
-% Ensure peak_est_locs is of the right size
-if size(peak_est_locs,1) > D
-    error('peak_est_locs must be of the right size')
-end
-
 %%  add/check optional values
 %--------------------------------------------------------------------------
 if ~exist('peak_est_locs', 'var')
     % default option of peak_est_locs
     peak_est_locs = 1; %Default is to just consider the maximum.
+end
+
+% Ensure peak_est_locs is of the right size
+if size(peak_est_locs,1) > D
+    error('peak_est_locs must be of the right size')
 end
 
 %% Error checking
@@ -95,6 +104,7 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     numberofmaxima2find = peak_est_locs;
     
     % Calculate the field on the lattice
+    params = ConvFieldParams(repmat(FWHM, 1, D), 1, 0);
     if strcmp(field_type, 'Z')
         lat_eval = convfield( lat_data, params );
     elseif strcmp(field_type, 'T')
@@ -102,7 +112,7 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     end
     
     % Find the top local maxima of the field on the lattice
-    max_indices = lmindices(lat_eval.field, numberofmaxima2find, lat_data.mask); 
+    max_indices = lmindices(lat_eval.field, numberofmaxima2find, lat_eval.mask); 
     
     % In D = 1 you need to transpose (CHECK THIS) Note the transpose here! 
     % It's necessary for the input to other functions.
@@ -111,13 +121,14 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     end
     
     % Reset this in case there are less maxima than desired
-    numberofmaxima2find = size(max_indices,2);
+%     numberofmaxima2find = size(max_indices,2);
     
-    % Initialize a matrix to store peak locations
-    peak_est_locs = zeros(D, numberofmaxima2find);
-    for I = 1:D
-        peak_est_locs(I, :) = lat_data.xvals{I}(max_indices(I,:));
-    end
+    % Store peak locations (in terms of the actual location in the xvals)
+    peak_est_locs = xvaleval(max_indices, lat_eval.xvals);
+%     peak_est_locs = zeros(D, numberofmaxima2find);
+%     for I = 1:D
+%         peak_est_locs(I, :) = lat_data.xvals{I}(max_indices(I,:));
+%     end
 elseif iscell(peak_est_locs)
     % Only intended to be used in the D = 1 case
     % For D = 1, if you want to calculate multiple peaks you need to enter
@@ -168,7 +179,7 @@ for I = 1:npeaks
         subset{d} = local_xvals_vecs{d} - lat_data.xvals{d}(1) + 1;
     end
     
-    local_mask = mask(subset{:});
+    local_mask = lat_data.mask(subset{:});
     
     % For t-fields make sure to include all subjects
     if strcmp(field_type, 'T')
@@ -176,9 +187,9 @@ for I = 1:npeaks
     end
     
     % Define local lat_data subset
-    local_lat_data = lat_data(subset{:});
+    local_lat_data = lat_data.field(subset{:});
     
-    % Define local convolution field (taking truncation = 0 have already
+    % Define local convolution field (taking truncation = 0 as have already
     % truncated to a small box)
     if strcmp(field_type, 'Z')
         cfield = @(tval) applyconvfield(tval, local_lat_data, FWHM, ...
@@ -190,8 +201,7 @@ for I = 1:npeaks
     
     [ peakloc, peakval ] = findlms( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
     peakvals(I) = peakval;
-    peaklocs(:,I) = peakloc;
-    
+    peaklocs(:,I) = peakloc;   
 end
 
 end

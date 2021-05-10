@@ -5,7 +5,8 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Y      a 3 dimensional array of real values
-% top    the top number of local maxima of which to report
+% top    the top number of local maxima of which to report, if you wish to
+%        consider all of the maxima you can take top = 'all'
 % CC     the connectivity criterion
 % mask   a 0/1 mask
 %--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % a(16,100,40) = 5;
 % a(10,50,35) = 3;
 % [peaklocs, peakinds, peakvals] = lmindices(a,2)
-% a(peakinds) %== peakvals
+% a(peakinds) == peakvals
 %
 % %1D example 
 % lmindices([1,2,1])
