@@ -1,5 +1,5 @@
 function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
-                                                peak_est_locs, field_type )
+                              peak_est_locs, field_type, meanfn, meanonlat)
 % FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
 %                                                  truncation, xvals_vecs )
 % calculates the locations of peaks in a convolution field.
@@ -10,33 +10,12 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
 %  FWHM      The amount of smoothing used to generate the convolution field
 %            (need to generalize to an arbitary kernel, i.e. to accept
 %            params = ConvFieldParams)
-% Optional 
-%  peak_est_locs a D by npeaks matrix giving the initial estimates of the
-%               location of the peaks. If this is instead an integer: top
-%               then the top number of maxima are considered and initial
-%               locations are estimated from the underlying data. If this
-%               is not specified then it is set to 1, i.e. only considering
-%               the maximum.
-%  field_type    Either 'Z' (mean field) or 'T' (t field). Default is 'Z'. 
-%               If 'Z' lat_data is treated as a single observation of data
-%               on a lattice. If 'T' lat_data is treated as multiple
-%               observations corresponding to nsubj = lat_data(end)
-%               subjects
-%  xvals_vecs    a D-dimensional cell array whose entries are vectors giving the
-%               xvalues at each each dimension along the lattice. It assumes
-%               a regular, rectangular lattice (though within a given
-%               dimension the voxels can be spaced irregularly).
-%               I.e suppose that your initial lattice grid is a
-%               4by5 2D grid with 4 voxels in the x direction and 5 in
-%               the y direction. And that the x-values take the values:
-%               [1,2,3,4] and the y-values take the values: [0,2,4,6,8].
-%               Then you would take xvals_vecs = {[1,2,3,4], [0,2,4,6,8]}.
-%               The default is to assume that the spacing between the
-%               voxels is 1. If only one xval_vec direction is set the
-%               others are taken to range up from 1 with increment given by
-%               the set direction.
-%  truncation
-%  mask
+% peak_est_locs    a D by npeaks matrix where the dth column is a vector
+%                  initializing the dth peak or a cell array of length D
+%                  where the dth entry is a vector containing the peaks
+% field_type
+% meanfn
+% meanonlat
 %--------------------------------------------------------------------------
 % OUTPUT
 % peak_locs   the true locations of the top peaks in the convolution field.
@@ -88,6 +67,12 @@ if size(peak_est_locs,1) > D
     error('peak_est_locs must be of the right size')
 end
 
+if ~exist('meanfn', 'var')
+    use_mean = 0;
+else
+    use_mean = 1;
+end
+
 %% Error checking
 %--------------------------------------------------------------------------
 % Ensure that the field has no NaN entries
@@ -112,7 +97,11 @@ if (D > 2 || isnumeric(peak_est_locs))  && (isequal(size(peak_est_locs),...
     end
     
     % Find the top local maxima of the field on the lattice
-    max_indices = lmindices(lat_eval.field, numberofmaxima2find, lat_eval.mask); 
+    if use_mean
+        max_indices = lmindices(lat_eval.field + meanonlat, numberofmaxima2find, lat_eval.mask);
+    else
+        max_indices = lmindices(lat_eval.field, numberofmaxima2find, lat_eval.mask);
+    end
     
     % In D = 1 you need to transpose (CHECK THIS) Note the transpose here! 
     % It's necessary for the input to other functions.
@@ -192,13 +181,23 @@ for I = 1:npeaks
     % Define local convolution field (taking truncation = 0 as have already
     % truncated to a small box)
     if strcmp(field_type, 'Z')
-        cfield = @(tval) applyconvfield(tval, local_lat_data, FWHM, ...
+        kfield = @(tval) applyconvfield(tval, local_lat_data, FWHM, ...
             local_mask, 0, local_xvals_vecs);
     elseif strcmp(field_type, 'T')
-        cfield = @(tval) applyconvfield_t( tval, local_lat_data, FWHM,...
+        kfield = @(tval) applyconvfield_t( tval, local_lat_data, FWHM,...
             local_mask, 0, local_xvals_vecs );
+        % To include the mean here need to code it into applyconvfield_t
+        % (not hard!)
     end
-    
+    if use_mean
+        if strcmp(field_type, 'T')
+            error('The mean hasn''t been coded for t-statistic')
+        end
+        cfield = @(tval) kfield(tval) + meanfn(tval);
+    else
+        cfield = kfield;
+    end
+        
     [ peakloc, peakval ] = findlms( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
     peakvals(I) = peakval;
     peaklocs(:,I) = peakloc;   

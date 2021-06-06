@@ -9,13 +9,14 @@ function [ derivs, derivs2 ] = lat_derivs( data, points )
 %           field at which to evaluate the derivative
 %--------------------------------------------------------------------------
 % OUTPUT
-%  derivs
+%  derivs   a D by npoints matrix
+%  derivs2  a D by D by npoints matrix
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% 1D Examples
 % data = 1:10; y = Field(data', 2); y.xvals = {data};
 % [derivs, deriv2] = lat_derivs( y, 4 )
-% 
+%
 % x = -1:0.01:1; y = Field(x'.^2, 2); y.xvals = {x};
 % [a,b] = lat_derivs(y, 0)
 %
@@ -30,6 +31,8 @@ function [ derivs, derivs2 ] = lat_derivs( data, points )
 % [x,y] = meshgrid( -1:0.01:1, -1:0.01:1); f = Field(x.^2+ 3*x.*y + y.^2, 2);
 % f.xvals = {-1:0.01:1, -1:0.01:1}
 % [derivs, deriv2] = lat_derivs( f, [0,0]' )
+% [derivs, deriv2] = lat_derivs( f, [-1,-1]' )
+% [derivs, deriv2] = lat_derivs( f, [-1,1]' )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -75,19 +78,28 @@ for I = 1:npoints
     %indexing
     PIE = point_index(I,:);
     
-    if PIE(d) == 1 || PIE(d) == length(data.xvals{d})
-        error('The off diagonal second derivative has not been implemented for edge voxels')
-    end
+    %     if PIE(d) == 1 || PIE(d) == length(data.xvals{d})
+    %         error('The off diagonal second derivative has not been implemented for edge voxels')
+    %     end
     
     % Derivatives and diagonal 2nd derivatives
     for d = 1:D
+        PIE2use = PIE;
+        % Hacky fix to ignore the edge cases:
+        if PIE(d) == 1
+            PIE2use(d) = PIE(d) + 1;
+        end
+        if PIE(d) == length(data.xvals{d})
+            PIE2use(d) = PIE(d) - 1;
+        end
+        
         sbvec = sbasis(d,D)';
-        PIm2dex = num2cell(PIE-2*sbvec);
-        PIm1dex = num2cell(PIE-sbvec);
-        PIdex = num2cell(PIE);
-        PI1dex = num2cell(PIE+sbvec);
-        PI2dex = num2cell(PIE+2*sbvec);
-        if PIE(d) > 1 && PIE(d) < length(data.xvals{d})
+        PIm2dex = num2cell(PIE2use-2*sbvec);
+        PIm1dex = num2cell(PIE2use-sbvec);
+        PIdex = num2cell(PIE2use);
+        PI1dex = num2cell(PIE2use+sbvec);
+        PI2dex = num2cell(PIE2use+2*sbvec);
+        if PIE2use(d) > 1 && PIE2use(d) < length(data.xvals{d})
             derivs(d,I) = (1/2)*(data.field(PI1dex{:}) - data.field(PIm1dex{:}))/lat_spacing(d);
             derivs2(d,d,I) = (data.field(PI1dex{:}) - 2*data.field(PIdex{:}) + data.field(PIm1dex{:}))/lat_spacing(d)^2;
         elseif PIE(d) == 1
@@ -101,19 +113,36 @@ for I = 1:npoints
     
     % Off diagonal hessian elements
     for d1 = 1:D
+        PIE2use = PIE;
+        % Hacky fix to ignore the edge cases:
+        if PIE(d1) == 1
+            PIE2use(d1) = PIE(d1) + 1;
+        end
+        if PIE(d1) == length(data.xvals{d1})
+            PIE2use(d1) = PIE(d1) - 1;
+        end
+        
         sbvec1 = sbasis(d1,D)';
         for d2 = 1:(d1-1)
+            PIE2usehere = PIE2use;
+            if PIE2use(d2) == 1
+                PIE2usehere(d2) = PIE2use(d2) + 1;
+            end
+            if PIE2use(d2) == length(data.xvals{d2})
+                PIE2usehere(d2) = PIE2use(d2) - 1;
+            end
+            
             sbvec2 = sbasis(d2,D)';
-            PIdex11 = num2cell(PIE+sbvec1+sbvec2);
-            PIdex01 = num2cell(PIE+sbvec2);
-            PIdex10 = num2cell(PIE+sbvec1); 
-            PIdex00 = num2cell(PIE);
+            PIdex11 = num2cell(PIE2usehere+sbvec1+sbvec2);
+            PIdex01 = num2cell(PIE2usehere+sbvec2);
+            PIdex10 = num2cell(PIE2usehere+sbvec1);
+            PIdex00 = num2cell(PIE2usehere);
             
             % Calculate ((f(x+1,y+1)-f(x,y+1))/h_1 - (f(x+1,y)-f(x,y))/h_1)/h_2
             % (or rather the generalization to D dimensions, the above
             % expression is the 2D one.
             derivs2(d1,d2,I) = ((data.field(PIdex11{:}) - data.field(PIdex01{:})) ...
-                    - (data.field(PIdex10{:}) - data.field(PIdex00{:})))/(lat_spacing(d1)*lat_spacing(d2));
+                - (data.field(PIdex10{:}) - data.field(PIdex00{:})))/(lat_spacing(d1)*lat_spacing(d2));
             derivs2(d2,d1,I) = derivs2(d1,d2,I);
         end
     end

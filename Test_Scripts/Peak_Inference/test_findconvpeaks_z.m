@@ -47,6 +47,18 @@ plot(cfield.mask)
 % Note that for a 1D convolution field the maximum can never lie on the
 % boundary.
 
+%% With the option for the mean!
+Y = wfield(10,1)*(1/50);
+x = 1:1:10; sigstore = peakgen1D( x, peakspec, peakparams, 1, smo );
+plot(x, sigstore)
+FWHM = 3; resadd = 1; params = ConvFieldParams(FWHM, resadd, 0);
+meanonlat = convfield(sigstore, params);
+truncation = 4*FWHM2sigma(FWHM);
+meanfn = @(x) applyconvfield(x, sigstore, FWHM, true(1,length(sigstore)), truncation, meanonlat.xvals);
+
+findconvpeaks(Y, 3, 1, 'Z', meanfn, meanonlat.field)
+findlms(meanfn, 5, 4,6)
+
 %% %% 2D Examples
 %% Simple 2D application
 Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1]; FWHM = 2; resadd = 50;
@@ -74,43 +86,48 @@ applyconvfield([2,1.5]', f.field, FWHM, mask)
 
 %% 2D multiple peaks
 Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]; resadd = 9;
-cfield = convfield(Y, 2, resadd, 2);
-surf(cfield)
-[peaklocs, peakvals] = findconvpeaks(Y, 2, [1,1;4,4]')
+FWHM = 2; params = ConvFieldParams([FWHM, FWHM], resadd);
+cfield = convfield(Y, params);
+surf(cfield.field)
+[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [1,1;4,4]');
+% Note that the first column is the location of the first peak
+% and the second column is the location of the second peak!
 
 %% Finding peaks in the presence of a mask
-Y = ones(4); FWHM = 2; D = 2;
-mask =  logical([1,1,1,1;1,0,0,1;1,0,0,1;1,1,1,1]); resadd = 9;
-field = @(tval) applyconvfield(tval, Y, FWHM, -1, 1:4, mask);
-mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
+Y = ones(4); FWHM = 2; resadd = 21;
+params = ConvFieldParams([FWHM, FWHM], resadd);
+mask =  logical([1,1,1,1;1,0,0,1;1,0,0,1;1,1,1,1]); 
+f = Mask(Field(Y, mask));
 
-[maxloc, maxval] = findconvpeaks(Y, FWHM, 1, 'Z', mask)
-cfield = convfield(Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-fine_eval = mask_hr.*convfield(Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-surf(fine_eval)
-max(fine_eval(:))
+field = @(tval) applyconvfield(tval, Y, FWHM, -1, 1:4, mask);
+
+[maxloc, maxval] = findconvpeaks(f, FWHM, [1,1;1,4;4,1;4,4]')
+cfield = Mask(convfield(f, params));
+surf(cfield.field)
+max(cfield.field(:))
 
 %% %% 3D Examples
-%% Simple 3D application
+%% Simple 3D application (mask defaulted to ones everywhere!)
 Y = ones([4,4,4]); Y(2:3,2:3,2:3) = 2; FWHM = 3;
 [maxloc, maxval] = findconvpeaks(Y, FWHM, 1)
 
-%% Large 3D application
-Dim = [91,109,91]; lat_data = randn(Dim); FWHM = 3; D = 3; 
+%% Large 3D application (takes a few seconds)
+Dim = [91,109,91]; lat_data = randn(Dim); FWHM = 3;
 resadd = 2; enlarge = ceil(resadd/2);
-[maxloc, maxval] = findconvpeaks(lat_data, FWHM, 1) %Initializes on the integer lattice
-[fine_field, xvals_vecs] = convfield(lat_data, FWHM, resadd, D, 0, ceil(resadd/2));
-Dimhr = ( Dim - 1 ) * resadd + Dim + 2*enlarge';
-[maxfineval, maxfineloc ] = max(fine_field(:))
-converted_maxfineloc = convind(maxfineloc, Dimhr);
+params = ConvFieldParams(repmat(FWHM, 1, 3), resadd, enlarge);
 
-%% Initializes at the max of the fine lattice
-finelatmaxloc = zeros(D,1);
-for d = 1:D
-    finelatmaxloc(d) = xvals_vecs{d}(converted_maxfineloc(d));
-end
-finelatmaxloc
-[maxloc, maxval] = findconvpeaks(lat_data, FWHM, finelatmaxloc)
+% Finds the maximum using findconvpeaks
+[maxloc, maxval] = findconvpeaks(lat_data, FWHM) %Initializes on the integer lattice
+
+% Evaluating on a lattice to illustrate that it does a good job!
+[fine_field, xvals_vecs] = convfield(lat_data, params);
+Dimhr = ( Dim - 1 ) * resadd + Dim + 2*enlarge';
+[maxfineval, maxfineloc ] = max(fine_field.field(:));
+converted_maxfineloc = convind(maxfineloc, Dimhr);
+xvaleval(converted_maxfineloc', fine_field.xvals) 
+% As there is a large image we have to take a low value of resadd here, 
+% but as can be seen the true location is close to the peak on the resadd =
+% 2 lattice.
 
 %% Finding peaks on the boundary
 FWHM = 3; D = 3;
@@ -124,3 +141,4 @@ mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
 cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
 surf(squeeze(cfield(1,:,:)))
 max(cfield(:))
+

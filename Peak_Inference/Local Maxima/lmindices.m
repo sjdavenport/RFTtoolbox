@@ -33,6 +33,11 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % %2D example
 % [ lmarrayindices, lmInd ] = lmindices([1,1,1;1,2,1;1,1,1])
 % lmindices([1,1,1;1,2,1;1,1,1;1,1,2], 2)
+%
+% % 2nd 2D example (this is not a maximum - as it's not a maximum within
+% the mask!)
+% data = zeros(3); data(2,2) = 1; mask = logical(data);
+% lmindices(data, mask)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------

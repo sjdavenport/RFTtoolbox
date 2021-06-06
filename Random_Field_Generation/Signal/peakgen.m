@@ -1,4 +1,4 @@
-function Sig = gensig( Mag, Rad, Smo, Dim, centre_locs )
+function Sig = peakgen( Mag, Rad, Smo, Dim, centre_locs )
 % GENSIGCONV( Mag, Rad, Smo, Dim, centre_locs ) generates signal with peaks 
 % that is defined everywhere (via convolution fields). WORK IN PROGRESS!!
 %--------------------------------------------------------------------------
@@ -29,14 +29,14 @@ function Sig = gensig( Mag, Rad, Smo, Dim, centre_locs )
 %--------------------------------------------------------------------------
 % EXAMPLES
 % % 1D signal (NEED TO IMPLEMENT FOR 1D)!
-% Sig = gensig( 1, 3, 6, 100 )
+% Sig = peakgen( 1, 3, 6, 100 )
 % 
 % % 2D signal
-% Sig = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
+% Sig = peakgen([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % surf(Sig)%
 %
 % % 2D Single peak plus noise
-% Sig = gensig(1, 10, 8, [90,90]); nsubj = 20;
+% Sig = peakgen(1, 10, 8, [90,90]); nsubj = 20;
 % surf(Sig)
 % lat_data = randn([90,90,nsubj]) + Sig;
 % surf(mean(lat_data,3))

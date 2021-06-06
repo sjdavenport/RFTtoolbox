@@ -20,25 +20,26 @@ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, u
 
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
+% Find the dimension of the data
+D = size(initial_estimates,1);
+
+% Increase the size of lowerbounds and convert to cell if necessary
 if ~iscell(lowerbounds)
+    if size(lowerbounds,2) < D
+        lowerbounds = repmat(lowerbounds,1,D);
+    end
     lowerbounds = {lowerbounds};
 end
 if ~iscell(upperbounds)
+    if size(upperbounds,2) < D
+        upperbounds = repmat(upperbounds,1,D);
+    end
+
     upperbounds = {upperbounds};
 end
 
 % Calculate the number of points at which to initialize
 npeaks = size(initial_estimates,2);
-
-% Find the dimension of the data
-D = size(initial_estimates,1);
-
-if size(lowerbounds,2) < D
-    lowerbounds = repmat(lowerbounds,1,D);
-end
-if size(upperbounds,2) < D
-    upperbounds = repmat(upperbounds,1,D);
-end
 
 %% Error checking
 %--------------------------------------------------------------------------

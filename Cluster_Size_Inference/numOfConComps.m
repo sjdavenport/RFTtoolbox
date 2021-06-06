@@ -22,6 +22,10 @@ function [number_of_clusters, occurences, sizes, index_locations] = numOfConComp
 % [number_of_clusters, occurences, sizes, index_locations] = numOfConComps(sims, thresh);
 % sims > thresh
 % sizes
+%
+%--------------------------------------------------------------------------
+% NOTES: 
+% To use with a mask just multiply the data by a mask beforehand!
 %--------------------------------------------------------------------------
 % AUTHORS: Thomas Maullin, Samuel Davenport
 %--------------------------------------------------------------------------

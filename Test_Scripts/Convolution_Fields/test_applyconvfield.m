@@ -18,6 +18,21 @@ Y = [1,2,3,4];
 tval = 2; FWHM = 3;
 applyconvfield(tval, Y, FWHM)
 
+%% 1D example with mean 
+peakspec = {[3,7]}; peakparams = {[2,2]};
+smo = 3;
+x = 1:1:10; sigstore = peakgen1D( x, peakspec, peakparams, 1, smo );
+plot(x, sigstore)
+FWHM = 3; resadd = 0; params = ConvFieldParams(FWHM, resadd);
+meanonlat = convfield(sigstore, params);
+truncation = 4*FWHM2sigma(FWHM);
+meanfn = @(x) applyconvfield(x, sigstore, FWHM, true(1,length(sigstore)), truncation, meanonlat.xvals);
+
+plot(x, meanonlat.field)
+y = 1:0.1:10;
+hold on
+plot(y, meanfn(y))
+
 %% 1D Comparison with convfield
 nvox = 50; lat_data = randn(1, nvox); FWHM = 3; resadd = 2;
 acf = @(tval) applyconvfield(tval, lat_data, FWHM);
@@ -50,6 +65,11 @@ plot(xvals_vecs{1}, masked_field(xvals_vecs{1}))
 hold on
 plot(xvals_vecs{1}, cfield, '--');
 legend('masked field', 'unmasked field')
+
+%% 1D smooth derivatives
+Y = [1,2,3,4];
+tval = 2; FWHM = 3;
+applyconvfield(tval, Y, FWHM)
 
 %% %% 2D examples
 %% Simple 2D example
