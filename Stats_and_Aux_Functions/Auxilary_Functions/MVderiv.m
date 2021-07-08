@@ -32,7 +32,7 @@ function [ f_deriv, f_deriv2 ] = MVderiv( f, D, h )
 if ~exist('h', 'var')
     h = 0.00001;
 end
-if h > 0.00001
+if h < 0.00001
     warning('Small h is bad due to numerical imprecision')
 end
 

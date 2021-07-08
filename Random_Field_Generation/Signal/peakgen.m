@@ -1,5 +1,5 @@
 function Sig = peakgen( Mag, Rad, Smo, Dim, centre_locs )
-% GENSIGCONV( Mag, Rad, Smo, Dim, centre_locs ) generates signal with peaks 
+% peakgen( Mag, Rad, Smo, Dim, centre_locs ) generates signal with peaks 
 % that is defined everywhere (via convolution fields). WORK IN PROGRESS!!
 %--------------------------------------------------------------------------
 % ARGUMENTS

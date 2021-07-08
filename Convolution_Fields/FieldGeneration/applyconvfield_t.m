@@ -1,5 +1,5 @@
 function [T, mu, sigma, d, Xcfields_at_tval] = ...
-   applyconvfield_t( tval, lat_data, Kernel, mask, truncation, xvals_vecs )
+   applyconvfield_t( tval, lat_data, Kernel, mask, truncation, xvals_vecs, meanfn )
 % tcfield( tval, data, xvalues_at_voxels, Kernel ) calculates a 
 % t-convolution field at the set of points specified by tval
 %--------------------------------------------------------------------------
@@ -88,6 +88,11 @@ if ~exist('truncation', 'var')
     truncation = -1;
 end
 
+% Default is to take the mean to be 0
+if ~exist('meanfn', 'var')
+    meanfn = @(x) 0;
+end
+
 Ldim = size(lat_data);
 D = length(Ldim) - 1;
 
@@ -132,15 +137,15 @@ Xcfields_at_tval = zeros(nevals, nsubj);
 
 if D == 1
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, lat_data(:,I)', Kernel, mask, truncation, xvals_vecs );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, lat_data(:,I)', Kernel, mask, truncation, xvals_vecs ) + meanfn(tval);
     end
 elseif D == 2
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,I)), Kernel, mask, truncation, xvals_vecs );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,I)), Kernel, mask, truncation, xvals_vecs )  + meanfn(tval);
     end
 elseif D == 3
     for I = 1:nsubj
-        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,:,I)), Kernel, mask, truncation, xvals_vecs );
+        Xcfields_at_tval(:, I) = applyconvfield(tval, squeeze(lat_data(:,:,:,I)), Kernel, mask, truncation, xvals_vecs )  + meanfn(tval);
     end
 else
     error('Not coded for D > 3')

@@ -13,6 +13,9 @@ close all
 Y = [1,2,1];
 findconvpeaks(Y, 3, 1)
 
+%% 1D with full eval
+findconvpeaks(Y, 3, 1)
+findconvpeaks(Y, 3, 1, 'Z', 0, 5)
 %% 1D with different xvals
 Y = [1,1,2,2,1,1];
 xvals = 11:(length(Y)+10);
@@ -67,6 +70,38 @@ params = ConvFieldParams([FWHM, FWHM], resadd);
 fine_eval = convfield(Y, params);
 max(fine_eval.field(:))
 imagesc(fine_eval)
+
+[maxloc, maxval] = findconvpeaks(Y, FWHM, 1, 'Z', 0, 11)
+
+%% 2D peak (on the need for local evaluation!)
+Mag = 5;
+Rad = [10,13,20]*(3/4)/10;
+smo = 15;
+Smo = smo*[1,1,1];
+Dim = [50,50];
+centre_locs = {[20,40]'/2,[60,25]'/2,[75,75]'/2};
+Sig = peakgen( Mag, Rad, Smo, Dim, centre_locs );
+add_FWHM = 1.5;
+findconvpeaks(Sig, add_FWHM, centre_locs)
+add_truncation = 4*FWHM2sigma(add_FWHM);
+add_truncation = 0;
+resadd = 0; params = ConvFieldParams([add_FWHM,add_FWHM], resadd);
+meanonlat = convfield(Sig, params);
+meanfn = @(x) applyconvfield(x, Sig, add_FWHM, true(Dim), add_truncation, meanonlat.xvals);
+I = 3; findlms( meanfn, centre_locs{I}, centre_locs{I} - 1, centre_locs{I} + 1 )
+
+%%
+centre_locs = {[20,40]'/2,[60,25]'/2,[75,75]'/2};
+centre_locs = centre_locs{3};
+findconvpeaks(Sig, add_FWHM, centre_locs)
+
+%% subset testing
+subset = {33:42, 33:42};
+subset_mean = meanonlat(subset{:});
+sub_sig  = Sig(subset{:});
+meanfn = @(x) applyconvfield(x, sub_sig, add_FWHM, true(size(sub_sig)), 0, subset_mean.xvals);
+meanfn([37.5, 37.5]')
+[a,b] = findlms( meanfn, centre_locs{I}, centre_locs{I}-1, centre_locs{I} + 1 )
 
 %% Finding peaks on the boundary
 % An example where the peak will be outside the mask!

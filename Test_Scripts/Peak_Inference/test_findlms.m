@@ -14,30 +14,31 @@ FWHM = 3;
 Y = [1,2,1];
 findconvpeaks(Y, FWHM, 1)
 cfield = @(tval) applyconvfield(tval, Y, 3)
-findlms( cfield, 2.5, 1 )
+findlms( cfield, 2.5, 1, 3 )
 
 %% Multiple peaks - same height
 Y = [1,2,1,1,1,1,1,2,1]; FWMM = 3;
 findconvpeaks(Y, FWHM, 2)
 cfield = @(tval) applyconvfield(tval, Y, FWHM)
-xvals_fine = 1:0.1:length(Y);
-plot(xvals_fine, convfield(Y, FWHM, 0.1, 1))
-findlms( cfield, [2.5,6.5])
+% xvals_fine = 1:0.1:length(Y);
+% plot(xvals_fine, convfield(Y, FWHM, 0.1, 1))
+findlms( cfield, [2.5,6.5], {1,3}, {6,8})
 
 %% %% 2D examples
 %% Simple 2D example
 FWHM = 3; Y = [1,1,1,1;1,2,2,1;1,2,2,1;1,1,1,1];
-cfield = @(tval) applyconvfield(tval, Y, 3)
-surf(convfield(Y, FWHM, 0.1, 2))
-fine_eval = convfield(Y, 2, 0.01, 2);
-findlms( cfield, [2,2]', 1)
+findconvpeaks(Y, FWHM, 1)
+
+cfield = @(tval) applyconvfield(tval, Y, FWHM);
+findlms( cfield, [2,2]', {[1.5,1.5]'}, {[3,3]'})
 
 %% 2D multiple peaks
 Y = [5,1,1,1;1,1,1,1;1,1,1,1;1,1,1,5]
-surf(convfield(Y, 2, 0.1, 2))
 findconvpeaks(Y, 2, [1,1;4,4]')
 cfield = @(tval) applyconvfield(tval, Y, 2)
-findlms( cfield, [1,1;4,4]', 4 )
+findlms( cfield, [1,1;4,4]', {[1,1]', [3,3]'},  {[2,2]', [4,4]'})
+
+%%
 % Works with functions that take NaN values so long as the initial
 % estimate is well defined!
 mask = [0,1,1];

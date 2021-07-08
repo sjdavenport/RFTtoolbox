@@ -1,5 +1,5 @@
-function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
-                              peak_est_locs, field_type, meanfn, meanonlat)
+function [peaklocs, peakvals, subset] = findconvpeaks(lat_data, FWHM, ...
+      peak_est_locs, field_type, truncation, use_bound, use_fn_eval, meanfn, meanonlat)
 % FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
 %                                                  truncation, xvals_vecs )
 % calculates the locations of peaks in a convolution field.
@@ -33,6 +33,13 @@ function [peaklocs, peakvals] = findconvpeaks(lat_data, FWHM, ...
 %--------------------------------------------------------------------------
 if ~exist('field_type', 'var')
     field_type = 'Z';
+end
+
+if ~exist('use_fn_eval', 'var')
+    use_fn_eval = 1;
+end
+if ~exist('use_bound', 'var')
+    use_bound = 0;
 end
 
 % Turn the input data into a field (with mask of ones and the standard
@@ -129,9 +136,17 @@ end
 % Obtain the number of peaks
 npeaks = size(peak_est_locs, 2); % Calculate the number of estimates
 
-% Set field that defines the mask
-mfield = @(x) mask_field( x, lat_data.mask, 0, lat_data.xvals );
-[ lowerbounds, upperbounds ] = assign_bounds( peak_est_locs, mfield );
+if use_bound == 0
+    % Set field that defines the mask
+    mfield = @(x) mask_field( x, lat_data.mask, 0, lat_data.xvals );
+    [ lowerbounds, upperbounds ] = assign_bounds( peak_est_locs, mfield );
+else
+    lowerbounds = cell(1, npeaks); upperbounds = cell(1, npeaks);
+    for I = 1:npeaks
+        lowerbounds{I} = peak_est_locs(:,I) - use_bound;
+        upperbounds{I} = peak_est_locs(:,I) + use_bound;
+    end
+end
 
 % Find box around peak within which to calculate
 lowerbox = zeros(D,npeaks);
@@ -142,7 +157,9 @@ for I = 1:npeaks
 end
 
 % set truncation distance
-truncation = 4*FWHM2sigma(FWHM);
+if ~exist('truncation', 'var')
+    truncation = 4*FWHM2sigma(FWHM);
+end
 
 %%% Note atm assumes the standard xvals_vecs!!!
 
@@ -158,49 +175,61 @@ upperbox = ceil(upperbox);
 peaklocs = zeros(D,npeaks);
 peakvals = zeros(1,npeaks);
 
+subset = cell(1,npeaks);
 % Find local maxima
 for I = 1:npeaks
     % Define the local xvals_vecs
     local_xvals_vecs = cell(1,D);
-    subset = cell(1,D);
+    subset{I} = cell(1,D);
     for d = 1:D
         local_xvals_vecs{d} = lowerbox(d,I):upperbox(d,I);
-        subset{d} = local_xvals_vecs{d} - lat_data.xvals{d}(1) + 1;
+        subset{I}{d} = local_xvals_vecs{d} - lat_data.xvals{d}(1) + 1;
     end
     
-    local_mask = lat_data.mask(subset{:});
+    local_mask = lat_data.mask(subset{I}{:});
     
     % For t-fields make sure to include all subjects
     if strcmp(field_type, 'T')
-        subset{D+1} = ':';
+        subset{I}{D+1} = ':';
     end
     
     % Define local lat_data subset
-    local_lat_data = lat_data.field(subset{:});
+    local_lat_data = lat_data(subset{I}{:});
     
-    % Define local convolution field (taking truncation = 0 as have already
-    % truncated to a small box)
-    if strcmp(field_type, 'Z')
-        kfield = @(tval) applyconvfield(tval, local_lat_data, FWHM, ...
-            local_mask, 0, local_xvals_vecs);
-    elseif strcmp(field_type, 'T')
-        kfield = @(tval) applyconvfield_t( tval, local_lat_data, FWHM,...
-            local_mask, 0, local_xvals_vecs );
-        % To include the mean here need to code it into applyconvfield_t
-        % (not hard!)
-    end
-    if use_mean
-        if strcmp(field_type, 'T')
-            error('The mean hasn''t been coded for t-statistic')
+    if use_fn_eval == 1
+        % Define local convolution field (taking truncation = 0 as have already
+        % truncated to a small box)
+        if strcmp(field_type, 'Z')
+            kfield = @(tval) applyconvfield(tval, local_lat_data.field, FWHM, ...
+                local_mask, 0, local_xvals_vecs);
+        elseif strcmp(field_type, 'T')
+            kfield = @(tval) applyconvfield_t( tval, local_lat_data.field, FWHM,...
+                local_mask, 0, local_xvals_vecs );
+            % To include the mean here need to code it into applyconvfield_t
+            % (not hard!)
         end
-        cfield = @(tval) kfield(tval) + meanfn(tval);
-    else
-        cfield = kfield;
-    end
+        if use_mean
+            if strcmp(field_type, 'T')
+                error('The mean hasn''t been coded for t-statistic')
+            end
+            cfield = @(tval) kfield(tval) + meanfn(tval);
+        else
+            cfield = kfield;
+        end
         
-    [ peakloc, peakval ] = findlms( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
-    peakvals(I) = peakval;
-    peaklocs(:,I) = peakloc;   
+        [ peakloc, peakval ] = findlms( cfield, peak_est_locs(:,I), lowerbounds{I}, upperbounds{I} );
+        peakvals(I) = peakval;
+        peaklocs(:,I) = peakloc;
+    else
+        params = ConvFieldParams(repmat(FWHM, 1, D), use_fn_eval, 0);
+        if strcmp(field_type, 'T')
+            localcfieldeval = convfield_t(local_lat_data, params);
+        else
+            localcfieldeval = convfield(local_lat_data, params);
+        end
+        [lm, ~, peakvals(I)] = lmindices(localcfieldeval.field, 1);
+        peaklocs(:,I) = xvaleval(lm, localcfieldeval.xvals);
+    end
 end
 
 end
