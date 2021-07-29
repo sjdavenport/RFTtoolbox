@@ -57,7 +57,7 @@ title('Convolution t Field')
 
 %% Matching to applyconvfield
 tcfield = @(x) applyconvfield_t(x, lat_data.field, FWHM);
-mask = true(dim);
+mask = true(Dim);
 tcfieldnotrunc = @(x) applyconvfield_t(x, lat_data.field, FWHM, mask, 0);
 
 smooth_data.field(20,20)

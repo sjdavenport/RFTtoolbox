@@ -1,9 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%%    This script tests the convfield function
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% prepare workspace
+clear all
+close all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% 1D
 %% Smoothing with increased resolution
 nvox = 10; xvals = 1:nvox; FWHM = 2; resadd = 10;
 params = ConvFieldParams( FWHM, resadd );
 mask = logical( ones( nvox, 1 ) );
-lat_data = wnfield( mask, 1 );
+lat_data = wfield( mask );
 lat_field = fconv(lat_data.field, FWHM);
 
 plot(xvals, lat_field, 'o-');
@@ -13,37 +23,38 @@ plot( convolution_field );
 
 %% Multiple subjects
 nsubj = 3; 
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 convolution_field = convfield( lat_data, params );
 plot( convolution_field );
 hold off
 
 %% 1D derivatives
 nvox = 100; resadd = 10; h = ( 1 / ( resadd + 1 ) ); 
-lat_data = wnfield( mask, 1 );
+lat_data = wfield( mask, 1 );
 mask = logical( ones( nvox, 1 ) );
 convolution_field = convfield( lat_data, params, 0);
-deriv1 = convfield( lat_data, params, 1);
-deriv2 = diff( convolution_field.field ) / h;
-plot( deriv1 )
-hold on 
-plot( convolution_field.xvals{1}(2:end), deriv2, '--' )
+deriv_viaconfield = convfield( lat_data, params, 1);
+deriv_numeric = diff( convolution_field.field ) / h;
+xval_diff = convolution_field.xvals{1}(2) - convolution_field.xvals{1}(1);
 
-% 1D derivative (multiple subjects) (Some minor differences here!)
-% FT here might be something wrong in the applyconvfield
-lat_data = wnfield( mask, 1 );
+plot( deriv_viaconfield.xvals{1}, deriv_viaconfield.field )
+hold on 
+plot( convolution_field.xvals{1}(2:end)-xval_diff/2, deriv_numeric, '--' )
+
+lat_data = wfield( mask );
 aderiv = @(x) applyconvfield( x, lat_data.field, @(y) GkerMVderiv(y, FWHM) );
 deriv_conv = convfield( lat_data, params, 1 );
 deriv_conv.field(1), aderiv(1)
 
-%% 2D
+%% %% 2D
+%% Simple 2D example
 D      = 2;
 Dim    = [25,25];
 mask   = true( Dim );
 FWHM   = 3;
 params = ConvFieldParams( FWHM * ones( [ 1 D ] ), 0, 0, false );
 params_fine = ConvFieldParams( FWHM * ones( [ 1 D ] ), 3, 0, false );
-lat_data = wnfield( mask, 1 );
+lat_data = wfield( mask, 1 );
 smooth_data = convfield( lat_data, params );
 fine_data = convfield( lat_data, params_fine ); %Convolution eval
 
@@ -57,10 +68,6 @@ subplot(1,2,2)
 surf(fine_data.field)
 zlim(zlimits)
 title('Convolution Field')
-
-%% Dealing with the prefab issues
-% smooth_data_prefab = convfield_prefab( lat_data, FWHM, 1, 2)
-% smooth_data_pre = convfield_dep( lat_data, FWHM, 1, 2)
 
 %% Matching to applyconvfield
 cfield = @(x) applyconvfield(x, lat_data.field, FWHM);
@@ -76,7 +83,7 @@ cfieldnotrunc([1,10]')
 
 %% 2D derivatives
 Dim = [25,25];
-lat_data = wnfield( mask, 1 ); resadd = 1;
+lat_data = wfield( mask, 1 ); resadd = 1;
 params = ConvFieldParams( FWHM * ones( [ 1 D ] ), resadd, 0 );
 
 derivfield = convfield( lat_data, params, 1);
@@ -84,7 +91,7 @@ surf( reshape( derivfield.field(:,:,1), spacep( Dim,resadd ) ) )
 title( '2D 1st partial derivative of the convolution field' )
 
 %% Showing that the derivatives work
-Dim = [5,5]; lat_data =  wnfield( mask, 1 );
+Dim = [5,5]; lat_data =  wfield( mask, 1 );
 point = [3,3]'; resadd = 100; h = 1/(1+resadd);
 params.resadd = resadd;
 spaced_point = spacep(point,resadd);
@@ -117,7 +124,7 @@ spm_lattice_derivatives = spm_derivs'
 
 %% 2D derivatives (multiple subjects)
 Dim = [5,5]; nsubj = 20;
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 derivfield = convfield( lat_data, params, 1)
 
 %% 3D
@@ -125,7 +132,7 @@ derivfield = convfield( lat_data, params, 1)
 Dim = [10,10,10]; FWHM = 3;
 mask = true( Dim );
 params = ConvFieldParams( [FWHM, FWHM, FWHM], 0);
-lat_data = wnfield( mask, 1 );
+lat_data = wfield( mask, 1 );
 subplot(1,2,1)
 spm_smooth_field = zeros(Dim); 
 spm_smooth(lat_data.field, spm_smooth_field, FWHM)
@@ -141,7 +148,7 @@ Dim = [10,10,10];
 resadd = 10; D = length(Dim);
 params.resadd = resadd;
 slice = Dim(end)/2; spaced_slice = spacep(slice, resadd);
-lat_data = wnfield(mask,1);
+lat_data = wfield(mask,1);
 cfield = convfield( lat_data, params ); %Convolution eval
 twoDcfieldslice = cfield.field(:,:,spaced_slice);
 zlimits = [min(twoDcfieldslice(:))-0.1, max(twoDcfieldslice(:))+0.1];
@@ -159,7 +166,7 @@ title('Convolution Field Eval (Convn)')
 zlim(zlimits)
 
 %% Compare to applyconvfield
-lat_data = wnfield( mask, 1);
+lat_data = wfield( mask, 1);
 acfield = @(x) applyconvfield(x, lat_data.field, FWHM);
 Dim = [10,10,10];
 D = length(Dim); FWHM = 3; resadd = 0;
@@ -172,7 +179,7 @@ cfield.field(1,1,10)
 
 %% % 3D derivatives (1 subject)
 Dim = [5,5,5]; D = length(Dim); FWHM = 3;
-lat_data = wnfield( mask, 1 ); resadd = 18;
+lat_data = wfield( mask, 1 ); resadd = 18;
 params.resadd = 0;
 derivfield = convfield( lat_data, params, 1);
 aderiv = @(x) applyconvfield( x, lat_data.field, @(y) GkerMVderiv(y, FWHM)  );
@@ -194,7 +201,7 @@ fine_lat_deriv = [derivx,derivy,derivz]'
 
 %% 3D derivatives (Multiple subjects)
 Dim = [5,5,5]; D = length(Dim); FWHM = 3; nsubj = 2;
-lat_data = wnfield( mask, nsubj ); resadd = 0;
+lat_data = wfield( mask, nsubj ); resadd = 0;
 params.resadd = resadd;
 derivfields = convfield( lat_data, params, 1);
 aderiv = @(x) applyconvfield( x, lat_data.field(:,:,:,2), @(y) GkerMVderiv(y, FWHM)  );
@@ -203,7 +210,7 @@ aceval = aderiv([3,3,3]')
 
 %% Adjusting the field (1D)
 nvox = 10; D = 1; FWHM = 2; mask = true( [ nvox, 1 ] );
-lat_data = wnfield( mask, 1 );
+lat_data = wfield( mask, 1 );
 kernel = SepKernel( D, FWHM ); kernel.adjust = 0.1; resadd = 10;
 params = ConvFieldParams( FWHM, resadd, 0 );
 params_adj = ConvFieldParams(  kernel, resadd, 0 );
@@ -225,7 +232,7 @@ acfield(3.1)
 %% Adjusting the field (3D)
 Dim = [ 10, 10, 10]; D = length( Dim ); FWHM = 1.5;
 mask = true( Dim );
-lat_data = wnfield( mask, 1 ); resadd = 9;
+lat_data = wfield( mask, 1 ); resadd = 9;
 params = ConvFieldParams( FWHM * ones( [ 1 D ] ), resadd, 0 );
 smoothfield = convfield( lat_data, params );
 
@@ -244,7 +251,7 @@ acfield(point)
 %% %% Enlarging the field
 
 %% 1D enlargement
-nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) );
+nvox = 10; lat_data = wfield( true([ nvox, 1 ]) );
 FWHM = 3; D = 1; resadd = 0;
 params = ConvFieldParams( FWHM, resadd, 1 );
 cfield = convfield( lat_data, params );
@@ -254,7 +261,7 @@ cfield.field(1)
 acfield(0)
 
 %% 1D enlargement
-nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) ); FWHM = 3;
+nvox = 10; lat_data = wfield( true([ nvox, 1 ]) ); FWHM = 3;
 resadd = 1; dx = 1/(1+resadd); enlarge = 1;
 params = ConvFieldParams( FWHM, resadd, enlarge );
 cfield = convfield( lat_data, params );
@@ -263,7 +270,7 @@ acfield = @(tval) applyconvfield( tval, lat_data.field, FWHM );
 cfield.field( 1 )
 acfield( 1 - dx * enlarge )
 %%
-nvox = 10; lat_data = wnfield( true([ nvox, 1 ]) ); FWHM = 3; resadd = 0;
+nvox = 10; lat_data = wfield( true([ nvox, 1 ]) ); FWHM = 3; resadd = 0;
 dx = 1/(1+resadd); enlarge = 5;
 params = ConvFieldParams( FWHM, resadd, enlarge );
 
@@ -274,7 +281,7 @@ cfield.field( 1 )
 acfield( 1 - dx * enlarge )
 
 %% 2D enlargement
-Dim = [10,10]; lat_data = wnfield( Dim, 1 ); FWHM = 3; D = 2; resadd = 1;
+Dim = [10,10]; lat_data = wfield( Dim, 1 ); FWHM = 3; D = 2; resadd = 1;
 dx = 1/(1+resadd); enlarge = 1;
 params = ConvFieldParams( [ FWHM FWHM ], resadd, enlarge );
 cfield = convfield( lat_data, params );
@@ -284,7 +291,7 @@ cfield.field( 1, 1 )
 acfield( [ 1 - dx * enlarge, 1 - dx * enlarge ]' )
 
 %% 3D enlargement
-Dim = [10,10,10]; lat_data = wnfield( Dim, 1 ); FWHM = 3; resadd = 1;
+Dim = [10,10,10]; lat_data = wfield( Dim, 1 ); FWHM = 3; resadd = 1;
 dx = 1/(1+resadd); enlarge = 1;
 params = ConvFieldParams( [ FWHM FWHM FWHM ], resadd, enlarge );
 cfield = convfield( lat_data, params );

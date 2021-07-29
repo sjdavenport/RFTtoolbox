@@ -35,12 +35,13 @@ plot(y, meanfn(y))
 
 %% 1D Comparison with convfield
 nvox = 50; lat_data = randn(1, nvox); FWHM = 3; resadd = 2;
+params = ConvFieldParams(FWHM, resadd);
 acf = @(tval) applyconvfield(tval, lat_data, FWHM);
-[cfield, xvals_vecs] = convfield( lat_data, FWHM, resadd, 1);
+cfield = convfield( lat_data, params );
 
-plot(xvals_vecs{1}, acf(xvals_vecs{1}))
+plot(cfield.xvals{1}, acf(cfield.xvals{1}))
 hold on
-plot(xvals_vecs{1}, cfield, '--');
+plot(cfield, '--');
 
 %% 1D Comparison with spm\_conv (if installed)
 nvox = 100; lat_field = normrnd(0,1,nvox,nsubj);
@@ -76,6 +77,16 @@ applyconvfield(tval, Y, FWHM)
 Y = [1,2;3,4];
 tval = [1.5,2,4; 3.4,2, 5]; FWHM = 3;
 applyconvfield(tval, Y, FWHM)
+
+%% 2D Comparison with convfield
+dim = [10,10]; lat_data = randn(dim); FWHM = 3; resadd = 1;
+params = ConvFieldParams([FWHM,FWHM], resadd);
+acf = @(tval) applyconvfield(tval, lat_data, FWHM);
+cfield = convfield( lat_data, params );
+
+plot(cfield.xvals{1}, acf(cfield.xvals{1}))
+hold on
+plot(cfield, '--');
 
 %% Demonstrating the need for truncation (and for using applyconvfield)
 % Need to truncate for speed, else  things are really slow!

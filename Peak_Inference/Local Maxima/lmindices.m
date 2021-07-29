@@ -48,6 +48,8 @@ if ~exist('top', 'var')
     top = 1;
 elseif strcmp(top, 'all')
     top = numel(Y);
+elseif ~isnumeric(top)
+    error("top must be a number or 'all'")
 end
 Y = squeeze(Y);
 Ydim = size(Y);
