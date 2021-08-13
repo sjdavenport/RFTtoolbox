@@ -1,5 +1,5 @@
 function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
-% wnfield( masksize, fibersize, mask ) constructs a Fields object having
+% wfield( masksize, fibersize, mask ) constructs a Fields object having
 % white noise in the fiber.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -29,20 +29,20 @@ function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
 % EXAMPLES
 % %% % Simple example with whole domain mask
 % %% scalar field
-% lat_data = wnfield( [4 2 3] )
+% lat_data = wfield( [4 2 3] )
 %
 % %% many subjects field
-% lat_data = wnfield( [4 2 3], 100 )
+% lat_data = wfield( [4 2 3], 100 )
 %
 % %% Simple example with mask
 % mask = true( [ 4, 12 ] )
 % mask = logical( pad_vals( mask ) )
-% lat_data = wnfield( mask, 1 )
+% lat_data = wfield( mask, 1 )
 % figure, clf,
 % imagesc( lat_data ), colorbar
 % title( 'not masked field' )
 % % Generate masked data
-% lat_data = Mask( wnfield( mask, 1 ) )
+% lat_data = Mask( wfield( mask, 1 ) )
 % figure, clf,
 % imagesc( lat_data )
 % title( 'masked field' )
@@ -95,7 +95,7 @@ end
 %--------------------------------------------------------------------------
 
 % Get a white noise field
-obj = wnfield( varmask, fibersize );
+obj = wfield( varmask, fibersize );
 if exist( 'xvals', 'var' )
     obj.xvals = xvals;
 end
