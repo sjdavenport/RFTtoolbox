@@ -1,6 +1,5 @@
 function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
-% wfield( masksize, fibersize, mask ) constructs a Fields object having
-% white noise in the fiber.
+% cnfield
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
