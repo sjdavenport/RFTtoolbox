@@ -5,7 +5,7 @@ function [ derivs, derivs2 ] = lat_derivs( data, points )
 % ARGUMENTS
 % Mandatory
 %  data     an object of class field
-%  points   a D by npoints matrix where each column is a field in the
+%  points   a D by npoints matrix where each column is a point in the
 %           field at which to evaluate the derivative
 %--------------------------------------------------------------------------
 % OUTPUT

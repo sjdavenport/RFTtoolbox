@@ -15,7 +15,7 @@ function stat_field = statfield( Dim, nsubj, params, truncmult )
 %
 % % 2D
 % FWHM = [3,3]; resadd = 3; params = ConvFieldParams(FWHM, resadd);
-% Dim = [10,10]; nsubj = 20; f = statnoise( Dim, nsubj, params )
+% Dim = [10,10]; nsubj = 20; f = statfield( Dim, nsubj, params )
 % % Note this has size 37x37 as (resadd+1)*10 - resadd = 37, i.e. 4
 % % associated with all except the final voxel point!
 % 
