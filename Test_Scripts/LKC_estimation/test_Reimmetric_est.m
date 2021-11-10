@@ -21,7 +21,7 @@ smooth_f_deriv = convfield(noise, params, 1);
 stat_f_derivs = smooth_f_deriv(start:smooth_f.masksize(1) -start);
 
 % Obtain the answer via Riemmetric_est
-Lambda = mean(Riemmetric_est( stat_f, stat_f_derivs ).field);
+Lambda = mean(Riemmetric_est( stat_f, stat_f_derivs ).field)
 
 % Obtain the answer from theory from the FWHM
 FWHM2Lambda(FWHM,1)

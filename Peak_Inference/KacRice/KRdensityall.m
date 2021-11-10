@@ -1,4 +1,4 @@
-function KRexpectation = KRdensityall( Lambda, Delta, gamma, omega, u, niters )
+function KRexpectation = KRdensityall( fV, dV, d2V, fd2cov, fdcov, dd2cov, u, niters )
 % KRDENSITY() evaluates the density from the Kac-Rice formula.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -28,12 +28,12 @@ function KRexpectation = KRdensityall( Lambda, Delta, gamma, omega, u, niters )
 
 % Set the correlation between the first and second derivative to be zero 
 % (this is e.g. true under stationarity).
-if ~exist('omega', 'var')
-    omega = 0;
+if ~exist('fdcov', 'var')
+    fdcov = 0;
 end
 
-if ~exist('gamma', 'var')
-    gamma = 0;
+if ~exist('fdcov', 'var')
+    dd2cov = 0;
 end
 
 if ~exist('niters', 'var')
@@ -48,7 +48,7 @@ end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-covmate = [1,gamma;gamma, Delta - omega^2/Lambda];
+covmate = [fV,fd2cov;fd2cov, d2V] - [fdcov;dd2cov]*[fdcov,dd2cov]/dV;
 data = mvnrnd([0;0], covmate, niters);
 
 setbelowzero = data(:,2) < 0;
@@ -73,6 +73,6 @@ end
 %     KRexpectation = mean(abs(data(setbelowzero)));
 % end
 
-KRexpectation = KRexpectation/sqrt(2*pi*Lambda); %multiply by p_t(0)!
+KRexpectation = KRexpectation/sqrt(2*pi*dV); %multiply by p_t(0)!
 
 end
