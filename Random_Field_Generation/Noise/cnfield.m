@@ -1,5 +1,8 @@
 function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
-% cnfield
+% cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals ) generates
+% correlated white noise and then shuffles it according to some voxel map.
+% This output can then be resmoothed to generate a non-stationary, smooth
+% random field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -17,36 +20,15 @@ function obj = cnfield( varmask, FWHMcor, voxmap, FWHM, fibersize, xvals )
 %  fibersize   a vector containing the size of the fiber. Default is 0,
 %              i.e. the field is scalar.
 %  xvals       a 1 x D cell array containing the xvals.
-%              Default { 1:masksize(1), ..., 1:masksize(D) }.
-%
+%              Default { 1:masksize(1), ..., 1:masksize(D) }
 %--------------------------------------------------------------------------
 % OUTPUT
 % obj  an object of class Fields representing white noise, which is not
-%      masked. 
-%
+%      masked
 %--------------------------------------------------------------------------
 % EXAMPLES
-% %% % Simple example with whole domain mask
-% %% scalar field
-% lat_data = wfield( [4 2 3] )
-%
-% %% many subjects field
-% lat_data = wfield( [4 2 3], 100 )
-%
-% %% Simple example with mask
-% mask = true( [ 4, 12 ] )
-% mask = logical( pad_vals( mask ) )
-% lat_data = wfield( mask, 1 )
-% figure, clf,
-% imagesc( lat_data ), colorbar
-% title( 'not masked field' )
-% % Generate masked data
-% lat_data = Mask( wfield( mask, 1 ) )
-% figure, clf,
-% imagesc( lat_data )
-% title( 'masked field' )
 %--------------------------------------------------------------------------
-% Author: Fabian Telschow
+% Authors: Fabian Telschow, Samuel Davenport
 %--------------------------------------------------------------------------
 
 %% Check mandatory input
