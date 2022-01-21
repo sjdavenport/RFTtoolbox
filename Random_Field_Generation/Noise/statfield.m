@@ -1,5 +1,6 @@
 function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params, truncmult, do_derivs )
 % STATNOISE generates a stationary smooth noise field. (ATM only 1D.)
+% For resadd greater than 1 this is approximately stationary for FWHM >= 3.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -46,6 +47,19 @@ end
 
 if ~exist('do_derivs', 'var')
     do_derivs = 1;
+end
+
+% if ~exist('setunitvariance', 'var')
+%     setunitvariance = 0;
+% end
+
+% Allow for default FWHM input
+D = 1;
+if isnumeric(params)
+    FWHM = params
+    params = ConvFieldParams( repmat(params,1,D), 0 );
+else
+    FWHM = 0;
 end
     
 %%  Add/check optional values
@@ -94,6 +108,17 @@ for I = 1:smooth_field.D
     stat_field.xvals{I} = stat_field.xvals{I} - cutoff;
 end
 % stat_field = cut_field(smooth_field, cutoff);
+
+% if setunitvariance
+%     if FWHM
+%        warning('To set unit variance you need the file storecfieldvar.m')
+%         global PIloc
+%         load([PIloc,'Variance/storevars'], 'allvars')
+%         stat_field = (stat_field./sqrt(allvars(FWHM)))*(100/99);
+%     else
+%         error("FWHM wasn't numeric so can't scale the variance")
+%     end
+% end
 
 end
 

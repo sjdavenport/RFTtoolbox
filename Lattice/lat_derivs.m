@@ -1,4 +1,4 @@
-function [ derivs, derivs2 ] = lat_derivs( data, points )
+function [ derivs, derivs2, fielditself ] = lat_derivs( data, points )
 % LAT_DERIVS( lat_data, points ) takes a lattice of data and estimates the
 % derivative at the specified points (Only 1D for now!)
 %--------------------------------------------------------------------------
@@ -15,10 +15,10 @@ function [ derivs, derivs2 ] = lat_derivs( data, points )
 % EXAMPLES
 % %% 1D Examples
 % data = 1:10; y = Field(data', 2); y.xvals = {data};
-% [derivs, deriv2] = lat_derivs( y, 4 )
+% [derivs, deriv2, fielditself] = lat_derivs( y, 4 )
 %
 % x = -1:0.01:1; y = Field(x'.^2, 2); y.xvals = {x};
-% [a,b] = lat_derivs(y, 0)
+% [a,b,c] = lat_derivs(y, 0)
 %
 % %% 2D examples
 % [x,y] = meshgrid(1:10,1:10); f = Field(x+y, 2);
@@ -33,6 +33,14 @@ function [ derivs, derivs2 ] = lat_derivs( data, points )
 % [derivs, deriv2] = lat_derivs( f, [0,0]' )
 % [derivs, deriv2] = lat_derivs( f, [-1,-1]' )
 % [derivs, deriv2] = lat_derivs( f, [-1,1]' )
+%
+% f = statfield( 4, 1, 5, 1, 0 )
+% [ derivs(I), derivs2(I), fielditself(I) ] = lat_derivs( f, 3 )
+% latspacing = (f.xvals{1}(2) - f.xvals{1}(1));
+% leftderiv = (f.field(13) - f.field(12))/latspacing;
+% rightderiv = (f.field(14) - f.field(13))/latspacing;
+% derivsnew(I) = (1/2)*(leftderiv + rightderiv);
+% derivs2new(I) = (rightderiv - leftderiv)/latspacing;
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -72,8 +80,10 @@ end
 %--------------------------------------------------------------------------
 derivs = zeros(D,npoints);
 derivs2 = zeros(D,D,npoints);
+fielditself = zeros(1, npoints);
 
 for I = 1:npoints
+    fielditself(I) = data.field(point_index(I,:));
     %PIE: point index entry, converted to a cell array to allow for
     %indexing
     PIE = point_index(I,:);
