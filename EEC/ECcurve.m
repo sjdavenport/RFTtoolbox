@@ -15,14 +15,20 @@ function [ curve, x ]  = ECcurve( lat_data, limits, increm, version)
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %% 1D
-% nvox = 100; FWHM = 5; D = length(Dim);
-% lat_data = wnfield(nvox);
+% nvox = 100; FWHM = 5;
+% lat_data = wfield(nvox);
 % [ curve, x ] = ECcurve(lat_data);
 % plot(x, curve)
 %
 % %% 2D
 % Dim = [10,10]; FWHM = 5; D = length(Dim);
-% lat_data = wnfield(Dim);
+% lat_data = wfield(Dim);
+% [ curve, x ] = ECcurve(lat_data);
+% plot(x, curve)
+%
+% %% 2D non-Gaussian data
+% Dim = [10,10]; FWHM = 5; D = length(Dim);
+% lat_data = wfield(Dim, 1, 'L', 3);
 % [ curve, x ] = ECcurve(lat_data);
 % plot(x, curve)
 %

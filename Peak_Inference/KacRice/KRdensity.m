@@ -1,6 +1,5 @@
-function [ interval, std_error ] = bernstd( p, N, level )
-% BERNSTD( p, N, sigma ) generates the bernouilli standard error confidence
-% intervals that arise from the central limit theorem.
+function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
+% KRDENSITY() evaluates the density from the Kac-Rice formula.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -10,7 +9,7 @@ function [ interval, std_error ] = bernstd( p, N, level )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% bernstd(0.05,1000,0.95)
+% 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -20,15 +19,29 @@ function [ interval, std_error ] = bernstd( p, N, level )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'level', 'var' )
-   % default option of alpha
-   level = 0.95;
-end
+
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-std_error = (p*(1-p))^(1/2)*norminv( 1-(1-level)/2 )/sqrt(N);
-interval = [ p - std_error, p + std_error ];
+niters = 1000000;
+data = randn([1,niters]);
+data = data*sqrt(Omega) + muprime2;
+
+setbelowzero = data < 0;
+if sum(setbelowzero) == 0 
+    KRexpectation = 0;
+else
+    data(~setbelowzero) = 0;
+    KRexpectation = mean(abs(data));
+end
+
+% if sum(setbelowzero) == 0
+%     KRexpectation = 0;
+% else
+%     KRexpectation = mean(abs(data(setbelowzero)));
+% end
+
+KRexpectation = KRexpectation*exp(-muprime^2/(2*Lambda))/sqrt(2*pi*Lambda); %multiply by p_t(0)!
 
 end
 

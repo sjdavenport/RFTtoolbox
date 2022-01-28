@@ -39,7 +39,7 @@ function [ smoothed_data, ss ] = fconv( data, sep_kern, D, truncation, dx,...
 %                   variance 1 isotropic fields
 %--------------------------------------------------------------------------
 % DEVELOPER TODOS
-% Need to allow calculation of ss (the sum of squares of the kernel for use
+% Need to allow calculation of    ss (the sum of squares of the kernel for use
 % in noisegen.m
 %--------------------------------------------------------------------------
 % EXAMPLES

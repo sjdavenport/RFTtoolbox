@@ -21,6 +21,9 @@ function dilated_mask = dilate_mask( mask, dilation )
 %
 % mask(2,4) = 1; mask(4,4) = 1;
 % dilate_mask(mask,-1)
+%
+% mask = zeros(5); mask(:,3) = 1; mask(3,:) = 1;
+% mask(4,:) = 1; mask(:,4) = 1; mask(2,:) = 1
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------

@@ -42,13 +42,17 @@ function mfield = multiplier_field( base_fields, nsubj, normalize, multiplier )
 % % Generate data with non constant variance given by the basis functions
 % mfields_nonconst = multiplier_field(PolyBase, 20, false, "gaussian");
 % imagesc(mfields_nonconst(:, :, 20))
-%
+% 
 % % Plot the variance of the field
 % var(mfields_nonconst)
-%
+% 
+% % Image basis
+% base_fields = Field(randn([91,109,40]), true([91,109]));
+% multiplier_field( base_fields, 10 ) 
 %--------------------------------------------------------------------------
 % AUTHORS:
 % Fabian Telschow
+%--------------------------------------------------------------------------
 
 %% Check mandatory input
 %--------------------------------------------------------------------------

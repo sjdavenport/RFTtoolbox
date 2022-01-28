@@ -12,7 +12,15 @@ function obj = cut2mask( obj )
 %
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% noise = wfield([50,50], 1)
+% mask = zeros(noise.masksize);
+% mask(20:30,20:30) = 1;
+% noise.mask = logical(mask);
+% params = ConvFieldParams([4,4], 3);
+% f = convfield(noise, params)
+% imagesc(f); figure
+% cut_f = cut2mask(f);
+% imagesc(cut_f)
 %--------------------------------------------------------------------------
 % Author: Fabian Telschow
 %--------------------------------------------------------------------------

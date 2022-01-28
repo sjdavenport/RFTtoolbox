@@ -83,7 +83,6 @@ end
 % nVox = prod(size_of_data(1:nDim));
 nsubj = size_of_data(end);
 
-
 %% Masking 
 %Set the default mask to be all ones.
 if nargin < 2

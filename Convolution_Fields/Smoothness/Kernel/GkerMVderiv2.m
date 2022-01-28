@@ -9,7 +9,7 @@ function deriv2 = GkerMVderiv2( x, sigma2_or_FWHM, use_fwhm )
 % use_fwhm
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% The second derivative of the Gaussian kernel evaluated at x
 %--------------------------------------------------------------------------
 % EXAMPLES
 % deriv = GkerMVderiv([1,2]', 3)
@@ -21,7 +21,8 @@ function deriv2 = GkerMVderiv2( x, sigma2_or_FWHM, use_fwhm )
 % (derivplushx - deriv)/h
 % (derivplushy - deriv)/h
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 3
     use_fwhm = 1;
 end

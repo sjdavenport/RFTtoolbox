@@ -1,4 +1,4 @@
-function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, upperbounds )
+function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, upperbounds, algorithm )
 % FINDLMS( fn, initial_estimates, box_size ) finds the local maxima of
 % function by searching within boxes centred at the initial estimates
 %--------------------------------------------------------------------------
@@ -17,28 +17,33 @@ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, u
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-
 %%  Check mandatory input and get important constants
 %--------------------------------------------------------------------------
+
+if ~exist('algorithm', 'var')
+   algorithm = 'sqp';
+end
+
+% Find the dimension of the data
+D = size(initial_estimates,1);
+
+% Increase the size of lowerbounds and convert to cell if necessary
 if ~iscell(lowerbounds)
+    if size(lowerbounds,2) < D
+        lowerbounds = repmat(lowerbounds,1,D);
+    end
     lowerbounds = {lowerbounds};
 end
 if ~iscell(upperbounds)
+    if size(upperbounds,2) < D
+        upperbounds = repmat(upperbounds,1,D);
+    end
+
     upperbounds = {upperbounds};
 end
 
 % Calculate the number of points at which to initialize
 npeaks = size(initial_estimates,2);
-
-% Find the dimension of the data
-D = size(initial_estimates,1);
-
-if size(lowerbounds,2) < D
-    lowerbounds = repmat(lowerbounds,1,D);
-end
-if size(upperbounds,2) < D
-    upperbounds = repmat(upperbounds,1,D);
-end
 
 %% Error checking
 %--------------------------------------------------------------------------
@@ -60,8 +65,10 @@ peakvals = zeros(1, npeaks);
 
 % Set the options for the optimization function fmincon
 options = optimoptions(@fmincon,'Display','off'); % Ensures that no output
+
 % is displayed.
-options.Algorithm = 'sqp';
+options.Algorithm = algorithm;
+
 % A bizarre constant that seems to be needed in order for the algorithm to
 % always converge if it is initialized at an integer!
 extra = 0.00001*(floor(initial_estimates) == initial_estimates);
@@ -73,7 +80,7 @@ for peakI = 1:npeaks
     ubs = upperbounds{peakI};
     templocs = cell(1,size(lbs,2));
     tempvals = zeros(1,size(ubs,2));
-    for J = 1:size(lbs,2)
+    for J = 1:size(lbs,2) %Unsure why this second loop is necessary!
         lb = lbs(:,J);
         ub = ubs(:,J);
         

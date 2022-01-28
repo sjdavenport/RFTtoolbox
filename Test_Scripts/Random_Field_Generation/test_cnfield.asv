@@ -10,7 +10,7 @@ close all
 
 %% %% 1D Examples
 % Simple 1D example
-rng(99)
+rng(105)
 dim = [30 1];
 voxmap = 1:dim;
 % tmp2 = mod( voxmap, 6);
@@ -21,9 +21,8 @@ nsubj = 10;
 FWHM  = 4; 
 lat_data = cnfield( dim, 10, voxmap, 0, nsubj );
 
-resadd = 3;
-params = ConvFieldParams(FWHM, resadd);
-smooth_data = convfield(lat_data, params);
+
+smooth_data = convfield(lat_data, FWHM);
 
 subplot(1, 2, 1)
 plot( lat_data(:,5) )

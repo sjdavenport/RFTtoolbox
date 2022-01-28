@@ -1,4 +1,4 @@
-function [ out ] = resel2LKC( in )
+function covest = rfcovest( lat_data )
 % NEWFUN serves as a function template.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -19,23 +19,17 @@ function [ out ] = resel2LKC( in )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'opt1', 'var' )
-   % default option of opt1
-   opt1 = 0;
+if lat_data.D > 1
+    error('Not implemented for D > 1')
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-% Calculate scaling factors to convert between resels and LKCs see e.g.
-% Worsley 1992 (3D brain paper).
-scaling_vec = repmat(sqrt(4*log(2)), 1, D).^(1:D);
+covest = zeros(lat_data.masksize(1), lat_data.masksize(1));
+for I = 1:lat_data.masksize(1)
+    demeanedvoxdata = lat_data.field(I, :) - mean(lat_data.field(I, :));
+    covest(I, :) = mean(repmat(demeanedvoxdata, lat_data.masksize(1), 1).*lat_data.field, 2);
+end
 
-% Initialise the resel vector
-resel_vec = zeros(1,4);
-
-% Set the non-zero LKCs
-scaled_resels = resels.*scaling_vec;
-LKCs.hatL = scaled_resels(2:end);
-LKC.L0 = scaled_resels(1);
 end
 

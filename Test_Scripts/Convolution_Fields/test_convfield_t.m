@@ -36,6 +36,37 @@ subplot(1,2,2); imagesc(tcfield); zlim([zmin,zmax])
 title('2D convolution t field')
 xlabel('x'); ylabel('y'); zlabel('t field')
 
+%% Matching to applyconvfield_t
+D = 2; dim = [25,25]; mask = true( dim ); FWHM = 3; nsubj = 50;
+params = ConvFieldParams( FWHM * ones( [ 1 D ] ), 0, 0, false );
+params_fine = ConvFieldParams( FWHM * ones( [ 1 D ] ), 3, 0, false );
+lat_data = wfield( mask, nsubj );
+smooth_tfield = convfield_t( lat_data, params );
+fine_tfield = convfield( lat_data, params_fine ); %Convolution eval
+
+zlimits = [min(fine_data.field(:))-0.1, max(fine_data.field(:))+0.1];
+
+subplot(1,2,1)
+surf(smooth_data.field)
+zlim(zlimits)
+title('Lattice tfield Evaluation')
+subplot(1,2,2)
+surf(fine_data.field)
+zlim(zlimits)
+title('Convolution t Field')
+
+%% Matching to applyconvfield
+tcfield = @(x) applyconvfield_t(x, lat_data.field, FWHM);
+mask = true(dim);
+tcfieldnotrunc = @(x) applyconvfield_t(x, lat_data.field, FWHM, mask, 0);
+
+smooth_data.field(20,20)
+tcfield([20,20]')
+tcfieldnotrunc([20,20]')
+smooth_data.field(1,10)
+tcfield([1,10]')
+tcfieldnotrunc([1,10]')
+
 %% 2D convolution field (with mask)
 Dim = [3,3]; nsubj = 20; resadd = 3; FWHM = 8;
 params = ConvFieldParams([FWHM, FWHM], resadd);

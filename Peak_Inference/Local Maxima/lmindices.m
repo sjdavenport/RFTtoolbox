@@ -5,15 +5,18 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Y      a 3 dimensional array of real values
-% top    the top number of local maxima of which to report
+% top    the top number of local maxima of which to report, if you wish to
+%        consider all of the maxima you can take top = 'all'
 % CC     the connectivity criterion
 % mask   a 0/1 mask
 %--------------------------------------------------------------------------
 % OUTPUT
-% lmarrayindices    an npeaks by D array of the peak locations
+% lmarrayindices    an D by npeaks array of the peak locations
 % lmind             an npeaks by 1 array where each value is the converted
 %                   peak location, converted according to the size of Y 
 %                   using convind
+% peakvals          an npeaks by 1 array each value of which is the value
+%                   the field takes at a given peak
 %--------------------------------------------------------------------------
 % EXAMPLES
 % %3D example
@@ -21,15 +24,23 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % a(16,100,40) = 5;
 % a(10,50,35) = 3;
 % [peaklocs, peakinds, peakvals] = lmindices(a,2)
-% a(peakinds) %== peakvals
+% a(peakinds) == peakvals
 %
 % %1D example 
 % lmindices([1,2,1])
 % lmindices([1,2,1,2,1],2)
 %
+% % 1D example with edges (note how edge maxima are counted!)
+% lmindicies([1,2,3])
+%
 % %2D example
 % [ lmarrayindices, lmInd ] = lmindices([1,1,1;1,2,1;1,1,1])
 % lmindices([1,1,1;1,2,1;1,1,1;1,1,2], 2)
+%
+% % 2nd 2D example (this is not a maximum - as it's not a maximum within
+% the mask!)
+% data = zeros(3); data(2,2) = 1; mask = logical(data);
+% lmindices(data, mask)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -37,6 +48,8 @@ if ~exist('top', 'var')
     top = 1;
 elseif strcmp(top, 'all')
     top = numel(Y);
+elseif ~isnumeric(top)
+    error("top must be a number or 'all'")
 end
 Y = squeeze(Y);
 Ydim = size(Y);
@@ -47,7 +60,11 @@ if ~exist('mask', 'var')
     mask = ones(Ydim);
 end
 if ~isequal(size(mask), size(Y))
-    error('The mask must be the same size as Y')
+    try 
+        Y = reshape(Y, size(mask));
+    catch
+        error('The mask must be the same size as Y')
+    end
 end
 
 if ~exist('CC', 'var')
@@ -91,5 +108,11 @@ end
 % Obtain the values at the peaks
 peakvals = Y(lmind);
 
-end
+% Return a column vector if the dimension is 1
+% if D == 1
+%     lmarrayindices = lmarrayindices';
+%     lmind = lmind';
+%     peakvals = peakvals';
+% end
 
+end

@@ -1,4 +1,4 @@
-function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, mask, demean, niters, include_original, alpha )
+function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, alpha, FWHM, mask, demean, niters, include_original )
 % PERM_THRESH( data, stat, niters, include_original, subject_mask, alpha ) 
 % implements the permutation test voxelwise on a dataset in order to 
 % estimate a one-sample threshold with which to perform multiple 
@@ -27,6 +27,11 @@ function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, FWHM, ma
 % lat_data = wfield([5,5], 10);
 % tic; [~,threshold] = perm_thresh_new(lat_data, 'T'); toc
 % tic; [~,threshold] = perm_thresh(lat_data.field, 'T');toc
+%
+% % Normal data with 1 voxel (very similar (as expected)!)
+% nsubj = 100; data = randn(1,nsubj);
+% [~, thresh] = perm_thresh(data, 'Z', 0.025)
+% 1.96*std(data')/sqrt(nsubj)
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
