@@ -54,9 +54,18 @@ classdef Field
        %-------------------------------------------------------------------
        % Change set.mask function
        function obj = set.mask( obj, val )
+           % Logical input
            if ~islogical( val )
                error( "mask must be an logical array." )
            end
+           
+           % Catch wrong 1D mask input
+           sM = size(val);
+           if sM(1) == 1 && sM(2) ~= 1
+               error( "a 1D mask must be a logical column vector." )
+           end
+           
+           % Check compatibilitiy with field
            if isempty( obj.field ) && isempty( obj.xvals )
              % Assign the value
              obj.mask = val;               
