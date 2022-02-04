@@ -37,7 +37,7 @@ if ~exist('fdcov', 'var')
 end
 
 if ~exist('niters', 'var')
-    niters = 1000000;
+    niters = 10000;
 end
 
 % If u is not specified just compute the epected number of local maxima
