@@ -41,9 +41,17 @@ for d = 1:obj.D
 
   % Correct kernel functions by taking the derivative in the
   % dth component
-  grad{d}.kernel{d} = obj.dkernel{d};
-  if iscell( obj.d2kernel )
-    grad{d}.dkernel{d} = obj.d2kernel{d};
+  if isa(grad{d}.dkernel{d}, 'function_handle')
+    grad{d}.kernel{d} = obj.dkernel{d};
+    if iscell( obj.d2kernel )
+        grad{d}.dkernel{d} = obj.d2kernel{d};
+    end
+  else
+      [dK, d2K] = MVderiv(obj.kernel{d}, obj.D);
+      grad{d}.kernel{d} = dK;
+      if iscell( obj.d2kernel )
+        grad{d}.dkernel{d} = d2K;
+      end
   end
   
   % Correct truncation for the derivative kernel

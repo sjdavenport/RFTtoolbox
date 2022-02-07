@@ -17,7 +17,7 @@ classdef SepKernel
       adjust       % a 1 by D array stating whether the kernel should be shifted by adjust
    end
    methods
-      function obj = SepKernel( D, FWHM )
+      function obj = SepKernel( varargin )
           % SEPKERNEL( D, FWHM ) is a basic constructor for a SepKernel
           % class object. If FWHM is provided it outputs an object of class
           % SepKernel representing a seperable Gaussian kernel with the
@@ -27,7 +27,7 @@ classdef SepKernel
           % Mandatory
           %  D     an numeric giving the dimension of the seperable kernel
           % Optional
-          %  FWHM  either a numeric or a numeric vector of length obj.D
+          %  arg2  either a numeric or a numeric vector of length obj.D
           %
           %----------------------------------------------------------------
           % OUTPUT
@@ -53,9 +53,18 @@ classdef SepKernel
           %----------------------------------------------------------------
           % Author: Fabian Telschow
           %----------------------------------------------------------------
-          if nargin == 1
-            obj.D = D;
-            
+          if nargin >= 1
+            if isnumeric( varargin{1} )
+                D =  varargin{1};
+                obj.D = D;
+            else
+                error("First Input must be an integer giving the dimension of the underlying domain.");
+            end  
+          else
+              error("At least the dimension of the underlying domain needs to be specified!")
+          end
+                      
+          if nargin >= 1
             obj.kernel = cell( [ 1 D ] );
             for d = 1:D
                 obj.kernel{d} = @(x) NaN;
@@ -75,19 +84,149 @@ classdef SepKernel
             obj.d2truncation = NaN * ones( [ 1 D ] );
             
             obj.adjust = zeros( [ 1 D] );
-            
-          else
-              if length( FWHM ) == 1 || length( FWHM ) == D
-                  % Create a standard SepKernel object of dimension D
-                  obj = GaussKernel( SepKernel( D ), FWHM );           
+          end
+          
+          if nargin >= 2
+              arg2 = varargin{2};
+              
+              if isnumeric(arg2)
+              % If second argument is numeric or 1 x D make a Gausskernel
+                  if length( arg2 ) == 1 || length( arg2 ) == D
+                      % create a standard SepKernel object of dimension D
+                      obj = GaussKernel(D, arg2);           
+                  else
+                    error( "FWHM needs to be either of length 1 or D." )
+                  end
+              elseif isa(arg2, 'function_handle')
+              % If second argument is function handle add it as kernel
+              % field in all dimensions
+                    for d = 1:D
+                        obj.kernel{d} = arg2;
+                    end
+              elseif iscell(arg2)
+              % If second argument is cell with function handles add it
+              % in the kernel field
+                for d = 1:D
+                    if isa(arg2{d}, 'function_handle')
+                        obj.kernel{d} = arg2{d};
+                    else
+                        error("The cell entries must be function handles!")
+                    end
+                end
+              end
+          end
+          
+          if nargin >= 3
+              arg3 = varargin{3};
+                            
+              if isnumeric(arg3)
+                  % Add the truncation field
+                  if length(arg3) == 1    
+                      obj.truncation   = arg3 * ones([ 1 D ]);
+                      obj.dtruncation  = arg3 * ones([ 1 D ]);
+                      obj.d2truncation = arg3 * ones([ 1 D ]);
+                  elseif length(arg3(:)) == D
+                      obj.truncation   = arg3;
+                      obj.dtruncation  = arg3;
+                      obj.d2truncation = arg3;
+                  elseif all(size(arg3) == [3 D])
+                      obj.truncation   = arg3(1,:);
+                      obj.dtruncation  = arg3(2,:);
+                      obj.d2truncation = arg3(3,:);                                  
+                  else
+                    error( "truncation input needs to be either of length 1, D or 3 x D." )
+                  end
+                  
+              elseif isa(arg3, 'function_handle')
+                    for d = 1:D
+                        obj.dkernel{d} = arg3;
+                    end
+              elseif iscell(arg3)
+                    for d = 1:D
+                        if isa(arg3{d}, 'function_handle')
+                            obj.dkernel{d} = arg3{d};
+                        else
+                            error("The cell entries must be function handles!")
+                        end
+                    end
+              end
+          end
+          
+          if nargin >= 4
+              arg4 = varargin{4};
+              
+              if isnumeric(arg4)
+                  % Add the truncation field
+                  if length(arg4) == 1    
+                      obj.adjust = arg4 * ones([ 1 D ]);
+                  elseif length(arg4(:)) == D
+                      obj.adjust = arg4;                      
+                  else
+                    error( "adjust input needs to be either of length 1, D." )
+                  end          
+              elseif isa(arg4, 'function_handle')
+                    for d = 1:D
+                        obj.d2kernel{d} = arg4;
+                    end
+              elseif iscell(arg4)
+                    for d = 1:D
+                        if isa(arg4{d}, 'function_handle')
+                            obj.d2kernel{d} = arg4{d};
+                        else
+                            error("The cell entries must be function handles!")
+                        end
+                    end
+              end
+          end
+          
+          if nargin >= 5
+              arg5 = varargin{5};
+                            
+              if isnumeric(arg5)
+                  % Add the truncation field
+                  if length(arg5) == 1    
+                      obj.truncation   = arg5 * ones([ 1 D ]);
+                      obj.dtruncation  = arg5 * ones([ 1 D ]);
+                      obj.d2truncation = arg5 * ones([ 1 D ]);
+                  elseif length(arg5(:)) == D
+                      obj.truncation   = arg5;
+                      obj.dtruncation  = arg5;
+                      obj.d2truncation = arg5;
+                  elseif all(size(arg5) == [3 D])
+                      obj.truncation   = arg5(1,:);
+                      obj.dtruncation  = arg5(2,:);
+                      obj.d2truncation = arg5(3,:);                                  
+                  else
+                    error( "truncation input needs to be either of length 1, D or 3 x D." )
+                  end
               else
-                error( "FWHM needs to be either of length 1 or D." )
+                   error( "truncation input needs to be either of length 1, D or 3 x D." )
+              end
+          end
+          
+          if nargin >= 6
+              arg6 = varargin{6};
+              
+              if isnumeric(arg6)
+                  % Add the truncation field
+                  if length(arg6) == 1    
+                      obj.adjust = arg6 * ones([ 1 D ]);
+                  elseif length(arg6(:)) == D
+                      obj.adjust = arg6;                      
+                  else
+                    error( "adjust input needs to be either of length 1, D." )
+                  end
+              else
+                  error( "adjust input needs to be either of length 1, D." )
               end
           end
       end
       
       % Constructs a SepKernel object from 1D Gaussian kernels
-      obj = GaussKernel( obj, FWHM );
+      %obj = GaussKernel( D, FWHM, adjust )
+            
+      % Fill derivatives by Numeric derivatives
+      obj = NumericDerivatives( obj, h )
       
       % Computes the gradient for a SepKernel object
       grad = Gradient( obj )

@@ -61,7 +61,7 @@ end
 
 % Allow for default FWHM input
 if isnumeric(params)
-    params = ConvFieldParams( repmat(params,1,lat_data.D), 0 );
+    params = ConvFieldParams( repmat(params, 1, lat_data.D), 0 );
 end
 
 % Check the lat_data input
