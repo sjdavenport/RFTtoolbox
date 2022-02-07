@@ -32,6 +32,8 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 %
 % % 1D example with edges (note how edge maxima are counted!)
 % lmindicies([1,2,3])
+% % Exclude the boundary
+% lmindicies([1,2,3], 1, [1,1,0])
 %
 % %2D example
 % [ lmarrayindices, lmInd ] = lmindices([1,1,1;1,2,1;1,1,1])

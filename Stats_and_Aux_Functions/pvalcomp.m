@@ -1,5 +1,5 @@
-function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
-% KRDENSITY() evaluates the density from the Kac-Rice formula.
+function [ pval_store ] = pvalcomp( dist1, dist2, doplot )
+% NEWFUN serves as a function template.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -9,7 +9,8 @@ function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% (More in PIloc)
+% pvalcomp(normrnd(0,1,1, 10000), normrnd(0,1,1, 10000))
+% pvalcomp(normrnd(0,1,1, 1000), chi2rnd(3,1, 10000))
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -19,29 +20,25 @@ function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-
+if ~exist( 'doplot', 'var' )
+   % Default value
+   doplot = 0;
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-niters = 1000000;
-data = randn([1,niters]);
-data = data*sqrt(Omega) + muprime2;
-
-setbelowzero = data < 0;
-if sum(setbelowzero) == 0 
-    KRexpectation = 0;
-else
-    data(~setbelowzero) = 0;
-    KRexpectation = mean(abs(data));
+nvals = length(dist1);
+pval_store = zeros(1, nvals);
+% peak_height_sim_distbn = mean(local_maxima) - mean(peak_height_sim_distbn) + peak_height_sim_distbn;
+for I = 1:nvals
+    modul(I,1000)
+    pval_store(I) = sum(dist2 > dist1(I));
 end
+pval_store = pval_store/length(dist2);
 
-% if sum(setbelowzero) == 0
-%     KRexpectation = 0;
-% else
-%     KRexpectation = mean(abs(data(setbelowzero)));
-% end
-
-KRexpectation = KRexpectation*exp(-muprime^2/(2*Lambda))/sqrt(2*pi*Lambda); %multiply by p_t(0)!
+if doplot
+    histogram(pval_store)
+end
 
 end
 

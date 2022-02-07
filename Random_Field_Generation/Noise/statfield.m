@@ -28,7 +28,9 @@ function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params
 % stat_field = statnoise( 100, 10, 3, 11 )
 %
 % global PIloc; load([PIloc, 'Variance/storevars']); FWHM = 20;
-% stat_field = statnoise( 100, 50, FWHM, 11 )*(1/sqrt(allvars(FWHM)));
+% params = ConvFieldParams(FWHM, 0)
+% std_est = sqrt(allvars(FWHM))*sqrt(100/99);
+% stat_field = statfield( 100, 10000, params)*(1/std_est);
 % plot(var(stat_field.field,0,2));
 %
 % nea = wfield(100,50); FWHM = 20; 

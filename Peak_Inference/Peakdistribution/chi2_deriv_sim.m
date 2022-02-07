@@ -1,5 +1,5 @@
-function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
-% KRDENSITY() evaluates the density from the Kac-Rice formula.
+function [ U, deriv2_sim_store ] = chi2_deriv_sim( df, Lambda, MofLambda, niters )
+% NEWFUN serves as a function template.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -9,7 +9,7 @@ function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% (More in PIloc)
+% 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -19,29 +19,23 @@ function KRexpectation = KRdensity( muprime, muprime2, Lambda, Omega )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-
+if ~exist( 'niters', 'var' )
+   % Default value
+   niters = 1000;
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-niters = 1000000;
-data = randn([1,niters]);
-data = data*sqrt(Omega) + muprime2;
-
-setbelowzero = data < 0;
-if sum(setbelowzero) == 0 
-    KRexpectation = 0;
-else
-    data(~setbelowzero) = 0;
-    KRexpectation = mean(abs(data));
+U = chi2rnd(df-1,1, niters); %% changed from U = chi2rnd(df,1, niters)
+H = normrnd(0, sqrt(MofLambda), 1, niters);
+deriv2_sim_store = zeros(1, niters);
+for I = 1:niters
+%     modul(I, 100)
+    %deriv_sim_store(I) = normrnd(0, 2*sqrt(U(I))*sqrt(Lambda));
+    deriv2_sim_store(I) = 2*Lambda*chi2rnd(df-1) + 2*(- U(I)*Lambda) + 2*U(I)^(1/2)*H(I); %+ deriv_sim_store(I)^2/U(I)/2 
 end
 
-% if sum(setbelowzero) == 0
-%     KRexpectation = 0;
-% else
-%     KRexpectation = mean(abs(data(setbelowzero)));
-% end
-
-KRexpectation = KRexpectation*exp(-muprime^2/(2*Lambda))/sqrt(2*pi*Lambda); %multiply by p_t(0)!
+% KRexpectation = -mean(deriv2_sim_store(deriv2_sim_store < 0));
 
 end
 

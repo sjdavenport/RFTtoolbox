@@ -11,7 +11,7 @@ function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, u
 %               Alternately if the box_size is numeric then this box size
 %--------------------------------------------------------------------------
 % OUTPUT
-% peaklocs      a vector with the locations of the local maxima
+% peaklocs      a matrix whose columns are the locations of the local maxima
 %--------------------------------------------------------------------------
 % EXAMPLES
 %--------------------------------------------------------------------------

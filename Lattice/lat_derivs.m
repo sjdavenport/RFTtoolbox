@@ -34,13 +34,14 @@ function [ derivs, derivs2, fielditself ] = lat_derivs( data, points )
 % [derivs, deriv2] = lat_derivs( f, [-1,-1]' )
 % [derivs, deriv2] = lat_derivs( f, [-1,1]' )
 %
-% f = statfield( 4, 1, 5, 1, 0 )
-% [ derivs(I), derivs2(I), fielditself(I) ] = lat_derivs( f, 3 )
+% params = ConvFieldParams(5, 5);
+% f = statfield( 4, 1, params, 1, 0 );
+% [ derivs, derivs2, fielditself ] = lat_derivs( f, 3 )
 % latspacing = (f.xvals{1}(2) - f.xvals{1}(1));
 % leftderiv = (f.field(13) - f.field(12))/latspacing;
 % rightderiv = (f.field(14) - f.field(13))/latspacing;
-% derivsnew(I) = (1/2)*(leftderiv + rightderiv);
-% derivs2new(I) = (rightderiv - leftderiv)/latspacing;
+% derivsraw = (1/2)*(leftderiv + rightderiv)
+% derivs2raw = (rightderiv - leftderiv)/latspacing
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -156,7 +157,9 @@ for I = 1:npoints
             derivs2(d2,d1,I) = derivs2(d1,d2,I);
         end
     end
-    
+end
+if D == 1
+    derivs2 = squeeze(derivs2)';
 end
 
 end

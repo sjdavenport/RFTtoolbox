@@ -16,7 +16,6 @@ FWHM_1 = 3;
 % FWHM second smoothing
 FWHM_2 = 12;
 
-
 % standard deviation of error
 switch D
     case 1
