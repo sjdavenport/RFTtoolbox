@@ -740,17 +740,13 @@ classdef Field
             end
        end
        
-       % Redefine a squeeze function
-       function out = squeeze( obj )
-            out       = Field( squeeze( obj.mask ) );
-            out.field = squeeze( obj.field );
-            ind       = false( [ 1 obj.D ] );
-            for d = 1:obj.D
-                if length( obj.xvals{d} ) > 1
-                    ind( d ) = true;
-                end
-            end
-            out.xvals = obj.xvals( ind );
+       % Redefine a reshape function
+       function obj = reshapeFiber( obj, dim )
+           if prod(obj.fibersize) == prod(dim)
+                obj.field = reshape(obj.field, [obj.masksize, dim ]);
+           else
+                error("dim must contain the same number of elements as the fibersize.")
+           end
        end
        
        % Collapse: a function collapsing either the fiber or the domain to
