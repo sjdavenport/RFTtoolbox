@@ -1,4 +1,4 @@
-function [ thresh, quantiles, hatdelta, hatsigma, len_bdry ] = CopeSets( field, c, lvls, quantEstim,...
+function [ thresh, quantiles, hatmu, hatsigma, len_bdry ] = CopeSets( field, c, lvls, quantEstim,...
                                                         bdry_type, center, normalize, delta )
 % CopeSets( field, c, lvls, quantEstim, bdry_type, center, normalize,
 % delta ) computes CoPe sets for the mean of a random field.
@@ -31,7 +31,7 @@ function [ thresh, quantiles, hatdelta, hatsigma, len_bdry ] = CopeSets( field, 
 %            be in the estimated lower and upper excursion sets 
 %  quantile  the bootstrapped quantile of the maximum distribution of the 
 %            input processes
-%  hatdelta  the sample mean of the fields
+%  hatmu  the sample mean of the fields
 %  hatsigma  the sample variance of the fields
 %--------------------------------------------------------------------------
 % EXAMPLES
@@ -85,7 +85,7 @@ sF    = field.masksize;
 %% Main function
 %--------------------------------------------------------------------------
 % Compute mean curve and variance
-hatdelta = mean( field );
+hatmu = mean( field );
 hatsigma = std( field );
 
 %%% Compute the process on the boundary and its mask
