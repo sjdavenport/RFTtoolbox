@@ -8,9 +8,9 @@ close all
 % Dimension of the domain
 D = 2;
 % sample size
-N = 200;
+N = 400;
 % Number of simulations
-M = 100;
+M = 50;
 % size of domain
 dim    = 100 * ones( [ 1 D ] );
 % FWHM first smoothing
@@ -65,7 +65,7 @@ thresh    = zeros([field.masksize, 1, M, 2]);
 quantiles = zeros([1 M]);
 hatmu     = zeros([field.masksize, M]);
 hatsigma  = zeros([field.masksize, M]);
-len_bdry_tmp = zeros([1 M]);
+len_bdry  = zeros([1 M]);
 
 % Get the Cope Set thresholds etc
 for m = 1:M
@@ -75,7 +75,7 @@ for m = 1:M
     quantiles(m)    = quantiles_tmp;
     hatmu(:,:,m)    = hatmu_tmp.field;
     hatsigma(:,:,m) = hatsigma_tmp.field;
-    len_bdry_tmp(m) = len_bdry_tmp;                                                
+    len_bdry(m) = len_bdry_tmp;                                                
 end
 
 %% Quick and dirty plots
@@ -172,5 +172,5 @@ end
 coveringRateNaive = CovRateLvlSets( mu, hatmu, thresh, c, 0 )
 
 % linear interpolated voxels
-coveringRateInterpol = CovRateLvlSets( mu, hatmu, thresh, c,1 )
+coveringRateInterpol = CovRateLvlSets( mu, hatmu, thresh, c, 1 )
 
