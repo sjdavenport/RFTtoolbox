@@ -80,6 +80,24 @@ GaussKern = SepKernel(D, 5, [1 3])
 
 GaussKern = SepKernel(D, 5, [1 3], [2 1]) % truncation and adjust
 
+%% % Non-isotropic Gaussian kernels
+GaussKern = GaussKernel(D, 2);
+% Equivalently you can use GaussKernel:
+GaussKern2 = GaussKernel(D, 10);
+
+non_isotropic_kernel = GaussKern;
+non_isotropic_kernel.truncation(2) = GaussKern2.dtruncation(1);
+non_isotropic_kernel.kernel{2} = GaussKern2.kernel{1};
+non_isotropic_kernel.dtruncation(2) = GaussKern2.dtruncation(1);
+non_isotropic_kernel.dkernel{2} = GaussKern2.dkernel{1};
+non_isotropic_kernel.d2truncation(2) = GaussKern2.dtruncation(1);
+non_isotropic_kernel.d2kernel{2} = GaussKern2.d2kernel{1};
+
+lat_data = wfield([40,40]);
+params = ConvFieldParams(non_isotropic_kernel, 5);
+f = convfield(lat_data, params);
+imagesc(f)
+
 %% %-----------------------------------------------------------------------
 % You can generate also Sep kernels with different kernels in different
 % directions. Here f,g are 1D functions and f1,g1 its derivatives and f2,g2
