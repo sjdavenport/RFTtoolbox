@@ -96,7 +96,16 @@ non_isotropic_kernel.d2kernel{2} = GaussKern2.d2kernel{1};
 lat_data = wfield([40,40]);
 params = ConvFieldParams(non_isotropic_kernel, 5);
 f = convfield(lat_data, params);
+figure(1)
 imagesc(f)
+
+% Equal code as above, but simpler
+non_isotropic_kernel = GaussKernel(2, [2 10]);
+params = ConvFieldParams(non_isotropic_kernel, 5)
+f = convfield(lat_data, params);
+figure(2)
+imagesc(f)
+
 
 %% %-----------------------------------------------------------------------
 % You can generate also Sep kernels with different kernels in different
