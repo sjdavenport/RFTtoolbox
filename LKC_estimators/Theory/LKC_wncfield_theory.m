@@ -10,7 +10,7 @@ function LKC = LKC_wncfield_theory( mask, params )
 % ARGUMENTS
 % Mandatory
 %  mask     a logical array of dimension T_1 x...x T_D.
-%  params    an object of class ConvFieldParams.      
+%  params   an object of class ConvFieldParams.      
 %
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -149,6 +149,7 @@ switch D
         g( :, :, 1, 1 ) = -CYdxY.^2 ./ VY.^2 + VdxY ./ VY;
         g( :, :, 2, 2 ) = -CYdyY.^2 ./ VY.^2 + VdyY ./ VY;
         g( :, :, 1, 2 ) = -CYdyY .* CYdxY ./ VY.^2 + CdxYdyY ./ VY;
+        g( :, :, 1, 2 ) = g( :, :, 2, 1 );
 
      case 3
         % Get the partial derivatives of the Kernel
@@ -218,8 +219,11 @@ switch D
         g( :, :, :, 2, 2 ) = ( -CYdyY.^2 + VdyY .* VY ) ./ VY.^2;
         g( :, :, :, 3, 3 ) = ( -CYdzY.^2 + VdzY .* VY ) ./ VY.^2;
         g( :, :, :, 1, 2 ) = ( -CYdyY .* CYdxY + CdxYdyY .* VY ) ./ VY.^2;
+        g( :, :, :, 2, 1 ) = g( :, :, :, 1, 2 );
         g( :, :, :, 1, 3 ) = ( -CYdzY .* CYdxY + CdxYdzY .* VY ) ./ VY.^2;
+        g( :, :, :, 3, 1 ) = g( :, :, :, 1, 3 );
         g( :, :, :, 2, 3 ) = ( -CYdzY .* CYdyY + CdyYdzY .* VY ) ./ VY.^2;
+        g( :, :, :, 3, 2 ) = g( :, :, :, 2, 3 );
         
 end
 
