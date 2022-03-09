@@ -34,19 +34,24 @@ function obj = cut2mask( obj )
 mask  = obj.mask;
 
 % Find the defining box
+s = struct();
+s.type = '()';
+
 vals = cell( [ 1 obj.D ] );
 
 switch obj.D
     case 1
         tmp     = find( sum( mask ) ~= 0 );
         vals{1} = tmp( 1 ) : tmp( end );
-        obj    = obj( vals{1} );
+        s.subs  = vals;
+        obj    = subsref(obj, s)
     case 2
         tmp     = find( sum(sum( mask, 3 ), 2) ~= 0 );
         vals{1} = tmp( 1 ):tmp( end );
         tmp     = find( sum(sum( mask, 3 ), 1) ~= 0 );
         vals{2} = tmp( 1 ):tmp( end );
-        obj    = obj( vals{1}, vals{2} );
+        s.subs  = vals;
+        obj    = subsref(obj, s)
     case 3
         tmp     = find( sum(sum( mask, 3 ), 2) ~= 0 );
         vals{1} = tmp( 1 ):tmp( end );
@@ -54,6 +59,7 @@ switch obj.D
         vals{2} = tmp( 1 ):tmp( end );
         tmp     = find( sum(sum( mask, 2 ), 1) ~= 0 );
         vals{3} = tmp( 1 ):tmp( end );
-        obj    = obj( vals{1}, vals{2}, vals{3} );
+        s.subs  = vals;
+        obj    = subsref(obj, s)
 end
 return
