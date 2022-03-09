@@ -269,16 +269,19 @@ struct('theoryIso', theoryLt,...
 %% %% D = 3 
 % Parameters for the field
 T      = 5;
-nsubj  = 10;
+nsubj  = 200;
 FWHM   = sigma2FWHM(1.5);
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
+nn = 40;
+
 %% Rectangular domain example
 % Generate rectangular mask with a padded zero collar 
-mask = pad_vals( ones( [ T T T ] ), [2 1 3], false );
+mask = pad_vals( ones( [ T T T ] ), pad, false );
+lat_masked = false;
 
 % Get theoretical LKC
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), false );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 7, ceil(7/2), lat_masked );
 theoryL  = LKC_wncfield_theory( mask, params );
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
@@ -287,16 +290,64 @@ theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
 lat_data = wfield( mask, nsubj );
 
 % Estimate across different resadd
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), false );
-LKC1   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 3, ceil(3/2), false );
-LKC3   = LKC_latconv_est( lat_data, params );
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), false );
-LKC5   = LKC_latconv_est( lat_data, params );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), lat_masked );
+LKC1   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 3, ceil(3/2), lat_masked );
+LKC3   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), lat_masked );
+LKC5   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
 
 % Values are stable accross different resadd increases. Note that resadd
 % should be odd.
-[ theoryL; LKC1; LKC3; LKC5 ]'
+struct('theoryIso', theoryLt,...
+       'theoryWn', theoryL,...
+        'res1', LKC1,...
+        'res3', LKC3,...
+        'res5', LKC5 )
+    
+%% Sphere domain example
+% Generate rectangular mask with a padded zero collar
+mask = ones( [ T T T ] );
+for t = 2:(T-1)
+    mask(3:(T-1),2:(T-1),t) = 0;
+end
+
+nn = 20;
+
+mask = pad_vals( mask, pad, false );
+lat_masked = true;
+
+% Get theoretical LKC
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), lat_masked );
+theoryL  = LKC_wncfield_theory( mask, params );
+% LKC from continuous theory
+theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
+
+% Generate test data
+lat_data = wfield( mask, nsubj );
+cfield  = convfield( lat_data, params );
+
+% HPE L_1
+HPE  = LKC_HP_est( cfield, 1, 1 );
+
+% Estimate across different resadd
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), lat_masked );
+LKC1   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 3, ceil(3/2), lat_masked );
+LKC3   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), lat_masked );
+LKC5   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+
+% Values are stable accross different resadd increases. Note that resadd
+% should be odd.
+struct('theoryIso', theoryLt,...
+       'theoryWn', theoryL,...
+       'HPE', HPE.hatL',...
+        'res1', LKC1,...
+        'res3', LKC3,...
+        'res5', LKC5 )
+    
+    
 
 %% Testing 3D (there's a bug)
 Dim = 2*[16,16,16]; mask = true(Dim); resadd = 1;

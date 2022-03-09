@@ -9,13 +9,15 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 1D
-FWHM = 6; resadd = 1; nsubj = 50; nvox = 100;
-lat_data = wnfield(nvox, nsubj);
+FWHM = 6; resadd = 5; nsubj = 50; nvox = 100;
+lat_data =  wfield( nvox, nsubj );
+
+params = ConvFieldParams( FWHM, resadd );
 
 % Convolution L_1 (voxmndest)
-cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
-dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
-[L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
+cfield  = convfield( lat_data, params );
+dcfield = convfield( lat_data, params, 1 );
+[L_conv, L0_conv] = LKC_voxmfd_est( cfield, dcfield );
 
 % HPE L_1
 HPE  = LKC_HP_est( cfield, 1, 1 );
@@ -24,8 +26,8 @@ HPE  = LKC_HP_est( cfield, 1, 1 );
 L_theory = LKC_isogauss_theory( FWHM, nvox );
 
 % SPM
-L_spm = LKC_SPM_est( FWHM, lat_data.mask );
-
+%L_spm = LKC_SPM_est( FWHM, lat_data.mask );
+L_spm = 0;
 % Compare results
 struct( 'theory', L_theory, 'voxmfd_est', L_conv, ...
         'HPE', HPE.hatL, 'SPM', L_spm )
@@ -35,33 +37,20 @@ struct( 'theory', L_theory, 'voxmfd_est', L_conv, ...
 %% 2D (no padding) big mismatch between the estimators here
 % Note: can reduce resadd for fast implementation of course)
 FWHM = 6; nsubj = 20; Dim = [49,49];
-resadd = 9; lat_data = wnfield(Dim, nsubj);
+D = length(Dim);
+resadd = 9;
+
+lat_data = wfield(Dim, nsubj);
+params  = ConvFieldParams( repmat(FWHM, [1 D]), resadd );
+cfield  = convfield( lat_data, params );
+dcfield = convfield( lat_data, params, 1 );
 
 % Convolution L_1 (voxmndest)
-cfield  = convfield_Field( lat_data, FWHM, 0, resadd );
-dcfield = convfield_Field( lat_data, FWHM, 1, resadd );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
 
-
-% Convolution L_1 (LKC_conv_est), not the same as above for some reason
-% FT: this function because I did not developed further had a bug, which
-% was a bug in mask_highres, which gave all 1's weights even if resolution
-% is increased, which is simply wrong.
-LKCs = LKC_conv_est( lat_data.field, lat_data.mask, FWHM, resadd );
-LKCs.hatL;
-
-% Convolution (previous implemenation) gives a very different answer
-Gker_param = FWHM2sigma(FWHM); D = length(Dim);
-L_oldconv = LKC_GaussConv( lat_data.field, Gker_param, D, resadd );
-
-% HPE seems to match the LKC_GaussConv answer here
+% HPE
 HPE  = LKC_HP_est( cfield, 1, 1);
 newHPE = HPE.hatL';
-
-% In this case old HPE matches new HPE
-D = length(Dim);
-HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
-oldHPE = HPE.hatn';
 
 % SPM (off of course because of non-stationarity but certainly more similar
 % to the HPE and LKCGaussconv estimators)
@@ -71,10 +60,10 @@ oldHPE = HPE.hatn';
 L_theory = LKC_isogauss_theory( FWHM, Dim );
 
 % Compare results
-struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'conv_est', LKCs.hatL,...
-        'old_conv', L_oldconv ,...
+struct( 'theory', L_theory,...
+        'voxmfd_est', L_conv,...
         'newHP', newHPE,...
-        'oldHPE', oldHPE, 'spm', L_spm )
+        'spm', L_spm )
 
     % FT: as seen later HP might have a small downward bias, that's why
     
@@ -82,12 +71,19 @@ struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'conv_est', LKCs.hatL,...
 %% 2D (with padding to ensure stationarity)
 FWHM = 12; nsubj = 100; Dim = [49,49]; D = length(Dim);
 resadd = 5; pad = ceil( 4 * FWHM2sigma( FWHM ) ); mask = ones(Dim);
-padded_mask = logical( pad_vals( mask, pad) ); lat_data = wnfield(padded_mask, nsubj);
+padded_mask = logical( pad_vals( mask, pad) );
+
+lat_masked = 0;
+
+D = length(Dim);
+resadd = 9;
+
+lat_data = wfield(padded_mask, nsubj);
+params  = ConvFieldParams( repmat(FWHM, [1 D]), resadd );
+cfield  = convfield( lat_data, params );
+dcfield = convfield( lat_data, params, 1 );
 
 % Convolution L_1 (voxmndest) seems to work in this case
-lat_masked = 0;
-cfield  = convfield_Field( lat_data, FWHM, 0, resadd, lat_masked );
-dcfield = convfield_Field( lat_data, FWHM, 1, resadd, lat_masked );
 [L_conv,L0_conv] = LKC_voxmfd_est( cfield, dcfield );
 
 %Note LKC_conv_est can't be used in this case as there is no way to
@@ -98,8 +94,8 @@ HPE  = LKC_HP_est( cfield, 1, 1);
 newHPEestimate = HPE.hatL';
 
 % HPE old version
-HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
-oldHPEestimate = HPE.hatn';
+%HPE  = LKCestim_HPE( cfield.field, D, cfield.mask, 1);
+%oldHPEestimate = HPE.hatn';
 
 % SPM
 [ L_spm, L0 ] = LKC_SPM_est( FWHM, mask );
@@ -108,8 +104,10 @@ oldHPEestimate = HPE.hatn';
 L_theory = LKC_isogauss_theory( FWHM, Dim );
 
 % Compare results
-struct( 'theory', L_theory, 'voxmfd_est', L_conv, 'newHP', newHPEestimate,...
-        'oldHPE', oldHPEestimate, 'spm', L_spm )
+struct('theory', L_theory,...
+       'voxmfd_est', L_conv,...
+       'newHP', newHPEestimate,...
+       'oldHPE', oldHPEestimate, 'spm', L_spm )
     
 % FT again seems to work well for convoltuiton estimator and large FHWM things seem to converge.
 
