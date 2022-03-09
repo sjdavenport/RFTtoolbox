@@ -100,8 +100,7 @@ figure(1)
 imagesc(f)
 
 % Equal code as above, but simpler
-non_isotropic_kernel = GaussKernel(2, [2 10]);
-params = ConvFieldParams(non_isotropic_kernel, 5)
+params = ConvFieldParams([2 10], 5)
 f = convfield(lat_data, params);
 figure(2)
 imagesc(f)
