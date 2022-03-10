@@ -30,8 +30,8 @@ function [ L_forman, L_kiebel, FWHM_f, FWHM_k ] = LKC_forman_est( field, df )
 Lambda_f = 4*log(2) * diag( 1 ./ FWHM_f.^2 );
 
 % Obtain the LKCs from Forman FWHM
-voxmfd  = VoxManifold( constfield( Lambda_f, field.mask, field.xvals ) );
-L_forman = LKC_est( voxmfd );
+voxmfd    = VoxManifold( constfield( Lambda_f, field.mask, field.xvals ) );
+L_forman  = LKC_est( voxmfd );
 
 % Obtain the LKCs from Forman FWHM
 voxmfd  = VoxManifold( constfield( Lambda_k, field.mask, field.xvals ) );

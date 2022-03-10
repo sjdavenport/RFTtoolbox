@@ -1,4 +1,4 @@
-function LKC = LKC_wncfield_theory( mask, params )
+function [LKC, g] = LKC_wncfield_theory( mask, params )
 % LKC_WNCFIELD_THEORY( mask, params ) computes
 % theoretical Lipschitz Killing curvatures for a convolution field
 % derived from a seperable kernel with underlying discrete independent
@@ -243,6 +243,7 @@ tmp = g;
 g   = Field( mask );
 g.field = tmp;
 g.xvals = xvals;
+g = Mask(g);
 voxmfd  = VoxManifold( g );
            
 LKC = LKC_est( voxmfd );
