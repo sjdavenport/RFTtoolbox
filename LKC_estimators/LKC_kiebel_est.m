@@ -1,4 +1,4 @@
-function [ L, Lambda, FWHM ] = LKC_kiebel_est( field, k )
+function [ L, Lambda, FWHM, L_forman, FWHM_forman ] = LKC_kiebel_est( field, k )
 % LKC_kiebel_est( field, k ) estimates the LKCs assuming isotropy according
 % to the article [1].
 %
@@ -149,6 +149,20 @@ end
 
 FWHM =  sqrt( 4*log(2) ./ diag(Lambda) );
 voxmfd  = VoxManifold( constfield( Lambda, field.mask, field.xvals ) );
-
 % Obtain the LKCs
 L = LKC_est( voxmfd );
+
+%--------------------------------------------------------------------------
+% Forman estimators
+sigma_est_forman = sqrt( -1 ./ 4 ./ log( 1 - diag(Lambda) / 2 ) );
+FWHM_forman  = sigma2FWHM( sigma_est_forman );
+
+Lambda_f = 4*log(2) * diag( 1 ./ FWHM_forman.^2 );
+
+% Obtain the LKCs from Forman FWHM
+voxmfd    = VoxManifold( constfield( Lambda_f, field.mask, field.xvals ) );
+L_forman  = LKC_est( voxmfd );
+%--------------------------------------------------------------------------
+
+
+

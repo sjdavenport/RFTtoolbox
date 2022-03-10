@@ -101,6 +101,7 @@ if isfield( methods, "formanE" )
     k = methods.formanE;
 end
 
+tic
 for m = 1:Msim
     % Get a function handle for data generation or load data from .mat
     if isa( data_gen, 'function_handle' )
@@ -171,7 +172,7 @@ for m = 1:Msim
        L_kiebel2_ests(m,:) = L_k;
     end
 end
-simtime = 1;
+simtime = toc
 
 % Prepare output
 results = struct( 'simtime', simtime, 'nsubj', nsubj );
