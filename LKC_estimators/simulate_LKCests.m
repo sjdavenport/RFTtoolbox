@@ -172,7 +172,7 @@ for m = 1:Msim
        L_kiebel2_ests(m,:) = L_k;
     end
 end
-simtime = toc
+simtime = toc;
 
 % Prepare output
 results = struct( 'simtime', simtime, 'nsubj', nsubj );

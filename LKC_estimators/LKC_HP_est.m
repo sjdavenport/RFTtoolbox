@@ -196,6 +196,8 @@ if( Mboot > 1 )
     % Normalize the residuals
     field = field - mean( field, 2 );
     field = field ./ sqrt( sum( field.^2, 2 ) );
+    
+    field(isnan(field)) = -Inf;
 
     for i = 1:Mboot
         % Get the bootstrapped process
