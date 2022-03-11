@@ -44,7 +44,6 @@ end
 
 % Check whether the mask and the field fit together
 sMask  = size( mask );
-sField = obj.fieldsize;
 
 if ~all( sMask == obj.masksize )
      error( "'mask' must be a logical array of size of the first length mask coordinates." )
@@ -56,10 +55,18 @@ end
 D = obj.D;
 
 % Mask the field
+mask_mult = 1 * mask;
 if val ~= 0
-    mask( ~mask ) = val;
+    mask_mult( ~mask ) = val;
 end
-obj.field = repmat( mask, [ ones( [ 1 D ] ), obj.fibersize ] ) .* obj.field;
+
+if val == -Inf || val == Inf
+    % +0.2 is added to remove a bug, if val = -Inf/Inf and the outside of the
+    % mask is zero!
+    obj.field = repmat( mask_mult, [ ones( [ 1 D ] ), obj.fibersize ] ) .* (obj.field + 0.2) - 0.2;
+else
+    obj.field = repmat( mask_mult, [ ones( [ 1 D ] ), obj.fibersize ] ) .* obj.field;
+end
 
 % Put the mask into the object
 obj.mask = mask;
