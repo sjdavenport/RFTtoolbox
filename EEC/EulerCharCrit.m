@@ -192,7 +192,7 @@ else
 end
 
 %%%% Compute the EC curves
-if strcmp( version, "C" ) && D ~= 1
+if strcmp( version, "C" )
     % C based implementation
     if Npar < 2
         for n = 1:nEC
