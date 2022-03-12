@@ -192,7 +192,7 @@ else
 end
 
 %%%% Compute the EC curves
-if strcmp( version, "C" )
+if strcmp( version, "C" ) && D ~= 1
     % C based implementation
     if Npar < 2
         for n = 1:nEC
@@ -236,8 +236,13 @@ else
     switch D
         case 1
             % Compute signs of horizontal and vertical gradient
+            difff  = f( 2:end, : ) - f( 1:end-1, : );
+            % Introduced to remove a bug, if there is just 
+            tmp = difff( 1:end-1, : ) - difff( 2:end, : );
+
             df     = sign( f( 2:end, : ) - f( 1:end-1, : ) );
             minMax = df( 1:end-1, : ) - df( 2:end, : );
+            minMax(tmp == -Inf) = 0;
             f = f( 2:end-1, : );
 
             % Get locations of local minima and maxima and there numbe rin each
