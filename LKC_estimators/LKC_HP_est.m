@@ -179,8 +179,13 @@ else
 end
 
 % Apply the mask to the data, i.e., set values outside the mask to -oo
-field = Mask( field, -Inf, field.mask );
+%field = Mask( field, -Inf, field.mask );
 field = field.field;
+
+%%% TEST
+ EC = EulerCharCrit( field, 2, mask, "C" );
+ EC{1}
+%%%
 
 % Scaling vector for integral
 p = [ sqrt( 2 * pi ); pi; ( 2 * pi )^( 3 / 2 ) / factorial( 3 ); ...
@@ -225,11 +230,17 @@ if( Mboot > 1 )
     
     L0 = EC( 1, 2 );
     
-else
+else    
     % Normalize the field to have mean zero and unit variance
     if normalize
-        field = ( field - mean( field, D+1 ) ) ./ std( field, 0, D+1 );
+        field2 = ( field - mean( field, D+1 ) ) ./ std( field, 0, D+1 );
+        field2(isnan(field2)) = 0;
     end
+    
+    %%% TEST
+    EC = EulerCharCrit( field2, 2, mask, "C" );
+    EC{3}
+    %%%
     
     % Get the EC stepfunctions
     ECall = EulerCharCrit( field, D, mask, version );
