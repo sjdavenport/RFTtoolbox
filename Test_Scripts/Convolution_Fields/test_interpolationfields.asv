@@ -1,0 +1,45 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%%    This script tests interpolation fields
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% prepare workspace
+clear all
+close all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %% 1D Examples
+%% Quadratic Kernel
+f = @(x) 1 - x.^2;
+fprime = @(x) -2*x;
+fprime2 = @(x) -2;
+
+quadkern = SepKernel(1, f, fprime, fprime2, 1, 0);
+
+nvox = 10;
+lat_data = wfield([nvox,1]);
+params = ConvFieldParams(quadkern, 15);
+f = convfield(lat_data, params);
+plot(lat_data, 'o-')
+hold on
+plot(f)
+
+%% Quartic Kernel
+clf
+f = @(x) (1 - x.^2).^2;
+fprime = @(x) -4*x.*(1-x.^2);
+fprime2 = @(x) -4 + 12*x.^2;
+
+quartkern = SepKernel(1, f, fprime, fprime2, 1, 0);
+
+nvox = 100;
+lat_data = wfield([nvox,1]);
+params_1 = ConvFieldParams(quartkern, 2);
+smooth = convfield(smoothf, params_1);
+
+params = ConvFieldParams(quartkern, 15);
+f = convfield(smoothf, params);
+plot(lat_data, 'o-')
+hold on
+plot(f)
+
