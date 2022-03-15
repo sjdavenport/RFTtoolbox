@@ -1,4 +1,4 @@
-function [ Lambda, FWHM_est ] = stat_Lambda( field, dfield )
+function [ Lambda, FWHM_est ] = Lambda_stat_est( field, dfield, scale )
 % stat_Lambda( cfield, dcfield ) estimates the Reimmeinian metric under the 
 % assumption of stationarity
 %--------------------------------------------------------------------------
@@ -39,8 +39,10 @@ G = reshape( g.field, [ prod( g.masksize ), D, D ] );
 % Calculate Lambda by averaging over the mask
 Lambda = squeeze( mean( G( g.mask(:), :, : ) ) );
 
-% Apply the scaling factor
-Lambda = Lambda*(field.fibersize-3)/(field.fibersize-2);
+% Adjust by the scaling factor, where does it come from?
+if scale == 1
+    Lambda = Lambda*(g.fibersize-3)/(g.fibersize-2);
+end
 FWHM_est = sqrt(4*log(2)./diag(Lambda));
 
 return
