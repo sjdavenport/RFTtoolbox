@@ -98,7 +98,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
             case 2
                 % Symmetric differential quotient eq. (15) Kiebel first component
-                Xderiv = ( Y(3:end,2:end-1,:) - Y(1:end-2,2:end-1,:) )...
+                Xderiv = ( Y(3:end,:,:) - Y(1:end-2,:,:) )...
                                                     / voxdim(1) / 2;
 
                 % Get the variance of this derivative
@@ -107,7 +107,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Symmetric differential quotient eq. (15) Kiebel second component
-                Yderiv = ( Y(2:end-1,3:end,:) - Y(2:end-1,1:end-2,:) )...
+                Yderiv = ( Y(:,3:end,:) - Y(:,1:end-2,:) )...
                                                     / voxdim(2) / 2;
 
                 % Get the variance of this derivative
@@ -116,7 +116,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross term
-                Yderiv = Xderiv.*Yderiv;
+                Yderiv = Xderiv(:, 2:end-1, :) .* Yderiv(2:end-1, :, :);
                 tmp     = ~isnan( Yderiv( index{:}, 1 ) );
                 Lambda(1,2) = sum( Yderiv( ~isnan( Yderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
@@ -124,7 +124,7 @@ switch num_deriv
 
             case 3
                 % Symmetric differential quotient eq. (15) Kiebel first component
-                Xderiv = ( Y(3:end,2:end-1,2:end-1,:) - Y(1:end-2,2:end-1,2:end-1,:) )...
+                Xderiv = ( Y(3:end,:,:,:) - Y(1:end-2,:,:,:) )...
                                                     / voxdim(1) / 2;
 
                 % Get the variance of this derivative
@@ -133,7 +133,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Symmetric differential quotient yeq. (15) Kiebel second component
-                Yderiv = ( Y(2:end-1,3:end,2:end-1,:) - Y(2:end-1,1:end-2,2:end-1,:) )...
+                Yderiv = ( Y(:, 3:end, :, :) - Y(:, 1:end-2, :, :) )...
                                                     / voxdim(2) / 2;
 
                 % Get the variance of this derivative
@@ -142,7 +142,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross term
-                XYderiv = Xderiv.*Yderiv;
+                XYderiv = Xderiv(:, 2:end-1, 2:end-1, :) .* Yderiv(2:end-1, :, 2:end-1,:);
                 tmp     = ~isnan( XYderiv( index{:}, 1 ) );
                 Lambda(1,2) = sum( XYderiv( ~isnan( XYderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
@@ -151,7 +151,7 @@ switch num_deriv
                 clear XYderiv
         
                 % Symmetric differential quotient yeq. (15) Kiebel third component
-                Zderiv = ( Y(2:end-1,2:end-1,3:end,:) - Y(2:end-1,2:end-1,1:end-2,:) )...
+                Zderiv = ( Y(:, :, 3:end, :) - Y(:, :, 1:end-2, :) )...
                                                     / voxdim(3) / 2;
 
                 % Get the variance of this derivative
@@ -160,14 +160,14 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross termS
-                XZderiv = Xderiv.*Zderiv;
+                XZderiv = Xderiv(:, 2:end-1, 2:end-1, :) .* Zderiv(2:end-1, 2:end-1, :, :);
                 tmp     = ~isnan( XZderiv( index{:}, 1 ) );
                 Lambda(1,3) = sum( XZderiv( ~isnan( XZderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
                 Lambda(3,1) = Lambda(1,3);
         
                 % Cross termS
-                YZderiv = Yderiv.*Zderiv;
+                YZderiv = Yderiv(2:end-1, :, 2:end-1,:) .* Zderiv(2:end-1, 2:end-1, :, :);
                 tmp     = ~isnan( YZderiv( index{:}, 1 ) );
                 Lambda(2,3) = sum( YZderiv( ~isnan( YZderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
@@ -187,7 +187,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
             case 2
                 % Symmetric differential quotient eq. (15) Kiebel first component
-                Xderiv = ( Y(2:end,1:end-1,:) - Y(1:end-1,1:end-1,:) )...
+                Xderiv = ( Y(2:end,:,:) - Y(1:end-1,:,:) )...
                                                     / voxdim(1);
 
                 % Get the variance of this derivative
@@ -196,7 +196,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Symmetric differential quotient eq. (15) Kiebel second component
-                Yderiv = ( Y(1:end-1,2:end,:) - Y(1:end-1,1:end-1,:) )...
+                Yderiv = ( Y(:,2:end,:) - Y(:,1:end-1,:) )...
                                                     / voxdim(2);
 
                 % Get the variance of this derivative
@@ -205,7 +205,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross term
-                Yderiv = Xderiv.*Yderiv;
+                Yderiv = Xderiv(:,1:end-1,:) .* Yderiv(1:end-1, :, :);
                 tmp     = ~isnan( Yderiv( index{:}, 1 ) );
                 Lambda(1,2) = sum( Yderiv( ~isnan( Yderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
@@ -213,7 +213,7 @@ switch num_deriv
 
             case 3
                 % Symmetric differential quotient eq. (15) Kiebel first component
-                Xderiv = ( Y(2:end,1:end-1,1:end-1,:) - Y(1:end-1,1:end-1,1:end-1,:) )...
+                Xderiv = ( Y(2:end,:,:,:) - Y(1:end-1,:,:,:) )...
                                                     / voxdim(1);
 
                 % Get the variance of this derivative
@@ -222,7 +222,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Symmetric differential quotient yeq. (15) Kiebel second component
-                Yderiv = ( Y(1:end-1,2:end,1:end-1,:) - Y(1:end-1,1:end-1,1:end-1,:) )...
+                Yderiv = ( Y(:,2:end,:,:) - Y(:,1:end-1,:,:) )...
                                                     / voxdim(2);
 
                 % Get the variance of this derivative
@@ -231,7 +231,7 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross term
-                XYderiv = Xderiv.*Yderiv;
+                XYderiv = Xderiv(:,1:end-1,1:end-1,:).*Yderiv(1:end-1,:,1:end-1,:);
                 tmp     = ~isnan( XYderiv( index{:}, 1 ) );
                 Lambda(1,2) = sum( XYderiv( ~isnan( XYderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
@@ -240,7 +240,7 @@ switch num_deriv
                 clear XYderiv
         
                 % Symmetric differential quotient yeq. (15) Kiebel third component
-                Zderiv = ( Y(1:end-1,1:end-1,2:end,:) - Y(1:end-1,1:end-1,1:end-1,:) )...
+                Zderiv = ( Y(:,:,2:end,:) - Y(:,:,1:end-1,:) )...
                                                     / voxdim(3);
 
                 % Get the variance of this derivative
@@ -249,14 +249,14 @@ switch num_deriv
                                                 / sum( tmp(:) ) * dffac;
                                             
                 % Cross termS
-                XZderiv = Xderiv.*Zderiv;
+                XZderiv = Xderiv(:, 1:end-1, 1:end-1, :) .* Zderiv(1:end-1, 1:end-1, :, :);
                 tmp     = ~isnan( XZderiv( index{:}, 1 ) );
                 Lambda(1,3) = sum( XZderiv( ~isnan( XZderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
                 Lambda(3,1) = Lambda(1,3);
         
                 % Cross termS
-                YZderiv = Yderiv.*Zderiv;
+                YZderiv = Yderiv(1:end-1, :, 1:end-1, :) .* Zderiv(1:end-1, 1:end-1, :, :);
                 tmp     = ~isnan( YZderiv( index{:}, 1 ) );
                 Lambda(2,3) = sum( YZderiv( ~isnan( YZderiv ) ) )...
                                                 / sum( tmp(:) ) * dffac;
