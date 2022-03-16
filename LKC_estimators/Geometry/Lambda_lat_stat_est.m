@@ -16,11 +16,13 @@ function [ Lambda, FWHM_est ] = Lambda_lat_stat_est( field, num_deriv, scale )
 % Mandatory
 %  field      an object of class Field representing observations of a field,
 %             fiberD = 1 and fibersize > 1.
+% Optional
 %  num_deriv  a string. Choices are "symmetric" or "onesided" for symmetric
-%             or onesided numeric derivatives.
+%             or onesided numeric derivatives. Default is "symmetric".
 %  scale      a numeric. If scale ~= 0 the estimate is multiplied by
 %             ( nsubj - scale - 2 ) / ( nsubj - scale - 1 ).
-%             If scale = 0, then no constant is multiplied to the estimate. 
+%             If scale = 0, then no constant is multiplied to the estimate.
+%             Default is 1.
 %--------------------------------------------------------------------------
 % EXAMPLES
 %
