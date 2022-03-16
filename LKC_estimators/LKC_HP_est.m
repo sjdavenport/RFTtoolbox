@@ -228,8 +228,8 @@ if( Mboot > 1 )
 else    
     % Normalize the field to have mean zero and unit variance
     if normalize
-        field2 = ( field - mean( field, D+1 ) ) ./ std( field, 0, D+1 );
-        field2(isnan(field2)) = 0;
+        field = ( field - mean( field, D+1 ) ) ./ std( field, 0, D+1 );
+        field(isnan(field)) = -Inf;
     end
     
     % Get the EC stepfunctions
