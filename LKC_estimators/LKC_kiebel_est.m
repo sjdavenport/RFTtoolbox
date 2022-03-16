@@ -78,7 +78,7 @@ switch D
         Lambda(1,1) = sum( Xderiv( ~isnan( Xderiv ) ).^2 )...
                                                 / sum( tmp(:) ) * dffac;
                                             
-        % Symmetric differential quotient yeq. (15) Kiebel second component
+        % Symmetric differential quotient eq. (15) Kiebel second component
         Yderiv = ( Y(2:end-1,3:end,:) - Y(2:end-1,1:end-2,:) )...
                                                     / voxdim(2) / 2;
 
