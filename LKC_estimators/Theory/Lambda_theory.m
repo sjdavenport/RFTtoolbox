@@ -28,7 +28,7 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 Gker_params = FWHM2sigma(FWHM);
-Lambda = diag(Gker_params.^(-2)/2);
-detLambda = det(Lambda);
+Lambda      = diag(Gker_params.^(-2) / 2);
+detLambda   = det(Lambda);
 end
 

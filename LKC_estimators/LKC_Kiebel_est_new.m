@@ -1,4 +1,4 @@
-function [ L, Lambda, FWHM ] = LKC_Kiebel_est_new( field, k, num_deriv )
+function [ L, Lambda, FWHM ] = LKC_Kiebel_est_new( field, k, num_deriv, pool )
 % LKC_kiebel_est( field, k, num_deriv ) estimates the LKCs assuming isotropy
 % according to the article [1].
 %
@@ -33,11 +33,14 @@ function [ L, Lambda, FWHM ] = LKC_Kiebel_est_new( field, k, num_deriv )
 
 %% Check mandatory input
 %--------------------------------------------------------------------------
+if ~exist('pool', 'var')
+   pool = false; 
+end
 
 %% Main function
 %--------------------------------------------------------------------------
 % Estimate the Lambda matrix from the grid
-Lambda =  Lambda_lat_stat_est( field, num_deriv, k );
+Lambda =  Lambda_lat_stat_est( field, num_deriv, k, pool );
 
 % Get the FHWM estimate
 FWHM =  sqrt( 4*log(2) ./ diag(Lambda) );
