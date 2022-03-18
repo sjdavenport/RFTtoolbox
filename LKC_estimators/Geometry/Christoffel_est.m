@@ -227,9 +227,11 @@ switch D
                                         CdYY( index{:}, dd ) ./  VY.^3;      
                 end
             end
-        end
-        
+        end        
 end
+
+% Remove NaNs due to division by zero
+Gamma.field(isnan(Gamma.field(:))) = 0;
 %%%%%% END compute Christoffel symbols
 
 return
