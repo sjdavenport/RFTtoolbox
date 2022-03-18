@@ -9,7 +9,7 @@ function [ Lambda, FWHM_est ] = Lambda_lat_stat_est( field, num_deriv, scale )
 %
 % [2] Forman, Steven D., et al. "Improved assessment of significant
 % activation in functional magnetic resonance imaging (fMRI): Use of a
-% cluster‚Äêsize threshold." Magnetic Resonance in medicine 33.5 (1995): 636-647.
+% cluster‚Ä?size threshold." Magnetic Resonance in medicine 33.5 (1995): 636-647.
 %
 %--------------------------------------------------------------------------
 % ARGUMENTS

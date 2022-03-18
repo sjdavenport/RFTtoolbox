@@ -164,7 +164,8 @@ if ninitpeaks > 0
     FWHM = Gker2FWHM( params.kernel );
     
     % Calculate the maximum of the convolution field
-    [~, max_tfield_at_lms] = findconvpeaks(lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
+%     [~, max_tfield_at_lms] = findconvpeaks_orig(lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
+    [~, max_tfield_at_lms] = findconvpeaks(lat_data, FWHM, peak_est_locs, 'T');
     maximum.conv = max(max_tfield_at_lms);
     
     maximum.allmaxima = max_tfield_at_lms;
@@ -203,7 +204,9 @@ if do2sample == 1
         end
         
         % Calculate the maximum of the convolution field
-        [~, min_tfield_at_lms] = findconvpeaks(-lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
+%         [~, min_tfield_at_lms] = findconvpeaks_orig(-lat_data.field, FWHM, peak_est_locs, 'T', lat_data.mask);
+        [~, min_tfield_at_lms] = findconvpeaks((-1)*lat_data, FWHM, peak_est_locs, 'T');
+
         min_tfield_at_lms = -min_tfield_at_lms;
         minimum.conv = min(min_tfield_at_lms);
         minimum.allminima = min_tfield_at_lms;

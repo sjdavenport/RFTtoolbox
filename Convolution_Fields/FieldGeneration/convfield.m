@@ -58,6 +58,11 @@ if ~isa( lat_data, 'Field' ) && isnumeric(lat_data)
 %     error('Need to sort the mask in one D here!')
 end
 
+% Ensure that the kernel has the same dimension as the data itself, if not
+% return an error
+if length(params.kernel.kernel) ~= lat_data.D
+    error('The dimensions of lat_data and params are not compatible')
+end
 
 % Allow for default FWHM input
 if isnumeric(params)

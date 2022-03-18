@@ -1,17 +1,18 @@
 function FWHM = sigma2FWHM( sigma )
-% FWHM = sigma2FWHM( sigma )
-% This function converts bandwidths into FWHM.
+% FWHM = sigma2FWHM( sigma ) kernel bandwidths into FWHM.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-%   sigma numeric vector/array of bandwidths for a smoother
+%   sigma: numeric vector/array of bandwidths for a smoother
 %--------------------------------------------------------------------------
 % OUTPUT
-%   FWHM bandwidth converted to FWHM
+%   FWHM: the full width half maximum of the istropic kernel with bandwidth
+%         sigma
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% sigma = sigma2FWHM( 3 )
+% FWHM = FWHM2sigma(sigma)
 %--------------------------------------------------------------------------
-% AUTHOR: Fabian Telschow.
-
+% AUTHORS: Fabian Telschow and Samuel Davenport
+%--------------------------------------------------------------------------
 FWHM = sigma * sqrt( 8*log(2) );
 end
