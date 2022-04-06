@@ -380,6 +380,7 @@ classdef Field
                           obj = Field( sF(1:D) );
                           % Fill the field field
                           obj.field = varargin{1};
+                          %obj.mask = true()
                       else
                           error( "Second input must be an integer, i.e. the dimension of the domain." )
                       end
@@ -475,6 +476,9 @@ classdef Field
        
        % Function for cutting a Field class to a mask
        obj = cut2mask( obj )
+       
+       % Function for normalizing a field
+       obj = normalize( obj, demean, normalize )
        
        % Function for obtaining the private complete field
        function val = iscomplete( obj )
