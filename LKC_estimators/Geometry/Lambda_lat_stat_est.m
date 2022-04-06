@@ -27,7 +27,7 @@ function Lambda = Lambda_lat_stat_est( field, num_deriv, nu, pool )
 % EXAMPLES
 %
 %--------------------------------------------------------------------------
-% AUTHOR: Fabian Telschow
+% AUTHOR: Fabian Telschow, Sam Davenport
 %--------------------------------------------------------------------------
 
 %%  Check mandatory input and get important constants
@@ -80,8 +80,8 @@ if ~pool
     Y = ( Y ./ normY ) .* mask;
 
     % Factor from eq. (14) Kiebel 1999, N computed later as sum(tmp(:))!
-    dffac = (nu - 2) / (nu - 1);
-    dffac = 1;
+    dffac = (nu - 2 - 1) / (nu - 1 - 1);
+%    dffac = 1;
 else
     Y = Y - mean( Y, D+1 );
     % Estimate the variance across the image
