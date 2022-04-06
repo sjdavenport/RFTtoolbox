@@ -7,7 +7,7 @@ function out = mean( varargin )
 %     - an object of class Field.
 %  If 2: inputs are
 %     - object of Class Field.
-%       positive integer denoting at which dimension in the fiber, the mean 
+%     - positive integer denoting at which dimension in the fiber, the mean 
 %       is taken.
 %--------------------------------------------------------------------------
 % OUTPUT
