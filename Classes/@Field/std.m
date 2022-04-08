@@ -7,7 +7,7 @@ function out = std( varargin )
 %     - an object of class Field.
 %  If 2: inputs are
 %     - object of Class Field.
-%       positive integer denoting at which dimension in the fiber, the mean 
+%     - positive integer denoting at which dimension in the fiber, the mean 
 %       is taken.
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -41,6 +41,20 @@ elseif nargin == 2
           if D > 0
             out = varargin{1};
             out.field = std( out.field, 0, out.D + D );
+          else
+            error( "Second inout must be a positive integer." )
+          end
+       end
+   else
+       error( "First input must be an object of class Field." )
+   end
+elseif nargin == 3
+   if isa( varargin{1}, "Field")
+       D = varargin{2};
+       if isnumeric( D )
+          if D > 0
+            out = varargin{1};
+            out.field = std( out.field, varargin{3}, out.D + D );
           else
             error( "Second inout must be a positive integer." )
           end
