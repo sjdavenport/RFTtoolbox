@@ -193,6 +193,7 @@ if( Mboot > 1 )
 
     % Reshape and and standardize the field, such that it has unit variance
     field = reshape( field, prod( sY( 1:end-1 ) ), N );
+    
     % Normalize the residuals
     field = field - mean( field, 2 );
     field = field ./ sqrt( sum( field.^2, 2 ) );
