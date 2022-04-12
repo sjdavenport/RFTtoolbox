@@ -55,18 +55,9 @@ end
 D = obj.D;
 
 % Mask the field
-mask_mult = 1 * mask;
-if val ~= 0
-    mask_mult( ~mask ) = val;
-end
+mask_mult = repmat( mask, [ ones( [ 1 D ] ), obj.fibersize ] );
 
-if val == -Inf || val == Inf
-    % +0.2 is added to remove a bug, if val = -Inf/Inf and the outside of the
-    % mask is zero!
-    obj.field = repmat( mask_mult, [ ones( [ 1 D ] ), obj.fibersize ] ) .* (obj.field + 0.2) - 0.2;
-else
-    obj.field = repmat( mask_mult, [ ones( [ 1 D ] ), obj.fibersize ] ) .* obj.field;
-end
+obj.field( ~mask_mult ) = val;
 
 % Put the mask into the object
 obj.mask = mask;
