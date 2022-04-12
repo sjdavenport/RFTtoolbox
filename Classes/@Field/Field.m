@@ -478,7 +478,7 @@ classdef Field
        obj = cut2mask( obj )
        
        % Function for normalizing a field
-       obj = normalize( obj, demean, normalize )
+       obj = normalize_field( obj, demean, destd, fiber_d )
        
        % Function for obtaining the private complete field
        function val = iscomplete( obj )
