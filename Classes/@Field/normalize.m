@@ -1,4 +1,4 @@
-function obj = normalize( obj, demean, destd, fiber_d )
+function obj = normalize_field( obj, demean, destd, fiber_d )
 % STD( varargin ) does take the mean of specified fiber dimensions.
 %--------------------------------------------------------------------------
 % ARGUMENTS
