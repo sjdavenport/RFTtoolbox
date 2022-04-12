@@ -98,7 +98,13 @@ dx = NaN * ones( [ 1 D ] );
 for d = 1:D
     dx(d) = xvals{d}(2)-xvals{d}(1);
 end
-dx_hr = dx ./ ( resadd + 1 );
+
+% small bug id resadd = 0 hence the if!
+if resadd ~= 0
+    dx_hr = dx ./ ( resadd + 1 );
+else
+    dx_hr = dx;
+end
 
 % Reject input, if resadd is to large in 3D
 if D == 3 && ( resadd > 18 )
@@ -162,7 +168,12 @@ for d = 1:D
     xvals2{d} = ( xvals{d}(1) - enlarge * dx_hr(d) ) : dx_hr(d) : ...
                                     ( xvals{d}(end) + enlarge * dx_hr(d) );
 end
-cfield.xvals = xvals2;
+
+if resadd ~= 0
+    cfield.xvals = xvals2;
+else
+    cfield.xvals = xvals;
+end
 
 %%% Main loop: calculation of convolution fields
 if D < 4
