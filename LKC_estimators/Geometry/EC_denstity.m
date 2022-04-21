@@ -43,18 +43,36 @@ end
 %% Main function
 %--------------------------------------------------------------------------
 
-if type == "Z" 
-    % get the EC density
-    switch d
-        case 0
-            rho_d = @(x) 1 - normcdf(x);
-        case 1
-            rho_d = @(x) (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
-        case 2
-            rho_d = @(x) x * (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
-        case 3
-            rho_d = @(x) (x.^2 - 1) * (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
-    end
-end
+switch type
+    case "Z" 
+        % get the EC density
+        switch d
+            case 0
+                rho_d = @(x) 1 - normcdf(x);
+            case 1
+                rho_d = @(x) (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
+            case 2
+                rho_d = @(x) x * (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
+            case 3
+                rho_d = @(x) (x.^2 - 1) * (2*pi)^( -( d + 1 ) / 2 ) .* exp( -x.^2 / 2 );
+        end
+    case "t"
+        % Factor depending on degrees of freedom
+        if df > 250
+            fac = 1;
+        else
+            fac = gamma( (df + 1) / 2 ) / gamma( df / 2 ) / sqrt(df/2);
+        end
 
-return
+        % Compute the ECdensities
+        switch d
+            case 0
+                rho_d = @(x) tcdf( x, df, 'upper' );
+            case 1
+                rho_d = @(x) ( 1 + x.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(2/2);
+            case 2
+                rho_d = @(x) fac * x .* ( 1 + x.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(3/2);
+            case 3
+                rho_d = ( (df-1) / df * x.^2 - 1 ) .* ( 1 + x.^2 / df ).^( - ( df - 1 ) / 2 ) / (2*pi)^(4/2);
+        end
+end
