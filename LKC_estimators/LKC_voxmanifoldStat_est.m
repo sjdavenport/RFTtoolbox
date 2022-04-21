@@ -1,4 +1,4 @@
-function [ L, L0, Lambda ] = LKC_stationary_est( field, dfield, version, scale )
+function [ L, L0, Lambda ] = LKC_voxmanifoldStat_est( field, dfield, version, scale )
 % LKC_stationary_est( cfield, dcfield, version ) estimates the LKCs assuming
 % stationarity.
 %--------------------------------------------------------------------------
