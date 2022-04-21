@@ -17,12 +17,12 @@ function [LKC_est, LKC_est_var] = LKC_regress_est( field, uvals, CovEst,...
 %  CovEst    a string giving the method to estimate the covariance.
 %            Options are:
 %               - OLS: covariance matrix is identity
-%  L         a numeric vector of length field.D + 1 indicating the values
+%  L         a numeric vector of length field. D + 1 indicating the values
 %            of known LKCs. NaN indicate that the LKC needs to be
 %            estimated. Default [1, NaN(1, D)]
-%  normalize logical indicating whether Y needs to be standardized. 
-%            Default 1, i.e., mean will be subtracted and data will be 
-%            standardized to have empirical variance 1, if N>1 else 0.
+%  standardize logical indicating whether Y needs to be standardized. 
+%              Default 1, i.e., mean will be subtracted and data will be 
+%              standardized to have empirical variance 1, if N>1 else 0.
 %  Mboot     an integer specifying the number of bootstraps used for
 %            estimation of LKC. If "1" the HPE is used otherwise the
 %            bHPE. Default 1.

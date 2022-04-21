@@ -54,11 +54,11 @@ Lambda = squeeze( mean( G( g.mask(:), :, : ) ) );
 
 % Adjust by the scaling factor
 if scale == 1
-    Lambda = Lambda*(g.fibersize-3)/(g.fibersize-2);
+    Lambda = Lambda .* (field.fibersize - 3) / (field.fibersize - 2);
 end
 
 % Obtain a constant field
-G = constfield( Lambda, g.masksize );
+G = constfield( Lambda, field.mask );
 g.field =  G.field;
 voxmfd  = VoxManifold( g );
 
