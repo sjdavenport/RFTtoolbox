@@ -45,6 +45,6 @@ cfields{2} = convfield( lat_data, params, 1 )./ ss;
 cfields{3} = Field();
 
 % Compute the LKCs
-[ L, L0, ~ ] = LKC_stationary_est( cfields{1}, cfields{2}, version, scale );
+[ L, L0, ~ ] = LKC_voxmanifoldStat_est( cfields{1}, cfields{2}, version, scale );
 
 return
