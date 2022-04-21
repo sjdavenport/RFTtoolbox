@@ -141,9 +141,9 @@ if Mboot > 1
         end
         
         if i == 1
-            EC = ECcurve2( Field(mfield, D), uvals);
+            EC = ECcurve( Field(mfield, D), uvals);
         else
-            ECi = ECcurve2( Field(mfield, D), uvals);
+            ECi = ECcurve( Field(mfield, D), uvals);
             EC.field = [EC.field, ECi.field];
         end
         
@@ -164,9 +164,9 @@ else
     
     for i = 1:N    
         if i == 1
-            EC = ECcurve2(field(indexD{:}, i), uvals);
+            EC = ECcurve(field(indexD{:}, i), uvals);
         else
-            ECi = ECcurve2(field(indexD{:}, i), uvals);
+            ECi = ECcurve(field(indexD{:}, i), uvals);
             EC.field = [EC.field, ECi.field];
         end
     end
