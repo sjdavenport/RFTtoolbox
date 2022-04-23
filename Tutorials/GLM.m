@@ -16,8 +16,8 @@ x = ( 1:10 ) / 10;
 [ xx, yy ] = meshgrid( x, x );
 
 % Noise field
-error   = wfield( dim, N);
-errorpt = squeeze( error.field( i, j, : ) );
+error_field   = wfield( dim, N);
+errorpt = squeeze( error_field.field( i, j, : ) );
 
 % Signal
 beta = constfield( [ 2, 2 ]', true( dim ) );
@@ -31,7 +31,7 @@ x2(1:4) = 1;
 X = [ x1; x2 ]';
 
 % Data
-Y   = X * beta + error;
+Y   = X * beta + error_field;
 Ypt = X * betapt + errorpt;
 
 % "Estimator"

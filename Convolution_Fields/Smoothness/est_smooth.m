@@ -37,7 +37,7 @@ function [ fwhm_est_forman, fwhm_est_kiebel, Lambda_est, sigma_est, ...
 % nsubj = 1;
 % noise = noisegen(Dim, nsubj, 20);
 % est_smooth(noise)
-%
+% 
 % Dim = [250,250];
 % nsubj = 100;
 % noise = noisegen(Dim, nsubj, 20);

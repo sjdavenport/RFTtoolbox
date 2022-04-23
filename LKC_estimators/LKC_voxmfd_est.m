@@ -1,4 +1,4 @@
-function [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field, version )
+function [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field, version, scale )
 % LKC_voxmfd_est( field, dfield ) estimates the LKCs of the voxel
 % manifold defined by the domain (aka its mask) of a convolution field and
 % its induced Riemannian metric.
@@ -20,7 +20,7 @@ function [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field, version
 %          - D = 3, logical of length 3. version(1), indicates whether L2
 %          should be estimated, version(2) whether the first integral is
 %          used in L1 and version(3) whether the second integral is used.
-%
+%  scale    0/1 determines whether to scale by the correction factor or not
 %--------------------------------------------------------------------------
 % OUTPUT
 % L   an 1 x field.D vector containing the LKCs L_1,...,L_field.D
@@ -30,7 +30,7 @@ function [ L, L0, nonstatInt ] = LKC_voxmfd_est( field, dfield, d2field, version
 % EXAMPLES
 % 
 %--------------------------------------------------------------------------
-% Author: Fabian Telschow
+% Author: Fabian Telschow and Samuel Davenport
 %--------------------------------------------------------------------------
 
 %% Check and add optional input
@@ -44,13 +44,23 @@ if ~exist( 'version', 'var' )
     end
 end
 
+if ~exist('scale','var')
+    scale = 0;
+end
+
 %% Main function
 %--------------------------------------------------------------------------
 
 % Construct VoxManifold object by providing Riemannian metric
-voxmfd = VoxManifold( Riemmetric_est( field, dfield ) );
+Lambda = Riemmetric_est( field, dfield );
 
-if exist( 'd2field', 'var' )
+% Adjust by the scaling factor if specified
+if scale == 1
+    Lambda = Lambda*((field.fibersize-3)/(field.fibersize-2));
+end
+voxmfd = VoxManifold( Lambda );
+
+if exist( 'd2field', 'var' ) && ~isempty(d2field)
     if ~isempty( d2field.field )
         voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
     end

@@ -14,7 +14,8 @@ function [ L, L0, Lambda ] = LKC_stationary_est( field, dfield, version, scale )
 %           second derivatives of a field.
 %  version a logical/ logical vector. Length depends on voxmfd.D
 %          - D = 1, always true.
-%          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else.
+%          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else. 
+%                   Default is 1.
 %          - D = 3, logical of length 3. version(1), indicates whether L2
 %          should be estimated, version(2) whether the first integral is
 %          used in L1 and version(3) whether the second integral is used.
@@ -54,7 +55,7 @@ Lambda = squeeze( mean( G( g.mask(:), :, : ) ) );
 
 % Adjust by the scaling factor
 if scale == 1
-    Lambda = Lambda*(g.fibersize-3)/(g.fibersize-2);
+    Lambda = Lambda*(field.fibersize-3)/(field.fibersize-2);
 end
 
 % Obtain a constant field

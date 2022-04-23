@@ -31,8 +31,8 @@ noise = noisegen(Dim, nsubj, 20);
 %% %% 2D Examples
 %% Simple 2D example
 Dim = [50,50];
-nsubj = 20;
-noise = noisegen(Dim, nsubj, 3);
+nsubj = 10;
+noise = noisegen(Dim, nsubj, 12);
 [ fwhm_est, fwhm_est_forman ] = est_smooth(noise)
 
 %% Add smoothing to detect smoothing
