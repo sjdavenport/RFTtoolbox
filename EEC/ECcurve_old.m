@@ -1,15 +1,16 @@
-function [ curve, x ]  = ECcurve2( lat_data, x, version)
+function [ curve, x ]  = ECcurve( lat_data, limits, increm, version)
 % ECcurve( lat_data, limits, ninter )
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-%  lat_data   a field
+%  lat_data     a field
 % Optional
-%  x      a vector giving the levels where the EC curve is evaluated
+%  limits       the upper and lower limits at which to calculate
+%  increm       the increment
 %--------------------------------------------------------------------------
 % OUTPUT
 % curve     the Euler chacteristic curve of the data
-% uvals         the levels at which the Euler characteristic has been
+% x         the levels at which the Euler characteristic has been
 %           calculated i.e. limits(1):increm:limits(2)
 %--------------------------------------------------------------------------
 % EXAMPLES
@@ -45,9 +46,14 @@ function [ curve, x ]  = ECcurve2( lat_data, x, version)
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'x', 'var' )
+if ~exist( 'limits', 'var' )
     % default option of limits
-    x = -3:0.1:3;
+    limits = [-2,2];
+end
+
+if ~exist( 'increm', 'var' )
+    % default option of ninter
+    increm = 0.1;
 end
 
 if ~exist( 'version', 'var' )
@@ -65,6 +71,9 @@ ECchanges =  ECcalc{1}( 2:end-1, 1 )';
 % Findt he values of the EC after those changes
 ECvals = ECcalc{1}( 2:end, 2 )';
 
+% Obtain the vector at which to evaluate the curve
+x = limits(1):increm:limits(2);
+
 % Initialize the storage curve
 curve = zeros(1, length(x));
 
@@ -79,6 +88,6 @@ for I = 1:length(x)
         curve(I) = ECvals(x_position+1);
     end
 end
-curve = Field(curve', 1, {x});
+
 end
 
