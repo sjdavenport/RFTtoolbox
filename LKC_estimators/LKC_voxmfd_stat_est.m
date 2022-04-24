@@ -1,4 +1,4 @@
-function [ L, L0, Lambda ] = LKC_voxmanifoldStat_est( field, dfield, version, scale )
+function [ L, L0, Lambda ] = LKC_voxmfd_stat_est( field, dfield, version, scale )
 % LKC_stationary_est( cfield, dcfield, version ) estimates the LKCs assuming
 % stationarity.
 %--------------------------------------------------------------------------
@@ -55,11 +55,7 @@ Lambda = squeeze( mean( G( g.mask(:), :, : ) ) );
 
 % Adjust by the scaling factor
 if scale == 1
-<<<<<<< HEAD:LKC_estimators/LKC_stationary_est.m
     Lambda = Lambda*(field.fibersize-3)/(field.fibersize-2);
-=======
-    Lambda = Lambda .* (field.fibersize - 3) / (field.fibersize - 2);
->>>>>>> 682451d8763e57c3cf0cd60dd21aeaddbcd722a9:LKC_estimators/LKC_voxmanifoldStat_est.m
 end
 
 % Obtain a constant field

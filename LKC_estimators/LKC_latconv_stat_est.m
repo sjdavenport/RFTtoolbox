@@ -1,4 +1,4 @@
-function [ L, L0, cfields ] = LKC_latconvStat_est( lat_data, params, scale )
+function [ L, L0, cfields ] = LKC_latconv_stat_est( lat_data, params, scale )
 % LKC_latconv_est( lat_data, params, version ) estimates the LKCs of the
 % voxel manifold defined by the domain (aka its mask) of a convolution
 % field and its induced Riemannian metric.
@@ -45,6 +45,6 @@ cfields{2} = convfield( lat_data, params, 1 )./ ss;
 cfields{3} = Field();
 
 % Compute the LKCs
-[ L, L0, ~ ] = LKC_voxmanifoldStat_est( cfields{1}, cfields{2}, version, scale );
+[ L, L0, ~ ] = LKC_voxmfd_stat_est( cfields{1}, cfields{2}, version, scale );
 
 return
