@@ -64,9 +64,8 @@ for r = 1:length(resaddVec)
     dcfield = convfield( lat_data, params, 1 );
 
     % Convolution fields estimators
-    L_voxM{r}   = LKC_voxmfd_est( cfield, dcfield );
     L_conv{r} = LKC_latconv_est( lat_data, params );
-    L_stat{r} = LKC_stationary_est( cfield, dcfield );
+    L_stat{r} = LKC_voxmfd_stat_est( cfield, dcfield );
 
     % Convolution fields estimators
     L_HPE{r}      = LKC_HP_est( cfield, 1, 1 ).hatL;

@@ -47,6 +47,145 @@ function [LKC_est, LKC_est_var] = LKC_regress_est( field, uvals, CovEst,...
 %                       based on the standard CLT.
 %--------------------------------------------------------------------------
 % EXAMPLES
+% %% 1D Isotropic field
+% %--------------------------------------------------------------------------
+% % Parameters
+% D     = 1;
+% FWHM  = 6;
+% nsubj = 50;
+% T     = 100;
+% Msim  = 100;
+% 
+% % Generate mask
+% pad    = ceil( 4*FWHM2sigma( FWHM ) );
+% mask = pad_vals( true( [ T, 1 ] ), pad, false );
+% lat_masked = false;
+% 
+% % Get high resolution theory
+% resThy = 301;
+% paramsThy = ConvFieldParams( FWHM, resThy, ceil(resThy/2), lat_masked );
+% mask = pad_vals( true( [ T, 1 ] ), pad, false );
+% theoryLKC = LKC_wncfield_theory( mask, paramsThy );
+% 
+% % Generate data
+% lat_data =  wfield( mask, nsubj );
+% 
+% % Convolution fields
+% cfield  = convfield( lat_data, params );
+% dcfield = convfield( lat_data, params, 1 );
+% 
+% 
+% % Regression estimators
+% % values for regression
+% uvals = -4:0.5:4;
+% 
+% % Which LKC needs to be estimated?
+% L = [1, NaN];
+% 
+% L_reg_OLS  = LKC_regress_est( cfield, uvals, "OLS", L, 1, 1 );
+% L_breg_OLS = LKC_regress_est( cfield, uvals, "OLS", L, 1, 200 );
+% L_reg_SD   = LKC_regress_est( cfield, uvals, "SD", L, 1, 1 );
+% L_breg_SD  = LKC_regress_est( cfield, uvals, "SD", L, 1, 200 );
+% L_reg_SC   = LKC_regress_est( cfield, uvals, "SC", L, 1, 1 );
+% L_breg_SC  = LKC_regress_est( cfield, uvals, "SC", L, 1, 200 );
+% L_reg_PI   = LKC_regress_est( cfield, uvals, "PI", L, 1, 1 );
+% L_breg_PI  = LKC_regress_est( cfield, uvals, "PI", L, 1, 200 );
+% 
+% struct(...
+%     'theoryL', theoryLKC,...
+%     'L_reg_OLS', L_reg_OLS,...
+%     'L_breg_OLS', L_reg_OLS,...
+%     'L_reg_SD', L_reg_SD,...
+%     'L_breg_SD', L_breg_SD,...
+%     'L_reg_SC', L_reg_SC,...
+%     'L_breg_SC', L_breg_SC,...
+%     'L_reg_PI', L_reg_PI,...
+%     'L_breg_PI', L_breg_PI...
+% )
+% 
+% %% 2D Isotropic field
+% %--------------------------------------------------------------------------
+% % Parameters
+% D     = 2;
+% FWHM  = 6;
+% nsubj = 50;
+% T     = 100;
+% Msim  = 100;
+% 
+% % Generate mask
+% pad    = ceil( 4*FWHM2sigma( FWHM ) );
+% mask = pad_vals( true( [ T, T ] ), pad, false );
+% lat_masked = false;
+% 
+% % Get high resolution theory
+% resThy = 7;
+% paramsThy = ConvFieldParams( [FWHM FWHM], resThy, ceil(resThy/2), lat_masked );
+% theoryLKC = LKC_wncfield_theory( mask, paramsThy );
+%  
+% % Generate data
+% lat_data =  wfield( mask, nsubj );
+% 
+% % Convolution fields
+% cfield  = convfield( lat_data, params );
+% dcfield = convfield( lat_data, params, 1 );
+% 
+% 
+% % Regression estimators
+% % values for regression
+% uvals = -4:0.5:4;
+% 
+% % Which LKC needs to be estimated?
+% L = [1, NaN, NaN];
+% 
+% L_reg_OLS  = LKC_regress_est( cfield, uvals, "OLS", L, 1, 1 );
+% L_breg_OLS = LKC_regress_est( cfield, uvals, "OLS", L, 1, 200 );
+% L_reg_SD   = LKC_regress_est( cfield, uvals, "SD", L, 1, 1 );
+% L_breg_SD  = LKC_regress_est( cfield, uvals, "SD", L, 1, 200 );
+% L_reg_SC   = LKC_regress_est( cfield, uvals, "SC", L, 1, 1 );
+% L_breg_SC  = LKC_regress_est( cfield, uvals, "SC", L, 1, 200 );
+% L_reg_PI   = LKC_regress_est( cfield, uvals, "PI", L, 1, 1 );
+% L_breg_PI  = LKC_regress_est( cfield, uvals, "PI", L, 1, 200 );
+% 
+% struct(...
+%     'theoryL', theoryLKC,...
+%     'L_reg_OLS', L_reg_OLS,...
+%     'L_breg_OLS', L_reg_OLS,...
+%     'L_reg_SD', L_reg_SD,...
+%     'L_breg_SD', L_breg_SD,...
+%     'L_reg_SC', L_reg_SC,...
+%     'L_breg_SC', L_breg_SC,...
+%     'L_reg_PI', L_reg_PI,...
+%     'L_breg_PI', L_breg_PI...
+% )
+% 
+% 
+% % Regression estimators
+% % values for regression
+% uvals = [-5, 0, 5];
+% 
+% % Which LKC needs to be estimated?
+% L = [1, NaN, theoryLKC(2)];
+% 
+% L_reg_OLS  = LKC_regress_est( cfield, uvals, "OLS", L, 1, 1 );
+% L_breg_OLS = LKC_regress_est( cfield, uvals, "OLS", L, 1, 200 );
+% L_reg_SD   = LKC_regress_est( cfield, uvals, "SD", L, 1, 1 );
+% L_breg_SD  = LKC_regress_est( cfield, uvals, "SD", L, 1, 200 );
+% L_reg_SC   = LKC_regress_est( cfield, uvals, "SC", L, 1, 1 );
+% L_breg_SC  = LKC_regress_est( cfield, uvals, "SC", L, 1, 200 );
+% L_reg_PI   = LKC_regress_est( cfield, uvals, "PI", L, 1, 1 );
+% L_breg_PI  = LKC_regress_est( cfield, uvals, "PI", L, 1, 200 );
+% 
+% struct(...
+%     'theoryL', theoryLKC,...
+%     'L_reg_OLS', L_reg_OLS,...
+%     'L_breg_OLS', L_reg_OLS,...
+%     'L_reg_SD', L_reg_SD,...
+%     'L_breg_SD', L_breg_SD,...
+%     'L_reg_SC', L_reg_SC,...
+%     'L_breg_SC', L_breg_SC,...
+%     'L_reg_PI', L_reg_PI,...
+%     'L_breg_PI', L_breg_PI...
+% )
 % -------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------
@@ -227,5 +366,6 @@ R = EC.field - X * LKC_est;
 s2_est = mean(trace(R' * C1 * R)) / (lU - rank(X) - 1 ); % check degrees of freedom formula in GLS!
 LKC_est_var = s2_est * XCX1;
 
-LKC_est = LKC_est';
+L(L_empty) = LKC_est';
+LKC_est = L(2:end);
 return

@@ -24,8 +24,8 @@ Y = noisegen( dim, 10, FWHM, 0 );
 % compute HPE for one subject. Note that normalize needs to be 0! It is
 % automatically correctly chosen if not specified. All values give the same
 % result!
-HPE_C = LKC_HP_est( Y(:,1), mask, 1, 0, "C" );
-HPE_m = LKC_HP_est( Y(:,1), mask, 1, 0, "matlab" );
+HPE_C = LKC_HP_est( Y(:,1), 1, 1, "C" );
+HPE_m = LKC_HP_est( Y(:,1), 1, 1, "matlab" );
 HPE_a = LKC_HP_est( Y(:,1), mask );
 
 if ~( HPE_C.hatL == HPE_m.hatL && HPE_C.hatL == HPE_a.hatL...
