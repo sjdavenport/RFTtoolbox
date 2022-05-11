@@ -12,7 +12,7 @@ close all
 %% Simple 1D example
 signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
 nvox = length(signal); nsubj = 75; FWHM = 1; resadd = 3;
-lat_data = 10*wnfield(nvox, nsubj) + signal;
+lat_data = 10*wfield(nvox, nsubj) + signal;
 params = ConvFieldParams( FWHM, resadd );
 
 % Threshold
@@ -30,7 +30,7 @@ threshold
 %% Simple Two sample example
 signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
 nvox = length(signal); nsubj = 75; FWHM = 1; resadd = 3;
-lat_data = 10*wnfield(nvox, nsubj) + signal;
+lat_data = 10*wfield(nvox, nsubj) + signal;
 params = ConvFieldParams( FWHM, resadd );
 
 % Threshold
@@ -50,7 +50,7 @@ threshold
 
 signal = 2*[ zeros(1,10), ones(1,5), zeros(1,10) ]';
 nvox = length(signal); nsubj = 75; FWHM = 1; resadd = 3;
-lat_data = 10*wnfield(nvox, nsubj) + signal;
+lat_data = 10*wfield(nvox, nsubj) + signal;
 params = ConvFieldParams( FWHM, resadd );
 
 % Threshold
@@ -83,7 +83,7 @@ signal = gensig( signal_magnitude, signal_radii, smoothnessofpeaks, ...
 
 % Data generation and thresholding
 nsubj = 75; resadd = 1;
-noisey_data = 10*wnfield(Dim, nsubj) + signal;
+noisey_data = 10*wfield(Dim, nsubj) + signal;
 FWHM = 3; smoothed_data = fconv(noisey_data.field, FWHM);
 
 params = ConvFieldParams( [FWHM, FWHM], resadd );

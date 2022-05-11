@@ -21,7 +21,7 @@ function [peaklocs, peakvals, subset] = findconvpeaks(lat_data, FWHM, ...
 % peak_locs   the true locations of the top peaks in the convolution field.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% See test_findconvpeaks and test_findconvpeaks_t.
+% See test_findconvpeaks_z.
 %--------------------------------------------------------------------------
 % TODO: Change it so that the default input into findconvpeaks is of Field
 % type.

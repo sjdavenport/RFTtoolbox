@@ -1,5 +1,5 @@
 function [ output_image, threshold, maximum, L, minimum ] = vRFT(...
-    lat_data, params, ninitpeaks, do2sample, version, alpha, L0 )
+            lat_data, params, ninitpeaks, do2sample, version, alpha, L0 )
 % VRFT( lat_data, params, L0, ninitpeaks, alpha, version ) runs voxelwise
 % RFT inference on a set of images to detect areas of activation using a
 % one-sample t-statistic.
@@ -36,7 +36,7 @@ function [ output_image, threshold, maximum, L, minimum ] = vRFT(...
 %                   an optimization algorithm (findconvpeaks)
 %--------------------------------------------------------------------------
 % EXAMPLES
-%
+% See test_vRFT.m
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport, Fabian Telschow
 %--------------------------------------------------------------------------
@@ -115,7 +115,7 @@ else %I.e. otherwise runs the conv case
 end
 
 % Calculate the threshold using the EEC heuristic
-L.L = real(LKCs); %Necessary as sometime there are small imaginary parts due to numerical inaccuracies
+L.L = real(LKCs); % Necessary as sometime there are small imaginary parts due to numerical inaccuracies
 L.L0 = L0;
 threshold = EECthreshold( alpha, L.L, L0, field_type, df );
 

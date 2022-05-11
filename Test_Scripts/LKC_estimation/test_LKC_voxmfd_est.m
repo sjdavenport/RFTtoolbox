@@ -25,7 +25,7 @@ mask = logical( pad_vals( true( [ T, 1 ] ), pad, 0 ) );
 theoryL = LKC_isogauss_theory( FWHM, T  );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params = ConvFieldParams( FWHM, 1 );
@@ -58,7 +58,7 @@ mask = true( [ T, 1 ] );
 theoryL = LKC_isogauss_theory( FWHM, T  );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params = ConvFieldParams( FWHM, 1 );
@@ -97,7 +97,7 @@ mask = logical( pad_vals( true( [ T T ] ), pad ) );
 theoryL = LKC_isogauss_theory( FWHM, [ T T ] );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params = ConvFieldParams( FWHM * ones([1 D]), 1 );
@@ -142,7 +142,7 @@ params_thy.lat_masked = lat_masked;
 theoryL = LKC_wncfield_theory( mask, params_thy );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params = ConvFieldParams( FWHM * ones([1 D]), 1 );
@@ -193,7 +193,7 @@ theoryL = LKC_wncfield_theory( mask, params_thy );
 contL = LKC_isogauss_theory( FWHM, dim );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params = ConvFieldParams( FWHM * ones([1 D]), 1 );
@@ -233,7 +233,7 @@ params_thy.lat_masked = lat_masked;
 theoryL = LKC_wncfield_theory( mask, params_thy );
 
 % Generate test data
-lat_data = wnfield( mask, nsubj );
+lat_data = wfield( mask, nsubj );
 
 % approximate continuous field
 params   = ConvFieldParams( FWHM * ones([1 D]), 1 );

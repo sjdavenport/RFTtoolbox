@@ -13,7 +13,6 @@ function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 %          - D = 3, logical of length 3. version(1), indicates whether L2
 %          should be estimated, version(2) whether the first integral is
 %          used in L1 and version(3) whether the second integral is used.
-%       
 %--------------------------------------------------------------------------
 % OUTPUT
 %   L   a 1 x voxmfd.D vector containing the LKCs L1,..., L_voxmfd.D
@@ -23,7 +22,7 @@ function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
 % EXAMPLES
-%
+% See test_LKC_est.m
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow
 %--------------------------------------------------------------------------

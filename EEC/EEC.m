@@ -1,6 +1,6 @@
 function [ EEC_vals, mEEC, EEC_se_hat, C_hat ] = EEC( uvals, LKC, LKC0,...
                                                       type, df, outfield )
-% EEC( uvals, LKC, D, LKC0, type )
+% EEC( uvals, LKC, LKC0, type, df, outfield )
 % calculates the expected Euler characteristic curves for given LKC values
 % at all values uvals
 %--------------------------------------------------------------------------
