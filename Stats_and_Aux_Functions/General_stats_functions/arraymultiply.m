@@ -1,6 +1,5 @@
-function [ interval, std_error ] = bernstd( p, N, level )
-% BERNSTD( p, N, sigma ) generates the bernouilli standard error confidence
-% intervals that arise from the central limit theorem.
+function [ out ] = arraymultiply( matrix, array, D )
+% ARRAYMULTIPLY( matrix, array ) multiplies an array with a matrix
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -10,7 +9,7 @@ function [ interval, std_error ] = bernstd( p, N, level )
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% bernstd(0.05,1000,0.95)
+% 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
@@ -20,19 +19,14 @@ function [ interval, std_error ] = bernstd( p, N, level )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'level', 'var' )
-   % default option of alpha
-   level = 0.95;
+if ~exist( 'opt1', 'var' )
+   % Default value
+   opt1 = 0;
 end
-
-std_error = zeros(1,length(p));
-interval = zeros(2,length(p));
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-for I = 1:length(p)
-    std_error(I) = (p(I)*(1-p(I)))^(1/2)*norminv( 1-(1-level)/2 )/sqrt(N);
-    interval(:,I) = [ p(I) - std_error(I), p(I) + std_error(I) ];
-end
+
+
 end
 

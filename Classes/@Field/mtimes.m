@@ -34,11 +34,13 @@ if isa( obj1, 'Field' ) || isa( obj2, 'Field' )
         out     = obj1;
         % Get index for the domain
         index  = repmat( {':'}, 1, obj1.D );
+        Aisfield = 1;
         
     elseif isnumeric( obj1 )
         msizeA  = NaN;
         sfiberA = size( obj1 );
         A       = obj1;
+        Aisfield = 0;
         
     else
         error( "obj1 must be either a numeric vector or matrix or a Field object." )
@@ -55,11 +57,13 @@ if isa( obj1, 'Field' ) || isa( obj2, 'Field' )
         out     = obj2;
         % Get index for the domain
         index  = repmat( {':'}, 1, obj2.D );
+        Bisfield = 1;
         
     elseif isnumeric( obj2 )
         sfiberB = size( obj2 );
         B       = obj2;
         msizeB  = NaN;
+        Bisfield = 0;
     else
         error( "obj1 must be either a numeric vector or matrix or a Field object." )
     end
@@ -99,7 +103,8 @@ else
     out.field = squeeze( zeros( [ msizeA, sfiberA(1), sfiberB(2) ] ) );
 end
 
-if all( sfiberA == 1 ) || all( sfiberB == 1 )
+% if (all( sfiberA == 1 ) && Aisfield == 0) || (all( sfiberB == 1 ) && Bisfield == 0)
+if (all( sfiberA == 1 ) && Aisfield == 0) || (all( sfiberB == 1 ) && Bisfield == 0)
     out.field = A*B;
 
 elseif ~all( isnan( msizeA ) ) && ~all( isnan( msizeB ) )

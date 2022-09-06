@@ -13,7 +13,7 @@ close all
 FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;
 spfn = @(nsubj) wfield( nvox, nsubj ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
-record_coverage( spfn, sample_size, params, niters)
+rcout = record_coverage( spfn, sample_size, params, niters)
 
 %% Pre-estimating the LKCs for quicker coverage
 FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;
