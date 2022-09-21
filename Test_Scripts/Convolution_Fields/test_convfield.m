@@ -22,9 +22,10 @@ convolution_field = convfield( lat_data, params );
 plot( convolution_field );
 
 %% Multiple subjects
-nsubj = 3; 
+nsubj = 30; 
 lat_data = wfield( mask, nsubj );
-convolution_field = convfield( lat_data, params );
+%convolution_
+field = convfield( lat_data, params );
 plot( convolution_field );
 hold off
 
