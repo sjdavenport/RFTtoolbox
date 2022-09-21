@@ -15,9 +15,11 @@ function [ L, L0, nonstatInt, cfields ] = LKC_latconv_est( lat_data,...
 %  version a logical/ logical vector. Length depends on voxmfd.D
 %          - D = 1, always true.
 %          - D = 2, either 1 or 0. 1 if L1 should be estimated, 0 else.
-%          - D = 3, logical of length 3. version(1), indicates whether L2
-%          should be estimated, version(2) whether the first integral is
-%          used in L1 and version(3) whether the second integral is used.
+%          - D = 3, logical of length 3. version(1) indicates whether L2
+%                   should be estimated, version(2) whether the first 
+%                   integral is used in L1 and version(3) whether also
+%                   the second integral is used in L1. Default: [1 1 0];
+%                   i.e., the stationary approximation of L1
 %
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -38,7 +40,7 @@ if ~exist( 'version', 'var' )
     if lat_data.D < 3
         version = true;
     else
-        version = true( [ 1 3 ] );
+        version = logical( [ 1 1 0 ] );
     end
 end
 
