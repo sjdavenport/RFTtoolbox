@@ -10,9 +10,9 @@ D = 2;
 % sample size
 N = 100;
 % Number of simulations
-M = 50;
+M = 500;
 % size of domain
-dim    = 100 * ones( [ 1 D ] );
+dim    = 25 * ones( [ 1 D ] );
 % FWHM first smoothing
 FWHM_1 = 3;
 % FWHM second smoothing
@@ -174,11 +174,3 @@ coveringRateNaive = CovRateLvlSets( mu, hatmu, thresh, c, 0 )
 % linear interpolated voxels
 coveringRateInterpol = CovRateLvlSets( mu, hatmu, thresh, c, 1 )
 
-%%
-for I = 1:M
-    subplot(2,1,1)
-    imagesc(mu)
-    subplot(2,1,2)
-    imagesc(hatmu(:,:,I))
-    pause
-end
