@@ -61,7 +61,7 @@ if scale == 1
 end
 voxmfd = VoxManifold( Lambda );
 
-if exist( 'd2field', 'var' ) && ~isempty(d2field)
+if exist( 'd2field', 'var' )
     if ~isempty( d2field.field )
         voxmfd.Gamma = Christoffel_est( field, dfield, d2field );
     end
