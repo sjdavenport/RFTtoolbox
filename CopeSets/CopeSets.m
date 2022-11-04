@@ -14,7 +14,7 @@ function [ thresh, quantiles, hatmu, hatsigma, len_bdry ] = CopeSets( field, c, 
 %  quantEstim  structure containing the name and the parameters for the
 %              quantile estimation method. Choices:
 %               {
-%                quantEstim.name = 'multiplierbootstrap'
+%                quantEstim.name in= 'multiplierbootstrap'
 %                quantEstim.params:
 %                   Mboot:     amount of bootstrap replicates (default=5e3)
 %                   method:    option for the bootstrap estimator (default='t')

@@ -1,6 +1,6 @@
 function [ field, mask ] = BdryEst_erodedilate( field, c, delta, outfield )
 % BdryEst_erodedilate( field, c, delta, outfield ) estimates the boundary
-% of the excursion set by eroding and delating the mask to get a small
+% of the excursion set by eroding and dilating the mask to get a small
 % neighbourhood of the boundary.
 %--------------------------------------------------------------------------
 % ARGUMENTS
