@@ -32,8 +32,19 @@ function [ pad_data, locs ] = pad_vals( data, padn, val )
 % EXAMPLES
 % %% 1D example
 % pad_vals( ones(1,3), 2 )
+% 
 % %% 2D example
 % pad_vals( ones(2), 1 )
+%
+% % 2D example with different padding values for each dimension
+% % Pads 1 value on the left and 2 values on the right in the first dimension
+% % Pads 2 values on the top and 1 value on the bottom in the second dimension
+% pad_vals( ones(2), [1 2; 2 1] )
+% 
+% % 2D example with different padding values for each dimension and non-zero padding value
+% % Pads 1 value of 10 on the left and 2 values of 20 on the right in the first dimension
+% % Pads 2 values of 30 on the top and 1 value of 40 on the bottom in the second dimension
+% pad_vals( ones(2), [1 2; 2 1], [10 20; 30 40] )
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow and Samuel Davenport
 %--------------------------------------------------------------------------

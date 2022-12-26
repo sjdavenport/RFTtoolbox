@@ -2,10 +2,10 @@ function out = inmask(point, mask)
 % INMASK(point, mask) tests whether a given point is in a given mask.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% point: a D x 1 vector where D is the number of dimensions, representing 
+% point: a D x 1 vector where M is the number of dimensions, representing 
 %        the point being tested.
-% mask: a logical array of size N_1 x N_2 x ... x N_D, where 
-%       N_1, N_2, ..., N_D are the dimensions of the mask.
+% mask: a logical array of size N_1 x N_2 x ... x N_M, where 
+%       N_1, N_2, ..., N_M are the dimensions of the mask.
 %--------------------------------------------------------------------------
 % OUTPUT
 % out: a logical scalar, true if the point is in the mask, false otherwise.

@@ -3,16 +3,18 @@ function out = vech( mateorvec )
 % elements and converts a vector to a symmetric matrix with the upper
 % triangular elements in the right place.
 %--------------------------------------------------------------------------
-% ARGUMENTS
-% Mandatory
-% Optional
+% INPUT
+%   mateorvec:  a matrix or a vector
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+%   out:        a vector containing the upper triangular elements of the 
+%               input matrix if the input is a matrix, or a symmetric matrix
+%               with the upper triangular elements of the input vector in the
+%               right place if the input is a vector.
 %--------------------------------------------------------------------------
 % EXAMPLES
-% vech([1,2;3,4])
-% vech([1,2,4])
+%   vech([1,2;3,4])
+%   vech([1,2,4])
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------

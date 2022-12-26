@@ -6,7 +6,7 @@ function [ out, array_diff ] = same_array( array1, array2, tol )
 %  array1       an array of data
 %  array2       another array of data with the same dimensions as array1
 % Optional
-%  tol 
+%  tol          a numeric variable giving the tolerance
 %--------------------------------------------------------------------------
 % OUTPUT
 % out           0/1 whether the arrays are the same

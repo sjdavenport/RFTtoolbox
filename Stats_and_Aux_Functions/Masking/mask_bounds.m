@@ -1,16 +1,19 @@
 function [ bounds, bounded_mask ] = mask_bounds( mask )
-% MASK_BOUNDS() obtains the 
+% MASK_BOUNDS finds the bounds of a mask and returns a mask without all
+% the padding.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
-% Optional
+% mask - a D-dimensional array of zeros and ones
 %--------------------------------------------------------------------------
 % OUTPUT
-% bounds     a D by 1 cell array whose dth entry gives the bounds of the
-%            mask 
+% bounds - a D-by-1 cell array, where the dth entry gives the bounds of the 
+%           mask in the dth direction
+% bounded_mask - a logical array giving the mask restricted without the
+%                extra padding
 %--------------------------------------------------------------------------
 % EXAMPLES
-% mask = imgload('MNImask'); bounds = mask_bounds( mask )
+% mask = imgload('MNImask'); [ bounds, bounded_mask ] = mask_bounds( mask )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------

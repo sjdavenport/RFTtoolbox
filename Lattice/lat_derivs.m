@@ -84,11 +84,12 @@ derivs2 = zeros(D,D,npoints);
 fielditself = zeros(1, npoints);
 
 for I = 1:npoints
-    fielditself(I) = data.field(point_index(I,:));
+    PIE = point_index(I,:);
     %PIE: point index entry, converted to a cell array to allow for
     %indexing
-    PIE = point_index(I,:);
-    
+    PIEcell = num2cell(PIE);
+    fielditself(I) = data.field(PIEcell{':'});
+
     %     if PIE(d) == 1 || PIE(d) == length(data.xvals{d})
     %         error('The off diagonal second derivative has not been implemented for edge voxels')
     %     end

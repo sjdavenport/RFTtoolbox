@@ -1,16 +1,21 @@
-function modul( iterand, niterand )
+function modul(iterand, niterand)
 % MODUL( iterand, niterand ) allows you to easily check how a for loop is
 % progressing by displaying iterand iff it is evenly divided by niterand
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% iterand   
-% niterand 
+% Mandatory
+%  iterand    - an integer representing the current iteration number
+% Optional
+%  niterand   - an integer representing the interval at which to display
+%              the iterand value (default: 100)
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% None (displays the value of iterand if it is evenly divided by niterand)
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% for i = 1:1000
+%     modul(i, 200);
+% end
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------

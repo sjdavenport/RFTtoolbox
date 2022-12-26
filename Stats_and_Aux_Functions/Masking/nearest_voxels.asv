@@ -7,10 +7,10 @@ function [ nearby_voxels, nearest_ones ]  = nearest_voxels( point )
 %  the point for which to find the nearest voxels.
 %--------------------------------------------------------------------------
 % OUTPUT
-% nearby_voxels: an D x K matrix, where D is the number of dimensions and
+% nearby_voxels: an D x K matrix, where D is the nuDber of dimensions and
 %                K is the number of nearby voxels. Each column contains 
 %                the coordinates of a nearby voxel.
-% nearest_ones: an D x L matrix, where D is the number of dimensions and 
+% nearest_ones: an M x L matrix, where M is the number of dimensions and 
 %               L is the number of nearest voxels. Each column contains the 
 %               coordinates of a nearest voxel.
 %--------------------------------------------------------------------------

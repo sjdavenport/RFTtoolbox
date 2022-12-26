@@ -3,8 +3,9 @@ function [ f_deriv, f_deriv2 ] = MVderiv( f, D, h )
 % field at given tvals.
 %--------------------------------------------------------------------------
 % ARGUMENTS
-% field
-% D
+% f      a function handle that takes a t-value in R^D as input and
+%        returns a scalar value.
+% D      an integer representing the dimension of the input space of f.
 % h      default is h = 0.00001
 %--------------------------------------------------------------------------
 % OUTPUT

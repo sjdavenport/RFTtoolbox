@@ -15,7 +15,12 @@ function maxval = maxdiff( X, Y )
 % DEVELOPER TODOs:
 % -------------------------------------------------------------------------
 % EXAMPLES
-%
+% % % Define two arrays to compare
+% X = [1, 2, 3, 4];
+% Y = [5, 6, 7, 8];
+% 
+% % Find the maximum difference between elements of X and Y
+% maxval = maxdiff(X, Y);
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow  
 %--------------------------------------------------------------------------

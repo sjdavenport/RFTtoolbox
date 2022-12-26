@@ -1,11 +1,12 @@
-function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, lowerbounds, upperbounds, algorithm )
+function [ peaklocs, peakvals ] = findlms( fn, initial_estimates, ... 
+                                      lowerbounds, upperbounds, algorithm )
 % FINDLMS( fn, initial_estimates, box_size ) finds the local maxima of
 % function by searching within boxes centred at the initial estimates
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % fn            a function handle of a function to maximize.
-% initial_estimates     a D by nestimates matrix where each column is a
-%                       D-dimensional initial estimate of a local maxima location
+% initial_estimates   a D by nestimates matrix where each column is a
+%                     D-dimensional initial estimate of a local maxima location
 % box_size      a 1 by nestimates cell array specifying the size of the box
 %               around each point within which to locally search.
 %               Alternately if the box_size is numeric then this box size

@@ -31,7 +31,6 @@ function [ L, L0, nonstatInt ] = LKC_est( voxmfd, version )
 
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
-
 % Check that method is implemented for dimension D
 if voxmfd.D > 3
     error( strcat( 'D must be < 4. LKC estimation for higher dimensional ',...

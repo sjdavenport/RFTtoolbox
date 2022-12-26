@@ -16,6 +16,18 @@ function int = integrateTriangulation(trep, z)
 % Output:
 %   int (numeric): integral of the function defined on the triangulation
 %
+% Example:
+% % Create a set of points in 2D space
+% P = [0 0; 1 0; 1 1; 0 1; 0.5 0.5];
+% 
+% % Delaunay triangulate the points
+% trep = delaunayTriangulation(P);
+% 
+% % Define values of a function on the nodes
+% z = [1; 2; 3; 4; 5];
+% 
+% % Compute the integral of the function defined on the triangulation
+% int = integrateTriangulation(trep, z);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 P = trep.Points; T = trep.ConnectivityList;
