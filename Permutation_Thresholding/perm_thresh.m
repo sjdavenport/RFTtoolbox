@@ -7,9 +7,8 @@ function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, ...
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % data      a Dim by nsubj array of the data.
-% stat      is the statistic to use. STAT = 'Z', we assume Gaussian and use
-%           the mean. STAT = 'T', we compute a one-sample t-stat. Default
-%           is STAT = 'Z'.
+% stat      is the statistic to use. STAT = 'Z', we use the mean. 
+%           STAT = 'T', we compute a one-sample t-stat. Default is STAT = 'Z'.
 % niters    the number of permutations to calculate
 % include_original 0/1 whether to include the original sample in your
 %           niters number of permutations.
