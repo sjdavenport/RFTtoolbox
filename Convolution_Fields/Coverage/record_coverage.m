@@ -116,7 +116,7 @@ coverage = struct();
 % Main
 for b = 1:niters
     %Display b if mod(b,100) = 0
-    modul(b,10)
+    modul(b,100)
     
     % Obtain the data
     if use_subsets

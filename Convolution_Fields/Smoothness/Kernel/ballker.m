@@ -1,5 +1,5 @@
-function out = boxker( x, rad, leq )
-% boxker( x, rad )
+function [ out ] = ballker( x, rad, leq )
+% NEWFUN serves as a function template.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % x         a D by nvalues matrix where D is the number of dimensions and
@@ -9,39 +9,32 @@ function out = boxker( x, rad, leq )
 %           support of the kernel or not. 0 (default) excludes it.
 %--------------------------------------------------------------------------
 % OUTPUT
-% out       vector of 0s and 1s each element of which indicates whether or 
-%           not the elements are within the box of radius rad
+% 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% boxker([1/2,1/4])
-% boxker([1/2,1/4]')
-% boxker([1/2,1/4, 2/3])
-% boxker([1/2,1/4;2/3,0.2])
+% 
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
 if nargin < 2
-    rad = 1/2;
+    rad = 1;
 end
 if nargin < 3
     leq = 0;
 end
 
+
+%%  Check mandatory input and get important constants
+%--------------------------------------------------------------------------
+x_sos = sum(x.^2, 1);
+
+%%  Main Function Loop
+%--------------------------------------------------------------------------
 if leq
-    out = all(x <= rad,1).*all(x >= -rad,1);
+    out = x_sos <= rad^2;
 else
-    out = all(x < rad,1).*all(x > -rad,1);
+    out = x_sos < rad^2;
 end
-
-% if leq
-%     out = all(x <= rad).*all(x >= -rad);
-% else
-%     out = all(x < rad).*all(x > -rad);
-% end
 
 end
 
-% lessthan = sum(x <= rad);
-% greaterthan = sum(x >= -rad);
-% 
-% test = (lessthan+greaterthan) == 2*D

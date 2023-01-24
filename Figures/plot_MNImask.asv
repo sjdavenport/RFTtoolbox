@@ -1,0 +1,5 @@
+MNImask = imgload('MNImask');
+f = Field();
+f.mask = MNImask;
+for I = 1:3
+    f.xvals{I} = 1:size(MNI

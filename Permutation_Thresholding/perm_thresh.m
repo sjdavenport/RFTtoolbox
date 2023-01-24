@@ -117,8 +117,9 @@ random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
 
 % Main loop
 for iter = start:niters
-%     modul(iter,1000);
-%     modul(iter, 100);
+    % Record progress
+    loader(I-1, nperm-1)
+    
     random_berns_for_iter = random_berns(:, iter);
     random_sample = find(random_berns_for_iter < 0);
     data2 = data;

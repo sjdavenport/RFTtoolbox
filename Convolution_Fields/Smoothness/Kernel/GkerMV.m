@@ -6,10 +6,12 @@ function val = GkerMV( x, sigma2_or_FWHM, use_fwhm )
 % x                 a D by nevals matrix where each column is a
 %                   D-dimensional vector at which to evaluate the kernel.
 % sigma2_or_FWHM    If FWHM, it is the FWHM in voxels.
-% use_fwhm
+% use_fwhm          0/1 indicating whether to parametrize the kernel in
+%                   terms of the FWHM or the variance. Default is 1 ie to
+%                   parametrize in terms of the FWHM.
 %--------------------------------------------------------------------------
 % OUTPUT
-% 
+% val               a number giving the value of the kernel
 %--------------------------------------------------------------------------
 % EXAMPLES
 % [val, deriv, deriv2] = GkerMV([1.5,2], 3)
@@ -39,8 +41,8 @@ function val = GkerMV( x, sigma2_or_FWHM, use_fwhm )
 % sigma2 = 1/GkerMV(x,FWHM)^(2/D)/(2*pi);
 % sigma2FWHM(sigma2^(1/2))
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel J. Davenport
-% Don't change this! Too much depends on it! LOL
+% AUTHOR: Samuel Davenport
+%--------------------------------------------------------------------------
 if nargin < 3
     use_fwhm = 1;
 end

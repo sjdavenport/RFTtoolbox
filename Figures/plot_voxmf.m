@@ -61,6 +61,7 @@ for d = 1:3
 end
 
 for i = 1:size(mpoints,1)
+    loader(i, size(mpoints,1), 'Percent of the rendering completed:');
     plotcube(delta, mpoints(i,:,:),.8,[1 0 0]); hold on
 end
 xlim([min(X(:)), max(X(:))])

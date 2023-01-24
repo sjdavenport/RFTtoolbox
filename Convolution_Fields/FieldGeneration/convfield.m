@@ -38,6 +38,13 @@ function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 % params = ConvFieldParams( [FWHM_x, FWHM_y], resadd, enlarge);
 % latcfield = convfield(lat_data, params);
 % imagesc(latcfield.field)
+%
+% Dim = [100,100]; FWHM = 5;
+% lat_data = wfield(Dim); resadd = 1; enlarge = 0;
+% params = ConvFieldParams( [FWHM, FWHM], resadd, enlarge);
+% [latcfield, ss] = convfield(lat_data, params);
+% latcfield.field = latcfield.field/sqrt(ss);
+% imagesc(latcfield.field)
 %--------------------------------------------------------------------------
 % AUTHOR: Fabian Telschow, Samuel Davenport                                            
 %--------------------------------------------------------------------------
@@ -233,9 +240,15 @@ else
     error('D != 1,2,3 has not been implemented yet!')
 end
 
-if exist( 'ss', 'var' )
-    ss = 1 / sqrt(ss);
-else
+% @Fabian, I don't think this code makes sense, ss should be the same here
+% as in fconv as ss stands for sum of squares. 
+% if exist( 'ss', 'var' )
+%     ss = 1 / sqrt(ss);
+% else
+%     ss = 1;
+% end
+% changes to:
+if ~exist( 'ss', 'var' )
     ss = 1;
 end
 

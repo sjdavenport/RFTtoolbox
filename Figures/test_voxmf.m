@@ -1,7 +1,7 @@
 clear all
 close all
 
-rng(42)
+% rng(42)
 mask = [20 20 20];
 % Get lattice data
 wn = wfield( mask, 1 );

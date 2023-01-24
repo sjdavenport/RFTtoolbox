@@ -27,7 +27,7 @@ function [ lmarrayindices, lmind, peakvals ] = lmindices( Y, top, mask, CC )
 % a(peakinds) == peakvals
 %
 % %1D example 
-% lmindices([1,2,1])
+% lmindices([1,3,1])
 % lmindices([1,2,1,2,1],2)
 %
 % % 1D example with edges (note how edge maxima are counted!)

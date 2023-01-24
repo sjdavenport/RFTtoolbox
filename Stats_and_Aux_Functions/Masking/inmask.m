@@ -18,7 +18,7 @@ function out = inmask(point, mask)
 % inmask( 5.55, [ones(1,5),0])
 % 
 % %2D
-% mask = [0,0,1;0,0,1;0,0,1];
+% mask = [0,0,1;0,0,1;0,0,1]
 % inmask([1,2]', mask)
 % inmask([2.5,2.6]', mask)
 % inmask([2.5,2.4]', mask)
