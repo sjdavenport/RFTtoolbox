@@ -80,7 +80,7 @@ mask = true( [10 10 3] );
 mask(1:5,:,1) = false;
 fibersize   = 1;
 xvals       = {1:10, (2:11)/2, 2:4};
-wn = wnfield( mask, fibersize, xvals );
+wn = wfield( mask, fibersize, 'N', 0, xvals );
 imagesc( wn(:,1,:) )
 % A constant fiber field, i.e. each mask value contains the same array A
 A  = ones( [ 2 2 3 ] )
@@ -126,7 +126,7 @@ subplot(1,3,3)
 imagesc( tmp(:,1,:,1,3) ), colorbar
 % Vector field scalar field multiplication
 v = constfield( [1 2 3], mask )
-w = wnfield( mask )
+w = wfield( mask )
 tmp = w .* v
 figure, clf
 imagesc( tmp(:,1,:,1,1) ), colorbar
@@ -138,13 +138,13 @@ figure, clf
 imagesc( tmp(:,1,:,1) ), colorbar
 % Matrix multiplication II: Matrix times Vector field
 v = constfield( [1 2 3]', mask )
-A = wnfield( mask, [3 3] )
+A = wfield( mask, [3 3] )
 tmp = A * v
 figure, clf
 imagesc( tmp(:,1,:,1) ), colorbar
 % Matrix multiplication III: Matrix times Matrix field
 A = constfield( ones( [ 4, 3 ] ), mask )
-B = wnfield( mask, [3 3] )
+B = wfield( mask, [3 3] )
 tmp = A * B
 figure, clf
 imagesc( tmp(:,1,:,1,1) ), colorbar
@@ -154,7 +154,7 @@ imagesc( tmp(:,1,:,1,1) ), colorbar
 %% Collapse
 % Another sometimes useful function is collapse, which collapses either the
 % domain or the fiber to a one dimensional space.
-A = wnfield( mask, [3 3] )
+A = wfield( mask, [3 3] )
 collapse( A )
 collapse(A, 'fiber')
 %% ConvField Class
@@ -166,11 +166,11 @@ collapse(A, 'fiber')
 % from smoothing with a kernel. It is generated as follows:
 
 % Get lattice data
-wn = wnfield( mask, 1 );
+wn = wfield( mask, 1 );
 % Input data
 % Kernel: SepKernel object. Numeric creates a seperable isotropic Gaussian
 % kernel with FWHM kernel
-kernel = 3;
+kernel_FWHM = 3;
 % Derivative type: 0/1/2 supported giving the actual field or its first or
 % second derivative
 derivtype = 0; 
@@ -181,8 +181,13 @@ resadd = 3;
 lat_masked = true;
 % enlarge the mask by voxres in high resolution. 
 enlarge = ceil( resadd / 2 );
+% Get the params object for a convfield
+params = ConvFieldParams(kernel_FWHM*ones([1 3]),...
+                         resadd,...
+                         enlarge,...
+                         true );
 % Construct ConvField object.
-cfield = convfield_Field( wn, kernel, derivtype, resadd, lat_masked, enlarge )
+cfield = convfield( wn, params, derivtype )
 imagesc( cfield(:,:,3) )
 
 % Note that a ConvField basically tracks the Kernel, resadd and enlarge
