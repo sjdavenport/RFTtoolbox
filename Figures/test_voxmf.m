@@ -36,7 +36,7 @@ cfield = Mask(cfield);
 cfield2 = convfield( wn, params2, derivtype );
 cfield2.mask = mask_highres( mask, resadd+1, ceil( (resadd + 1) / 2 ));
 
-figure(1)
+figure(1), clf,
 plot_voxmf( cfield )
 
 figure(2)
