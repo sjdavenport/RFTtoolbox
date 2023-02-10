@@ -7,7 +7,6 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd,...
 % Optionally, 'weights' can be output, which assign the weights This is
 % used in LKC estimation, since in this toolbox voxels are usually
 % interpreted as the center values of rectangular domains.
-%
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -32,9 +31,6 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd,...
 % DEVELOPER TODOs:
 % -------------------------------------------------------------------------
 % EXAMPLES
-% showplots of the mask
-% show_plot = 1;
-% 
 % %%% 1D
 % % resolution added
 % resadd  = 1;
@@ -46,21 +42,21 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd,...
 % plot( mask )
 % clear Sig
 % 
-% mask_hr = mask_highres( mask, resadd, enlarge, show_plot );
+% mask_hr = mask_highres( mask, resadd, enlarge, 1 );
 % 
 % %%% 2D
 % % resolution added
 % resadd  = 3;
 % % create a mask and show it
-% Sig  = gensig([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
+% Sig  = peakgen([1,2], 3, [10,20], [100,150], {[40,30], [70,120]});
 % mask = logical( Sig > 0.02 & Sig < 1.1 );
 % imagesc( mask )
 % clear Sig
 % 
 % % enlarged domain
-% mask_hr = mask_highres( mask, resadd, 1, show_plot );
+% mask_hr = mask_highres( mask, resadd, 1, 1 );
 % % non enlarged domain
-% mask_hr = mask_highres( mask, resadd, 0, show_plot );
+% mask_hr = mask_highres( mask, resadd, 0, 1 );
 % 
 % % resolution added
 % resadd  = 3;
@@ -72,9 +68,9 @@ function [ mask_hr, weights ] = mask_highres( mask, resadd,...
 % clear Sig
 % 
 % % enlarged domain
-% mask_hr = mask_highres( mask, resadd, 1, show_plot );
+% mask_hr = mask_highres( mask, resadd, 1, 1 );
 % % non enlarged domain
-% mask_hr = mask_highres( mask, resadd, 0, show_plot );
+% mask_hr = mask_highres( mask, resadd, 0, 1 );
 % 
 % %%% 3D
 % % resolution added

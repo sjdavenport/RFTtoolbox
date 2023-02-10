@@ -6,7 +6,7 @@ function [field_vals, ss] = ...
 % ARGUMENTS
 % tval      the t values (an ndim = D by nvalues matrix) at which to evaluate 
 %           the field.
-% Y         the lattice field an array of size Dim.
+% lat_data  the lattice field an array of size Dim.
 % Kernel    the smoothing Kernel (as a function). If Kernel is a postive
 %           number then an isotropic Gaussian kernel with dimension D and
 %           FWHM = Kernel is used

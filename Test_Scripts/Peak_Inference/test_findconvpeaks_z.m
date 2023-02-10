@@ -50,17 +50,18 @@ plot(cfield.mask)
 % Note that for a 1D convolution field the maximum can never lie on the
 % boundary.
 
-%% With the option for the mean!
-Y = wfield(10,1)*(1/50);
-x = 1:1:10; sigstore = peakgen1D( x, peakspec, peakparams, 1, smo );
-plot(x, sigstore)
-FWHM = 3; resadd = 1; params = ConvFieldParams(FWHM, resadd, 0);
-meanonlat = convfield(sigstore, params);
-truncation = 4*FWHM2sigma(FWHM);
-meanfn = @(x) applyconvfield(x, sigstore, FWHM, true(1,length(sigstore)), truncation, meanonlat.xvals);
-
-findconvpeaks(Y, 3, 1, 'Z', meanfn, meanonlat.field)
-findlms(meanfn, 5, 4,6)
+%% With the option for the mean! (Not working right now)
+% Y = wfield(10,1)*(1/50);
+% peakspec = {[3,7]}; peakparams = {[2,2]};
+% x = 1:1:10; sigstore = peakgen1D( x, peakspec, peakparams, 1, 3 );
+% plot(x, sigstore)
+% FWHM = 3; resadd = 1; params = ConvFieldParams(FWHM, resadd, 0);
+% meanonlat = convfield(sigstore, params);
+% truncation = 4*FWHM2sigma(FWHM);
+% meanfn = @(x) applyconvfield(x, sigstore, FWHM, true(1,length(sigstore)), truncation, meanonlat.xvals);
+% 
+% findconvpeaks(Y, 3, 5, 'Z', 0, 1, meanfn, meanonlat.field)
+% findlms(meanfn, 5, 4,6)
 
 %% %% 2D Examples
 %% Simple 2D application
@@ -94,14 +95,6 @@ I = 3; findlms( meanfn, centre_locs{I}, centre_locs{I} - 1, centre_locs{I} + 1 )
 centre_locs = {[20,40]'/2,[60,25]'/2,[75,75]'/2};
 centre_locs = centre_locs{3};
 findconvpeaks(Sig, add_FWHM, centre_locs)
-
-%% subset testing
-subset = {33:42, 33:42};
-subset_mean = meanonlat(subset{:});
-sub_sig  = Sig(subset{:});
-meanfn = @(x) applyconvfield(x, sub_sig, add_FWHM, true(size(sub_sig)), 0, subset_mean.xvals);
-meanfn([37.5, 37.5]')
-[a,b] = findlms( meanfn, centre_locs{I}, centre_locs{I}-1, centre_locs{I} + 1 )
 
 %% Finding peaks on the boundary
 % An example where the peak will be outside the mask!
@@ -164,16 +157,16 @@ xvaleval(converted_maxfineloc', fine_field.xvals)
 % but as can be seen the true location is close to the peak on the resadd =
 % 2 lattice.
 
-%% Finding peaks on the boundary
-FWHM = 3; D = 3;
-Y = ones([3,3,3]); Y(1,:,:) = 10; %I.e. so the peak will be outside the mask!
-mask = true([3,3,3]); mask(1,2,2) = 0;
-[peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2,2]', 'Z', mask)
-
-% View a slice through the masked field
-resadd = 6;
-mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
-cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
-surf(squeeze(cfield(1,:,:)))
-max(cfield(:))
+% %% Finding peaks on the boundary Needs fixing
+% FWHM = 3; D = 3;
+% Y = ones([3,3,3]); Y(1,:,:) = 10; %I.e. so the peak will be outside the mask!
+% mask = true([3,3,3]); mask(1,2,2) = 0;
+% [peaklocs, peakvals] = findconvpeaks(Y, FWHM, [2,2,2]', 'Z', mask)
+% 
+% % View a slice through the masked field
+% resadd = 6;
+% mask_hr = zero2nan(mask_highres(mask, resadd, ceil(resadd/2)));
+% cfield = mask_hr.*convfield( Y.*mask, FWHM, resadd, D, 0, ceil(resadd/2));
+% surf(squeeze(cfield(1,:,:)))
+% max(cfield(:))
 

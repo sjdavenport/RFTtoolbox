@@ -51,12 +51,13 @@ function [T, mu, sigma, d, Xcfields_at_tval] = ...
 % %% 1D t convolution field
 % FWHM = 4; nvox = 100; nsubj = 40;
 % lat_data = normrnd(0,1, nvox, nsubj); resadd = 2;
+% params = ConvFieldParams(FWHM, resadd)
 % tcf = @(tval) applyconvfield_t( tval, lat_data, FWHM );
-% [cfield, xvals_vecs] = convfield_t( lat_data, FWHM, resadd );
+% tcfield = convfield_t( lat_data, params );
 % 
-% plot(xvals_vecs{1}, tcf(xvals_vecs{1}))
+% plot(tcfield.xvals{1}, tcf(tcfield.xvals{1}))
 % hold on
-% plot(xvals_vecs{1}, cfield, '--');
+% plot(tcfield.xvals{1}, tcfield.field, '--');
 % 
 % %% 1D masked example
 % FWHM = 4; nvox = 50; nsubj = 20;
@@ -67,26 +68,33 @@ function [T, mu, sigma, d, Xcfields_at_tval] = ...
 % mfield = @(x) mask_field(x, mask);
 % masked_field = @(x) mfield(x).*tcf(x);
 % 
-% [cfield, xvals_vecs] = convfield_t( lat_data, FWHM, resadd );
-% 
-% plot(xvals_vecs{1}, masked_field(xvals_vecs{1}))
+% params = ConvFieldParams(FWHM, resadd)
+% tcfield = convfield_t( lat_data, params );
+% plot(tcfield.xvals{1}, tcf(tcfield.xvals{1}))
 % hold on
-% plot(xvals_vecs{1}, cfield, '--');
+% plot(tcfield.xvals{1}, tcfield.field, '--');
 % legend('masked field', 'unmasked field')
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
-if isnumeric(Kernel)
-%     if Kernel < 1
-%         warning('Are you sure the FWHM and increm have been written the right way around?')
-%     end
-%     FWHM = Kernel;
-%     truncation = round(10*FWHM2sigma(FWHM));
-    Kernel = @(x) GkerMV(x,Kernel);
-end
+
 if ~exist('truncation', 'var')
     truncation = -1;
 end
+if isnumeric(Kernel)
+    if truncation == -1
+        sigma = FWHM2sigma(Kernel);
+        truncation = round(4*sigma); % Default truncation
+    end
+    Kernel = @(x) GkerMV(x,Kernel); % The multivariate Gaussian kernel
+else
+    %     Need to work out what to do here for general kernels
+    if truncation == -1
+        % The -1 selection is only set up for isotropic Gaussian kernels atm
+        truncation = 0; 
+    end
+end
+
 
 % Default is to take the mean to be 0
 if ~exist('meanfn', 'var')
