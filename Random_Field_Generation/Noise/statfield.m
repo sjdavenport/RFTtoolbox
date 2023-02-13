@@ -17,7 +17,7 @@ function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params
 % EXAMPLES
 % % 1D 
 % FWHM = 3; resadd = 3; params = ConvFieldParams(FWHM, resadd);
-% Dim = 10; nsubj = 20; f = statnoise( Dim, nsubj, params )
+% Dim = 10; nsubj = 20; f = statfield( Dim, nsubj, params )
 %
 % % 2D
 % FWHM = [3,3]; resadd = 3; params = ConvFieldParams(FWHM, resadd);
