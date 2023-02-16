@@ -15,6 +15,12 @@ peakspec = {[3,7]}; peakparams = {[2,2]};
 [~, meanfn] = peakgen1D( 1:0.1:nvox, peakspec, peakparams, 1, 0.01);
 FWHM = 2; out = convCR(lat_data, FWHM, {5}, meanfn);
 
+%% Simple 1D example single peak multiple FWHM
+nvox = 10; nsubj = 100; lat_data = wfield([nvox,1], nsubj);
+peakspec = {[3,7]}; peakparams = {[2,2]};
+[~, meanfn] = peakgen1D( 1:0.1:nvox, peakspec, peakparams, 1, 0.01);
+FWHM = [2,3]; out = convCR(lat_data, [2,3], {5}, meanfn);
+
 % %% Simple 1D example two peaks
 % nvox = 15; nsubj = 100; lat_data = wfield([nvox,1], nsubj);
 % peakspec = {[3,4], [4,5]}; peakparams = {[3,3]};

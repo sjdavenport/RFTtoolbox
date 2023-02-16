@@ -21,7 +21,7 @@ function [im_perm, threshold, vec_of_maxima] = perm_thresh( data, stat, ...
 %                   lattice fields for each permutation
 %--------------------------------------------------------------------------
 % EXAMPLES
-% data = normrnd(0,1,20,100);
+% data = normrnd(0,1,20,1000);
 % [~, threshold] = perm_thresh(data, 'T');
 %
 % lat_data = wfield([5,5], 10);
@@ -118,7 +118,7 @@ random_berns = 2*(binornd(1,0.5, nsubj, niters )-1/2);
 % Main loop
 for iter = start:niters
     % Record progress
-    loader(I-1, nperm-1)
+    loader(iter - start + 1, niters - start, 'Progress:')
     
     random_berns_for_iter = random_berns(:, iter);
     random_sample = find(random_berns_for_iter < 0);
