@@ -15,8 +15,8 @@ function [peaklocs, peakvals, subset] = findconvpeaks(lat_data, FWHM, ...
 %                  where the dth entry is a vector containing the peaks
 % field_type       'Z' or 'T'
 % meanfn           a function handle default giving a continuous mean,
-%                  default is @(x) 0
-% meanonlat        the mean on the lattice, default is 0 everywhere 
+% default is 
+% meanonlat
 %--------------------------------------------------------------------------
 % OUTPUT
 % peak_locs   the true locations of the top peaks in the convolution field.

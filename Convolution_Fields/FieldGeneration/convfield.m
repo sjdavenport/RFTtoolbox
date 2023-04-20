@@ -3,7 +3,7 @@ function [ cfield, ss ] = convfield( lat_data, params, derivtype )
 % generates an object of class Field containing the convolution field
 % derived from lattice data smoothed with a seperable kernel.
 % The generated field is evaluated on an equidistant grid with resolution
-% increased by adding resadd voxels inbetween each voxel in each dimension.
+% increased by adding resadd voxels in between each voxel in each dimension.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory

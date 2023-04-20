@@ -18,15 +18,14 @@ function Rmap = MkRadImg(Dim,c)
 %--------------------------------------------------------------------------
 % EXAMPLES
 % MkRadImg([2,2,2], [0,0,0])
-% %compare to sqrt(4+4+225*4)
 %
 % Img = double(MkRadImg([256, 256],[128.5,128.5]) <= 20);
 % surf(Img);
 %
 % Img = double(MkRadImg([256, 256, 256],[128.5,128.5, 128.5]) <= 20);
-% surf(Img(:,:,128)); %And compare this to:
-% surf(Img(:,:,109)); %The radius is smaller because we're intersecting a
-%                     %higher part of the sphere.
+% subplot(1,2,1); surf(Img(:,:,128));
+% subplot(1,2,2); surf(Img(:,:,109)); 
+% %The radius is smaller because we're intersecting a higher part of the sphere.
 %--------------------------------------------------------------------------
 
 %Note that if [x,y] = ndgrid(a,b) for vectors a, b of lengths na, nb

@@ -18,10 +18,10 @@ function [ points, xlevellocs, ylevellocs ] = sample_boundary( f, xvals, ninters
 % ylevellocs: a matrix of size (length(xvals{2}), nitersections) containing
 %          the y-coordinates of the sampled points on the function boundary
 %--------------------------------------------------------------------------
-% EXAMPLES
+% % EXAMPLES
 % f = @(x,y) x.^2 + y.^2 - 1;
 % xvals = {-1.5:0.1:1.5, -1.5:0.1:1.5};
-% [ xlevellocs, ylevellocs, points ] = sample_boundary( f, xvals, 4 )
+% [ points, xlevellocs, ylevellocs ] = sample_boundary( f, xvals, 4 )
 % 
 % subplot(2,1,1)
 % for J = 1:4
@@ -33,7 +33,7 @@ function [ points, xlevellocs, ylevellocs ] = sample_boundary( f, xvals, ninters
 %    plot(xlevellocs(:,J),xvals{2}, '*')
 %    hold on
 % end
-%
+% 
 % plot(points(1,:), points(2,:), '*')
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
