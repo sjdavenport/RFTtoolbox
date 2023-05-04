@@ -1,0 +1,8 @@
+% Illusrating the edge effect
+nvox = 100;
+nsim = 1000;
+smooth_fields = zeros(nsim, nvox);
+for I = 1:1000
+   f = wfield(nvox);
+   smoothf(
+end
