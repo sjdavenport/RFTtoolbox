@@ -138,15 +138,13 @@ tic
 findconvpeaks(f, FWHM, lattice_peaklocs)
 toc
 %%
-tic
 resadd = 9;
 params = ConvFieldParams([FWHM, FWHM], resadd, 0)
 smoothf = convfield(f, params);
 spacep_inv(lmindices(smoothf.field, 'all'), resadd)
-toc
 
 %% Finding 2D peaks after smoothing
-f = wfield([20,20,20]);
+f = wfield([50,50]);
 FWHM = 3;
 smoothf = convfield(f, FWHM);
 lattice_peaklocs = lmindices(smoothf.field, 'all')
@@ -155,7 +153,7 @@ findconvpeaks(f, FWHM, lattice_peaklocs)
 toc
 %%
 tic
-resadd = ;
+resadd = 1;
 params = ConvFieldParams([FWHM, FWHM, FWHM], resadd, 0)
 smoothf = convfield(f, params);
 spacep_inv(lmindices(smoothf.field, 'all'), resadd)
