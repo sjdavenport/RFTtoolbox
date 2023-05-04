@@ -1,5 +1,5 @@
 function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params, truncmult, do_derivs )
-% STATFIELD generates a stationary smooth noise field. (ATM only 1D.)
+% STATFIELD generates a stationary smooth noise field.
 % For resadd greater than 1 this is approximately stationary for FWHM >= 3.
 %--------------------------------------------------------------------------
 % ARGUMENTS
