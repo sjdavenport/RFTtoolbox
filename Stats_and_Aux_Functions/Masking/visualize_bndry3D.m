@@ -146,8 +146,10 @@ else
         % Plot the original voxels
         voxel_image( mask_pts, mask_voxsize, "red", 0.65 );
         % Plot the bdry locations
+%         scatter3( m1*dx +(0.5-dx), m2*dx+(0.5-dx), m3*dx+(0.5-dx),...
+%                   spts(k), colors(k), 'filled' );
         scatter3( m1*dx +(0.5-dx), m2*dx+(0.5-dx), m3*dx+(0.5-dx),...
-                  spts(k), colors(k), 'filled' );
+                  spts(k), 'yellow', 'filled' );
     end
 end
 % Change the view angle
