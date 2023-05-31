@@ -172,7 +172,7 @@ mask = pad_vals( true( [ T T ] ), pad, false );
 
 % Mask the lattice before smoothing or not
 mask_lat = false;
-mask_lat = true;
+%mask_lat = true;
 
 % Generate params object for convfields
 params = ConvFieldParams( [ FWHM, FWHM ], 5, ceil(5/2), mask_lat );
@@ -271,18 +271,30 @@ struct('theoryIso', theoryLt,...
 T      = 5;
 nsubj  = 200;
 FWHM   = sigma2FWHM(1.5);
+FWHM   = 6;
 pad    = ceil( 4*FWHM2sigma( FWHM ) );
 
 nn = 40;
 
 %% Rectangular domain example
+mask = ones([ T T T ]);
+mask = zeros([ T-1 T-1 T ]);
+
+mask(2,2,2) = 1;
+mask(2,2,3) = 1;
+mask(2,2,4) = 1;
+mask(2,3,4) = 1;
+mask(3,3,2) = 1;
+mask(3,3,4) = 1;
+
 % Generate rectangular mask with a padded zero collar 
-mask = pad_vals( ones( [ T T T ] ), pad, false );
+mask = pad_vals( mask , pad, false );
 lat_masked = false;
 
 % Get theoretical LKC
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 7, ceil(7/2), lat_masked );
-theoryL  = LKC_wncfield_theory( mask, params );
+theory_res = 1;
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], theory_res, ceil(theory_res/2), lat_masked );
+[theoryL, g_thy]  = LKC_wncfield_theory( mask, params );
 % LKC from continuous theory
 theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
 
@@ -290,8 +302,9 @@ theoryLt = LKC_isogauss_theory( FWHM, [ T T T ]  );
 lat_data = wfield( mask, nsubj );
 
 % Estimate across different resadd
-params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 1, ceil(1/2), lat_masked );
-LKC1   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
+rr = 1;
+params = ConvFieldParams( [ FWHM, FWHM, FWHM ], rr, ceil(rr/2), lat_masked );
+[LKC1, ~, ~, ~,voxmfd_est]   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
 params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 3, ceil(3/2), lat_masked );
 LKC3   = LKC_latconv_est( lat_data(:,:,:,1:nn), params );
 params = ConvFieldParams( [ FWHM, FWHM, FWHM ], 5, ceil(5/2), lat_masked );
@@ -304,7 +317,11 @@ struct('theoryIso', theoryLt,...
         'res1', LKC1,...
         'res3', LKC3,...
         'res5', LKC5 )
-    
+
+voxmfd_est = Mask(voxmfd_est);
+squeeze(g_thy.field(26,25,25,:,:))
+squeeze(voxmfd_est.g.field(26,25,25,:,:))
+
 %% Sphere domain example
 % Generate rectangular mask with a padded zero collar
 mask = ones( [ T T T ] );

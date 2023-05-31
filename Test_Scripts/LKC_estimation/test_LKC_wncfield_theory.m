@@ -10,9 +10,6 @@ close all
 
 %% %% D = 1 
 %% % Rectangular mask and Kernel
-% Set Kernel to be isotropic Gaussian with FHWM
-Kernel = SepKernel( 1, 3 );
-
 % Create a mask and show it
 mask = ones( [ 30 1 ] );
 mask = pad_vals( mask, Kernel.truncation );
@@ -21,10 +18,13 @@ title('mask')
 
 %% Stability for increasing resadd
 % mask the lattice data
-LKC1 = LKC_wncfield_theory( mask, Kernel, 1, 1 );
-LKC3 = LKC_wncfield_theory( mask, Kernel, 3, 1 );
-LKC5 = LKC_wncfield_theory( mask, Kernel, 5, 1 );
-[ LKC1.L; LKC3.L; LKC5.L ]
+theory_res = 21;
+params = ConvFieldParams( repmat(3, [1 1]),...
+                          theory_res,...
+                          ceil( theory_res / 2 ),...
+                          false );
+
+LKC1 = LKC_wncfield_theory( mask, params );
 
 % Show that LKC_conv_est provides similar result (seems to agree)
 lat_data = randn( [ size( mask,1 ) 200 ] );
