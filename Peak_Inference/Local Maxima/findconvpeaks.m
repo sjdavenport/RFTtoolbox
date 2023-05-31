@@ -1,7 +1,7 @@
 function [peaklocs, peakvals, subset] = findconvpeaks(lat_data, FWHM, ...
       peak_est_locs, field_type, truncation, use_bound, use_fn_eval, meanfn, meanonlat)
-% FINDCONVPEAKS( lat_data, Kernel, peak_est_locs, field_type, mask,
-%                                                  truncation, xvals_vecs )
+% FINDCONVPEAKS(lat_data, FWHM, peak_est_locs, field_type, truncation, 
+%                               use_bound, use_fn_eval, meanfn, meanonlat)
 % calculates the locations of peaks in a convolution field.
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -13,9 +13,15 @@ function [peaklocs, peakvals, subset] = findconvpeaks(lat_data, FWHM, ...
 % peak_est_locs    a D by npeaks matrix where the dth column is a vector
 %                  initializing the dth peak or a cell array of length D
 %                  where the dth entry is a vector containing the peaks
-% field_type
-% meanfn
-% meanonlat
+% field_type       'Z' or 'T' corresponding to Guassian or T fields
+%                  respectively, default is 'Z'
+% truncation       the truncation for the kernel, default is 4 times the 
+%                  standard deviation of the kernel
+% use_bound        setting a bound for the box to search around each peak
+% use_fn_eval      0/1 whether to use applyconvfield or convfield
+% meanfn           a function handle default giving a continuous mean,
+%                  default is @(x) 0
+% meanonlat        the mean on the lattice, default is 0 everywhere 
 %--------------------------------------------------------------------------
 % OUTPUT
 % peak_locs   the true locations of the top peaks in the convolution field.

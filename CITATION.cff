@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: RFTtoolbox
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Samuel
+    family-names: Davenport
+    email: sdavenport@health.ucsd.edu
+    affiliation: UCSD
+    orcid: 'https://orcid.org/0000-0002-9539-3200'
+  - given-names: Fabian
+    family-names: Telschow
+    email: fabian.telschow@hu-berlin.de
+    affiliation: Humboldt University of Berlin
+repository-code: 'https://github.com/sjdavenport/RFTtoolbox'
+keywords:
+  - Random Field Theory
+  - Multiple Testing
+  - Confidence Regions
+  - Peak Inference

@@ -62,11 +62,7 @@ if ~exist('mask', 'var')
     mask = ones(Ydim);
 end
 if ~isequal(size(mask), size(Y))
-    try 
-        Y = reshape(Y, size(mask));
-    catch
-        error('The mask must be the same size as Y')
-    end
+    error('The mask must be the same size as Y')
 end
 
 if ~exist('CC', 'var')

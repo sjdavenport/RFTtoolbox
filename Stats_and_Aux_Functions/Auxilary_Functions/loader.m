@@ -20,6 +20,7 @@ function loader( I, totalI, message )
 percentDone = 100 * I / totalI;
 msg = sprintf('%3.1f\n', percentDone); %Don't forget this semicolon
 if I == 1
+    fprintf('-------------------------------------------------------\n')
     if nargin < 3
         message = 'Percent done:   ';
     else

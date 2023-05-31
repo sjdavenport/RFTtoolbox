@@ -1,7 +1,7 @@
 function Img = SpheroidSignal(Dim, rad, mag, FWHM, center_loc)
 % SPHEROIDSIGNAL generates signal within the ellipsoid with cartesian 
 % equation x^2 + y^2 + z^2 = rad^2. It then smoothes it using a 
-% kernel smoother with the given FWHM.Amate
+% kernel smoother with the given FWHM.
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Dim   A 1 by 2 or 1 by 3 vector of the image dimensions, 

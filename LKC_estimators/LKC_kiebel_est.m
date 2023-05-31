@@ -53,7 +53,7 @@ normY = sqrt( sum( Y.^2, D + 1) );
 % Mask the residuals
 Y = ( Y ./ normY ) .* mask;
 
-% Factor from eq. (14) Kienel 1999
+% Factor from eq. (14) Kiebel 1999
 dffac = ( nsubj - k - 2 ) / ( nsubj - k - 1 );
 
 % Preallocate the Lambda matrix
