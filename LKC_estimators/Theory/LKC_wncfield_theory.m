@@ -57,9 +57,6 @@ lat_masked = params.lat_masked;
 %% Main function
 %--------------------------------------------------------------------------
 
-% Allocate vector for Lipschitz Killing curvature
-L = NaN * ones( [ 1 D ] );
-
 % Get dx from resadd
 dx = 1 / ( resadd + 1 );
 
