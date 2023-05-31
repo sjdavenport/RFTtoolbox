@@ -30,7 +30,7 @@ params2 = ConvFieldParams(kernel_FWHM*ones([1 3]),...
 % Construct ConvField object.
 cfield = convfield( wn, params, derivtype );
 mask  = cfield.field > 0.08;
-cfield.mask = mask;
+cfield.mask = bndry_voxels(mask, "full");
 cfield = Mask(cfield);
 
 cfield2 = convfield( wn, params2, derivtype );
