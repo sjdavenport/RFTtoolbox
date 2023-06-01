@@ -110,7 +110,8 @@ end
 
 % Define a color structure
 colors = [ "b", "y", "k" ];
-spts = pts_size * [ 3, 1, 0.5 ];
+% spts = pts_size * [ 3, 1, 0.5 ];
+spts = repmat(pts_size, 1, 3);
            
 % Get the highres mask
 mask_hr = mask_highres( mask, resadd );
@@ -144,12 +145,13 @@ else
         % bdry voxel coordinates
         [m1, m2, m3] = ind2sub( size( mask_hr ), find( bndry.(type) == 1 ) );
         % Plot the original voxels
-        voxel_image( mask_pts, mask_voxsize, "red", 0.65 );
+        voxel_image( mask_pts, mask_voxsize, "red", 0.3 );
         % Plot the bdry locations
 %         scatter3( m1*dx +(0.5-dx), m2*dx+(0.5-dx), m3*dx+(0.5-dx),...
 %                   spts(k), colors(k), 'filled' );
         scatter3( m1*dx +(0.5-dx), m2*dx+(0.5-dx), m3*dx+(0.5-dx),...
                   spts(k), 'yellow', 'filled' );
+%         pause
     end
 end
 % Change the view angle

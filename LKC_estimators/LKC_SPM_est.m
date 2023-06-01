@@ -17,6 +17,9 @@ function [ L, L0 ] = LKC_SPM_est( FWHM, mask )
 % mask = ones(3,3,3);
 % FWHM = [3,2,1];
 % LKC_SPM_est( FWHM, mask )
+%
+% mask = imgload('MNImask');
+% [ L, L0 ] = LKC_SPM_est( FWHM, mask )
 %--------------------------------------------------------------------------
 % AUTHOR: Samuel Davenport
 %--------------------------------------------------------------------------
