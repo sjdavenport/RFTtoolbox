@@ -410,11 +410,19 @@ if D == 2 || D == 3
             h(2,:,:)= 1;
             angle.x = convn( larger_image, h, 'same');
             angle.x = angle.x( locs{:} );
-            tmp1 = angle.x < 8;
-            tmp2 = angle.x >= 8;
-            angle.x( tmp1 )  = 2 * pi / 4;
-            angle.x( tmp2 ) = 2 * pi * 3 / 4;
             angle.x( ~bndry.x ) = 0;
+            tmp1 = angle.x == 4;
+            tmp2 = angle.x == 7;
+            tmp3 = angle.x == 8;
+            angle.x( tmp1 )  = pi / 2;      % 2 * pi / 4;
+            angle.x( tmp2 )  = pi;          % 2 * 2 * pi / 4;
+            angle.x( tmp3 )  = pi * 3 / 2;  % 2 * pi * 3 / 4;
+
+%             h = ones([3 3 3]);
+%             h([1 3], 2, 2)= 1/2;
+%             angle.x = convn( larger_image, h, 'same');
+%             angle.x = angle.x( locs{:} );
+%             angle.x( ~bndry.x ) = 0;
 
             %%% Get angles for y-edges
             bndry.y   = bndry.y( locs{:} );
@@ -424,11 +432,18 @@ if D == 2 || D == 3
             h(:,2,:)= 1;
             angle.y = convn( larger_image, h, 'same');
             angle.y = angle.y( locs{:} );
-            tmp1 = angle.y < 8;
-            tmp2 = angle.y >= 8;
-            angle.y( tmp1 )  = 2 * pi / 4;
-            angle.y( tmp2 ) = 2 * pi * 3 / 4;
-            angle.y( ~bndry.y ) = 0;
+            tmp1 = angle.y == 4;
+            tmp2 = angle.y == 7;
+            tmp3 = angle.y == 8;
+            angle.y( tmp1 )  = pi / 2;      % 2 * pi / 4;
+            angle.y( tmp2 )  = pi;          % 2 * 2 * pi / 4;
+            angle.y( tmp3 )  = pi * 3 / 2;  % 2 * pi * 3 / 4;
+
+%             h = ones([3 3 3]);
+%             h(2, [1 3], 2)= 1/2;
+%             angle.y = convn( larger_image, h, 'same');
+%             angle.y = angle.y( locs{:} );
+%             angle.y( ~bndry.y ) = 0;
 
             %%% Get angles for z-edges
             bndry.z   = bndry.z( locs{:} );
@@ -438,11 +453,18 @@ if D == 2 || D == 3
             h(:,:,2)= 1;
             angle.z = convn( larger_image, h, 'same');
             angle.z = angle.z( locs{:} );
-            tmp1 = angle.z < 8;
-            tmp2 = angle.z >= 8;
-            angle.z( tmp1 ) = 2 * pi / 4;
-            angle.z( tmp2 ) = 2 * pi * 3 / 4;
-            angle.z( ~bndry.z ) = 0;
+            tmp1 = angle.z == 4;
+            tmp2 = angle.z == 7;
+            tmp3 = angle.z == 8;
+            angle.z( tmp1 )  = pi / 2;      % 2 * pi / 4;
+            angle.z( tmp2 )  = pi;          % 2 * 2 * pi / 4;
+            angle.z( tmp3 )  = pi * 3 / 2;  % 2 * pi * 3 / 4;
+
+%             h = ones([3 3 3]);
+%             h(2, 2, [1 3])= 1/2;
+%             angle.z = convn( larger_image, h, 'same');
+%             angle.z = angle.z( locs{:} );
+%             angle.z( ~bndry.z ) = 0;
             
             % Get overall weights and shrink bndry.full
             weights.full = getweights( mask );
