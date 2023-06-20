@@ -11,9 +11,12 @@ function LKC = LKC_HP_est( field, Mboot, normalize, version )
 %  field  an object of class field containing observation of a random field.
 %
 % Optional:
-%  Mboot     an integer specifying the number of bootstraps used for
-%            estimation of LKC. If "1" the HPE is used otherwise the
-%            bHPE. Default 1.
+%  Mboot     a numeric or 1 x 2 vector specifying in the first
+%            component the number of bootstraps used for estimation of LKC.
+%            If the first component is "1" the HPE is
+%            used otherwise the bHPE. The second component specifies the
+%            number of bootstrap replicates to estimate the covariance of
+%            the bHPE estimator. Default [1,0].
 %  normalize logical indicating whether Y needs to be standardized. 
 %            Default 1, i.e., mean will be subtracted and data will be 
 %            standardized to have empirical variance 1, if N>1 else 0.
@@ -146,7 +149,11 @@ end
 
 if ~exist( 'Mboot', 'var' )
    % default number of bootstrap replicates
-   Mboot = 1;
+   Mboot = [1, 0];
+end
+
+if length(Mboot) == 1
+   Mboot = [Mboot, 0];
 end
 
 if N == 1 && Mboot > 1
@@ -172,8 +179,8 @@ end
 %--------------------------------------------------------------------------
 
 % Initialize the LKC output
-if Mboot > 1
-    L_hat = NaN * zeros( [ D, Mboot ] );
+if Mboot(1) > 1
+    L_hat = NaN * zeros( [ D, Mboot(1) ] );
 else
     L_hat = NaN * zeros( [ D, N ] );    
 end
@@ -187,9 +194,9 @@ p = [ sqrt( 2 * pi ); pi; ( 2 * pi )^( 3 / 2 ) / factorial( 3 ); ...
       ( 2 * pi )^( 4 / 2 ) / factorial( 4 ) ];
 
 % Compute LKCs depending on method
-if( Mboot > 1 )    
+if( Mboot(1) > 1 )    
     % Get weights for the multiplier bootstrap
-    multiplier = normrnd( 0, 1, [ N, Mboot ] );
+    multiplier = normrnd( 0, 1, [ N, Mboot(1) ] );
 
     % Reshape and and standardize the field, such that it has unit variance
     field = reshape( field, prod( sY( 1:end-1 ) ), N );
@@ -200,7 +207,7 @@ if( Mboot > 1 )
     
     field(isnan(field)) = -Inf;
 
-    for i = 1:Mboot
+    for i = 1:Mboot(1)
         % Get the bootstrapped process
         if D ~= 1
             mfield = reshape( field * multiplier( :, i ), sY( 1:end-1 ) );
@@ -225,6 +232,21 @@ if( Mboot > 1 )
     end
     
     L0 = EC( 1, 2 );
+    % Compute a bootstrap sample to get the estimated covariance
+    if Mboot(2) > 0
+         L_hat_boot = NaN * zeros( [ D, Mboot(2) ] );
+
+         for i = 1:Mboot(2)
+            %
+            r1 = randsample(N, N, true);
+            boot_field = Field(reshape( field(:,r1), [sY( 1:end-1 ),N] ), D);
+            LL = LKC_HP_est(boot_field,...
+                             [Mboot(1), 0], normalize, version );
+    
+            L_hat_boot( :, i ) = LL.hatL;
+            
+         end
+    end
     
 else    
     % Normalize the field to have mean zero and unit variance
@@ -260,6 +282,9 @@ end
 if N > 1
     L_hatn     = mean( L_hat, 2 );
     Sigma_hat  = cov( L_hat' );
+    if Mboot(2) > 1
+        Sigma_hat  = cov( L_hat_boot' );
+    end
     L_se_hat   = sqrt( diag( Sigma_hat ) / size( L_hat, 2 ) );
     L_conf_hat = cat( 2, L_hatn - 1.96 * L_se_hat, ...
                          L_hatn + 1.96 * L_se_hat );
