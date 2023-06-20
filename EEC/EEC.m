@@ -94,7 +94,7 @@ if N > 1
     % mean of EEC curve
     mEEC = mean( EEC_vals, 1 );
     % covariance matrix of EEC curve
-    C_hat = rho( :, 1:D ) * Sigma_hat * rho( :, 1:D )';
+    C_hat = rho( :, 2:(D+1) ) * Sigma_hat * rho( :, 2:(D+1) )';
     % standard error of EEC curve
     EEC_se_hat = sqrt( diag( C_hat ) / N );
 else
