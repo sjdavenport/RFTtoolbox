@@ -668,6 +668,13 @@ classdef Field
            out.field = A - B;
        end
 
+       % Redefine abs
+       function out = abs( obj )
+           out = obj;
+           
+           out.field = abs(obj.field);
+       end
+
        % Redefine cross
        function obj = cross( obj1, obj2 )
            obj = obj1;
