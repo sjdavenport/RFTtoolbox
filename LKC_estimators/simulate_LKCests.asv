@@ -1,7 +1,8 @@
 function results = simulate_LKCests( Msim, nsubj, methods, params,...
-                                                      data_gen, do_gauss )
+                                     data_gen, data_distbn )
 % simulate_LKCests( Msim, methods, data_gen ) simulates different LKC
 % estimators for random fields.
+%
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -20,11 +21,8 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 %   data_gen  a function handle for the lattice data or a logical mask. If
 %             it is a logical mask the lattice data is white noise with
 %             mean zero and variance one.
-%   field_type   either 'G', 'L', or 'T' given the distribution of the
-%                 noise before smoothing
-%   field_params  the parameters of the field, default is set to 3, see
-%                 wfield for further details
-%   do_gauss      0/1 whether to Gaussianize the noise before smoothing
+%   data_distbn   either 'G', 'L', or 'T' given the distribution of the
+%   noise 
 %--------------------------------------------------------------------------
 % OUTPUT
 %   results  a structure containing the results of the simulation
@@ -32,14 +30,11 @@ function results = simulate_LKCests( Msim, nsubj, methods, params,...
 % DEVELOPER TODOs:
 %--------------------------------------------------------------------------
 % EXAMPLES
-% simulate_LKCests( Msim,...
-%                                              Nsubj( n ),...
-%                                              methods,...
-%                                              params,...
-%                                              mask
+%
 %--------------------------------------------------------------------------
-% AUTHOR: Fabian Telschow and Samuel Davenport  
+% AUTHOR: Fabian Telschow  
 %--------------------------------------------------------------------------
+
 
 %% Check mandatory input and get important constants
 %--------------------------------------------------------------------------
@@ -117,12 +112,7 @@ for m = 1:Msim
         lat_data.field = data_gen.field( index{:},...
                                          randsample( data_gen.fibersize, nsubj ) );
     end
-    
-    % Gaussianize the data if do_gauss == 1
-    if do_gauss == 1
-        lat_data = Gaussianize(lat_data);
-    end
-    
+
     % Generate convolution fields from lattice data
     [ cfield, ss ] = convfield( lat_data, params, 0 );
     cfield = ss .* cfield;

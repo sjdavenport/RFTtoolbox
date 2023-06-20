@@ -5,7 +5,7 @@ function [val, deriv, deriv2] = Gker( x, sigma2_or_FWHM, use_fwhm )
 % ARGUMENTS
 % x
 % sigma2_or_FWHM    If FWHM, it is the FWHM in voxels.
-% use_fwhm
+% use_fwhm          Using the FWHM is the default
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
