@@ -1,4 +1,4 @@
-function [ bounds, bounded_mask ] = mask_bounds( mask )
+function [ bounds, bounded_mask ] = mask_bounds( mask, padding )
 % MASK_BOUNDS finds the bounds of a mask and returns a mask without all
 % the padding.
 %--------------------------------------------------------------------------
@@ -25,6 +25,14 @@ s_mask = size(mask);
 
 % Obtain the number of dimensions of the mask
 D = length(s_mask);
+
+if ~exist('padding', 'var')
+    padding = 0;
+end
+
+if length(padding) < D
+    padding = repmat(padding, 1, D);
+end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
@@ -61,7 +69,7 @@ for d = 1:D
         slice = slice - 1;
     end
     
-    bounds{d} = lower_bound_d:upper_bound_d;
+    bounds{d} = (lower_bound_d - padding(d)):(upper_bound_d + padding(d));
 end
 
 bounded_mask = logical(mask(bounds{:}));
