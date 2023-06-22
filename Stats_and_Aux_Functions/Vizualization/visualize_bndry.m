@@ -86,7 +86,7 @@ if ~exist('linewidth', 'var')
     linewidth = 1;
 end
 
-if ~exist( 'alpha', 'var' )
+if ~exist( 'alpha_level', 'var' )
     % Default option of opt1
     alpha_level = 0.65;
 end
