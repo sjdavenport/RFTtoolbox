@@ -1,9 +1,14 @@
-function [corrval, covmate] = decorr( lat_data )
-% NEWFUN serves as a function template.
+function pvals = tstat_pval( tstat, df, do2sample )
+% tstat_pval( tstat, do2sample ) calculates the pvalues from the
+% t-statistic. 
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
+%  tstat: an array of size dim
+%  df: degrees of freedom
 % Optional
+%  do2sample: 0/1, 1: compute two sample p-values. 0: compute onesample
+%                 p-values. Default is 1 ie to do two sample.
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
@@ -19,35 +24,18 @@ function [corrval, covmate] = decorr( lat_data )
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'opt1', 'var' )
+if ~exist( 'do2sample', 'var' )
    % Default value
-   opt1 = 0;
+   do2sample = 1;
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-basefield = mean(lat_data);
-varfield = var(lat_data);
-basefield.field = basefield.field*0;
-nsubj = lat_data.fibersize;
-D = lat_data.D;
-if D == 1
-    for I = 1:nsubj
-        basefield.field = basefield.field + lat_data.field(:,I).*mean(lat_data.field(:,[1:(I-1),(I+1):nsubj]), 2);
-    end
-elseif D == 2
-    for I = 1:nsubj
-        basefield.field = basefield.field + lat_data.field(:,:,I).*mean(lat_data.field(:,:,[1:(I-1),(I+1):nsubj]),3);
-    end 
+if do2sample == 1
+    pvals = 2*(1 - tcdf(abs(data_tstat), df));
+else
+    pvals = 1 - tcdf(tstat, df);
 end
-basefield = Mask(basefield);
-varfield = Mask(varfield);
-
-corrval = sum(basefield.field(:))/sum(basefield.mask(:))/nsubj;
-varval = sum(varfield.field(:))/sum(varfield.mask(:));
-
-covmate = corrval*ones(nsubj);
-covmate = covmate + (varval-corrval)*eye(nsubj);
 
 end
 

@@ -58,7 +58,8 @@ xbar = mean(data, (D+1));
 sq_xbar = mean(data.^2, (D+1));
     
 est_var = (nsubj/(nsubj-1))*(sq_xbar - (xbar.^2)); %This is the population estimate!
-std_dev = sqrt(est_var);
+std_dev = real(sqrt(est_var)); % Some matlab bug sometimes makes this imaginary! See below for commented example of the bug if the real is removed
+% std_dev = sqrt(est_var);
 
 if isequal(prod(Dim),  prod(sD(1:end-1))) && (length(Dim) > 1)
     xbar = reshape(xbar, Dim);
@@ -78,3 +79,24 @@ end
 
 end
 
+% Example of the weird imaginary value error that can occasionally occur.
+% dim = [100,100];
+% nsubj = 100;
+% effectsize = 0.5;
+% field_type = 'L';
+% field_params = 3;
+% lat_data = wfield(dim, nsubj, field_type, field_params);
+% 
+% signal = peakgen( effectsize, 8, 10, dim, {[20,20], [20,80], [50,50], [80,20], [80,80]});
+% lat_data.field = lat_data.field + signal;
+% 
+% FWHM = 10;
+% tstat_orig = convfield_t(lat_data, FWHM).field;
+% pvals_orig = tstat_pval(tstat_orig, nsubj-1, 0);
+% smooth_fields = convfield(lat_data, FWHM);
+% smooth_fields_gauss = Gaussianize(smooth_fields.field);
+% % Need to investigate why occasionally get imaginary parts!
+% 
+% % smooth_fields_gauss = sqrt(smooth_fields.field);
+% tstat_gauss = mvtstat(smooth_fields_gauss.field);
+% pvals_gauss = tstat_pval(tstat_gauss, nsubj-1, 0);

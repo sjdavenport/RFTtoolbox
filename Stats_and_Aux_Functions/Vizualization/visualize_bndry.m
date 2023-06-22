@@ -1,4 +1,4 @@
-function visualize_bndry( mask, resadd, types, pts_size, center_vox_size_ratio, alpha_level, linewidth, angle )
+function visualize_bndry( mask, resadd, types, pts_size, center_vox_size_ratio, alpha_level, angle, linewidth )
 % visualize_bndry( mask, resadd, types, pts_size, angle ) visualizes the
 % resolution increased boundary from mask_highres.m as well as its subparts,
 % which are computed using bndry_voxel.m.
@@ -186,13 +186,17 @@ if length( types ) == 1
                 pts_size, 'yellow', 'filled');
         end
         
-        scatter3( a*dx +(0.5-dx), b*dx+(0.5-dx), c*dx+(0.5-dx),...
-            pts_size*center_vox_size_ratio, 'yellow', 'filled');
+        if strcmp(types, "all")
+            scatter3( a*dx +(0.5-dx), b*dx+(0.5-dx), c*dx+(0.5-dx),...
+                pts_size*center_vox_size_ratio, 'yellow', 'filled');
+        end
     elseif D == 2
         if resadd > 0
             scatter( m1*dx +(0.5-dx), m2*dx+(0.5-dx), pts_size, 'yellow', 'filled');
         end
-        scatter( a*dx +(0.5-dx), b*dx+(0.5-dx), pts_size*center_vox_size_ratio, 'yellow', 'filled');
+        if strcmp(types, "all")
+            scatter( a*dx +(0.5-dx), b*dx+(0.5-dx), pts_size*center_vox_size_ratio, 'yellow', 'filled');
+        end
     end
 else
     % Initialize the figure
