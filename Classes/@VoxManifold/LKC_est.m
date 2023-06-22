@@ -200,12 +200,6 @@ switch D
         %%% Calculate LKC 1
         % Get the opening angles with respect to the metric g
         angle = IntegralAlpha( voxmfd, bdry, eucangle );
-        angle.x = eucangle.x( eucangle.x ~= 0 );
-        angle.x( angle.x > pi ) = - pi/2;
-        angle.y = eucangle.y( eucangle.y ~= 0 );
-        angle.y( angle.y > pi ) =  - pi/2;      
-        angle.z = eucangle.z( eucangle.z ~= 0 );
-        angle.z( angle.z > pi ) = - pi/2;
 
         clear eucangle
 
@@ -215,12 +209,14 @@ switch D
             weights.x = weights.x( weights.x ~= 0 );
             weights.y = weights.y( weights.y ~= 0 );
             weights.z = weights.z( weights.z ~= 0 );
+
             L(1) = sum( sqrt( max( g_xx( bdry.x ), 0 ) )...
-                                  .* weights.x .* angle.x ) * dx;
+                                 .* angle.x( bdry.x ) ) * dx;
             L(1) = L(1) + sum( sqrt( max( g_yy( bdry.y ), 0 ) )...
-                                  .* weights.y .* angle.y ) * dy;       
+                                 .* angle.y( bdry.y ) ) * dy;    
             L(1) = L(1) + sum( sqrt( max( g_zz( bdry.z ), 0 ) )...
-                                  .* weights.z .* angle.z ) * dz;
+                                 .* angle.z( bdry.z ) ) * dz;
+
         end
                        
         % Integrate volume form of faces versus the trace of the shape operator
