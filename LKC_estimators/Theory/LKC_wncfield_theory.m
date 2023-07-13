@@ -1,4 +1,4 @@
-function [LKC, g] = LKC_wncfield_theory( mask, params )
+function [LKC, g] = LKC_wncfield_theory( mask, params, mask2 )
 % LKC_WNCFIELD_THEORY( mask, params ) computes
 % theoretical Lipschitz Killing curvatures for a convolution field
 % derived from a seperable kernel with underlying discrete independent
@@ -10,7 +10,8 @@ function [LKC, g] = LKC_wncfield_theory( mask, params )
 % ARGUMENTS
 % Mandatory
 %  mask     a logical array of dimension T_1 x...x T_D.
-%  params   an object of class ConvFieldParams.      
+%  params   an object of class ConvFieldParams
+%  mask2    optional second mask to allow for more non-stationarity
 %
 %--------------------------------------------------------------------------
 % OUTPUT
@@ -29,6 +30,11 @@ function [LKC, g] = LKC_wncfield_theory( mask, params )
 sM = size( mask );
 % make mask logical
 mask = logical( mask );
+
+if ~exist( 'mask2', 'var' )
+   % default number of bootstrap replicates
+   mask2 = mask;
+end
 
 % Dimension of the domain, since matlab is not consistent for D<1, we need
 % to catch this case 
@@ -64,6 +70,7 @@ dx = 1 / ( resadd + 1 );
 % volume computation.
 if resadd ~= 0
     [ mask, ~ ] = mask_highres( mask, resadd, enlarge );
+    [ mask2, ~ ] = mask_highres( mask2, resadd, enlarge );
 end
 
 % Get the size of the resolution increased domain
@@ -237,7 +244,7 @@ end
 
 % Create a voxmanifold with the computed metric
 tmp = g;
-g   = Field( mask );
+g   = Field( mask2 );
 g.field = tmp;
 g.xvals = xvals;
 g = Mask(g);

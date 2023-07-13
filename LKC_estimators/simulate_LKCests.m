@@ -92,7 +92,7 @@ if isfield( methods, "bHPE" )
 end
 
 if isfield( methods, "warpE" )
-    L_warp_ests    = NaN * ones( [ Msim D ] );
+    L_warp_ests   = NaN * ones( [ Msim D ] );
     normalizewarp = methods.warpE;
 end
 
