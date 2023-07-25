@@ -2,7 +2,6 @@ function visualize_bndry( mask, resadd, types, pts_size, center_vox_size_ratio, 
 % visualize_bndry( mask, resadd, types, pts_size, angle ) visualizes the
 % resolution increased boundary from mask_highres.m as well as its subparts,
 % which are computed using bndry_voxel.m.
-%
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -62,6 +61,16 @@ function visualize_bndry( mask, resadd, types, pts_size, center_vox_size_ratio, 
 % %% % resadd = 3
 % visualize_bndry( mask, 3, [ "x", "y", "z" ], 40 )
 % title("All edges colored by coordinate")
+%
+% % % Double Convex Edge
+% mask = false([3 3 3]);
+% mask( 2, 2, 2 ) = 1;
+% mask( 2, 3, 3 ) = 1;
+% types = ["x"];
+% pts_size = 100;
+% resadd = 1;
+% visualize_bndry( mask, resadd, types, pts_size)
+% view( [ 30 20 ] )
 %--------------------------------------------------------------------------
 % AUTHORS: Fabian Telschow and Samuel Davenport
 %--------------------------------------------------------------------------

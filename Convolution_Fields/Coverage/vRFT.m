@@ -28,7 +28,7 @@ function [ output_image, threshold, maximum, L, minimum ] = vRFT(...
 %  output_image   a logical array (with dimensions that of the resolution
 %                 increased data) with 0 if a given point is below the
 %                 threshold and 1 if above
-%  threshold     the voxelwise RFT threshold
+%  threshold     the one tailed voxelwise RFT threshold
 %  maximum    a structure with fields:
 %   maximum.lat      the maximum on the original lattice
 %   maximum.finelat  the maximum on the resolution increased lattice

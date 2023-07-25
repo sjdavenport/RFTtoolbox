@@ -10,10 +10,13 @@ close all
 
 %% %% 1D examples
 %% Simple 1D example
-FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;
+FWHM = 3; sample_size = 20; nvox = 100; resadd = 1;
 spfn = @(nsubj) wfield( nvox, nsubj ); niters = 1000;
 params = ConvFieldParams( FWHM, resadd );
 rcout = record_coverage( spfn, sample_size, params, niters)
+
+%%
+threshold = EECthreshold( 0.025, L.L, L0, field_type, df );
 
 %% Pre-estimating the LKCs for quicker coverage
 FWHM = 3; sample_size = 20; nvox = 100; resadd = 3;

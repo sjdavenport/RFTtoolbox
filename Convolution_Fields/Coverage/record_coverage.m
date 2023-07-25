@@ -1,4 +1,4 @@
- function coverage = record_coverage( spfn, sample_size, params, niters, npeaks, version )
+ function coverage = record_coverage( spfn, sample_size, params, niters, npeaks, twotailed, version )
 % RECORD_COVERAGE( data, FWHM, mask, B, sample_size ) estimates the coverage
 % provided by a variety of RFT implementations including non-stationary and
 % stationary convolution and lattice versions.
@@ -14,8 +14,9 @@
 %  niters        the number of resamples of the data to do
 %  npeaks       the number of peaks of the lattice data around which to
 %               search for the local maxima
+%  twotailed    0/1 whether to do two-tailed or not. Default is 0 ie
+%               one-tailed inference (on the positive side of the tail).
 %  version      the version of the LKC estimation to use
-%  subsets
 %--------------------------------------------------------------------------
 % OUTPUT
 %  coverage    a structural array with entries:
@@ -103,6 +104,11 @@ nabovethresh_finelat = 0;
 latmaxima     = zeros( 1, niters );
 finelatmaxima = zeros( 1, niters );
 convmaxima    = zeros( 1, niters );
+
+latminima     = zeros( 1, niters );
+finelatminima = zeros( 1, niters );
+convminima    = zeros( 1, niters );
+
 thresholds    = zeros( 1, niters );
 maxabovethreshold = zeros( 1, niters );
 
@@ -126,8 +132,11 @@ for b = 1:niters
     end
     
     lat_data = Mask(lat_data);
-    [ ~, threshold, maximum, L ] = vRFT(lat_data, params, npeaks, version);
+    [ ~, threshold, maximum, L, minimum ] = vRFT(lat_data, params, npeaks, 1, version);
     storeLKCs(:,b) = L.L';
+    if b == 1
+        coverage.L0 = L.L0;
+    end
     if any(isnan(L.L))
         warning('NAN LKC recorded')
     end
@@ -141,6 +150,11 @@ for b = 1:niters
     if  maximum.finelat > threshold
         nabovethresh_finelat = nabovethresh_finelat + 1;
     end
+    latminima(b) = minimum.lat;
+    finelatminima(b) = minimum.finelat;
+    convminima(b) = minimum.conv;
+    allminima(1:length(minimum.allminima),b) = minimum.allminima';
+    
     latmaxima(b) = maximum.lat;
     finelatmaxima(b) = maximum.finelat;
     convmaxima(b) = maximum.conv;
@@ -157,10 +171,16 @@ coverage.conv = nabovethresh/niters;
 coverage.lat =  nabovethresh_lat/niters;
 coverage.finelat =  nabovethresh_finelat/niters;
 
+coverage.finelatminima = finelatminima;
+coverage.latminima  = latminima;
+coverage.convminima = convminima;
+coverage.allminima  = allminima;
+
 coverage.finelatmaxima = finelatmaxima;
 coverage.latmaxima  = latmaxima;
 coverage.convmaxima = convmaxima;
 coverage.allmaxima  = allmaxima;
+
 coverage.thresholds = thresholds;
 
 coverage.maxabovethreshold = maxabovethreshold;

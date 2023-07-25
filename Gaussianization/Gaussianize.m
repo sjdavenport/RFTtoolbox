@@ -37,6 +37,8 @@ function [lat_data, standardized_field, standard_data] = ...
 %--------------------------------------------------------------------------
 % OUTPUT
 %  lat_data    the Gaussianized field of data
+%  standardized_field  (X_n - muhat)/sigmahat for 1 <= n <=leq N
+%  standard_data  X_n/sigmahat for 1 <= n <= N
 %--------------------------------------------------------------------------
 % EXAMPLES
 % lat_data = wfield( [20,20], 100, 'T', 3 )

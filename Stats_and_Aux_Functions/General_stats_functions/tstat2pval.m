@@ -1,5 +1,5 @@
-function pvals = tstat_pval( tstat, df, do2sample )
-% tstat_pval( tstat, do2sample ) calculates the pvalues from the
+function pvals = tstat2pval( tstat, df, do2sample )
+% tstat2pval( tstat, do2sample ) calculates the pvalues from the
 % t-statistic. 
 %--------------------------------------------------------------------------
 % ARGUMENTS
@@ -32,7 +32,7 @@ end
 %%  Main Function Loop
 %--------------------------------------------------------------------------
 if do2sample == 1
-    pvals = 2*(1 - tcdf(abs(data_tstat), df));
+    pvals = 2*(1 - tcdf(abs(tstat), df));
 else
     pvals = 1 - tcdf(tstat, df);
 end
