@@ -183,6 +183,14 @@ end
 Kernel = cell( [ 1 D ] );
 
 if isnumeric( sep_kern )
+    if length(sep_kern) == 1
+        if sep_kern == 0 
+            smoothed_data = data;
+            ss = NaN;
+            return
+        end
+    end
+    
     % Numeric sep_kernel defines the FWHM
     sep_kern = SepKernel( D, sep_kern );
 

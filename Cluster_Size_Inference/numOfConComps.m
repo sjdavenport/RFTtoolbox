@@ -1,4 +1,5 @@
-function [number_of_clusters, occurences, sizes, index_locations] = numOfConComps(data, thresh, connectivity_criterion)
+function [number_of_clusters, occurences, sizes, index_locations] = ...
+                        numOfConComps(data, thresh, connectivity_criterion)
 % NUMOFCONCOMPS(data, thresh, connectivity_criterion) calculates the number
 % of connected components in an array that lie above a threshold.
 %--------------------------------------------------------------------------
@@ -23,6 +24,12 @@ function [number_of_clusters, occurences, sizes, index_locations] = numOfConComp
 % sims > thresh
 % sizes
 %
+% dim = [25,25]; noise = randn(dim); FWHM = 4;
+% [smooth_noise, ss] = fconv(noise, FWHM, 2);
+% smooth_noise = smooth_noise./sqrt(ss);
+% [number_of_clusters, occurences, sizes, index_locations] = numOfConComps(smooth_noise, 1);
+% surviving_cluster_im = cluster_im( dim, index_locations, 25 )
+% imagesc(surviving_cluster_im)
 %--------------------------------------------------------------------------
 % NOTES: 
 % To use with a mask just multiply the data by a mask beforehand!

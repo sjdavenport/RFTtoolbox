@@ -1,4 +1,4 @@
-function lat_data = asinh_trans( lat_data, param)
+function lat_data = apower_trans( lat_data, power )
 % ASINH_TRANS( lat_data ) transforms data with the inverse hyperbolic sinh
 % transformation.
 %--------------------------------------------------------------------------
@@ -29,8 +29,8 @@ if ~exist('stdsmo', 'var')
     stdsmo = 0;
 end
 
-if ~exist('param', 'var')
-    param = 1;
+if ~exist('usetrans', 'var')
+    usetrans = 0;
 end
 
 %% Allow for non field input
@@ -73,7 +73,7 @@ mean_dev = mean(lat_data.field, lat_data.D + 1);
 % Standardize without demeaning
 standard_data = lat_data.field./std_dev.field; 
 
-lat_data.field = asinh(standard_data*param)/param;
+lat_data.field = apower(standard_data, power);
 % lat_data.field = apower(standard_data);
 
 end

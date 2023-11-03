@@ -69,7 +69,9 @@ for d = 1:D
         slice = slice - 1;
     end
     
-    bounds{d} = (lower_bound_d - padding(d)):(upper_bound_d + padding(d));
+    lowerbound = max(lower_bound_d - padding(d), 1);
+    upperbound = min(upper_bound_d + padding(d), size(mask,d));
+    bounds{d} = lowerbound:upperbound;
 end
 
 bounded_mask = logical(mask(bounds{:}));

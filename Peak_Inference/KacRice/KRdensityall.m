@@ -9,7 +9,6 @@ function KRexpectation = KRdensityall( fV, dV, d2V, fd2cov, fdcov, dd2cov, u, ni
 % omega     the covariance between the first and second derivatives
 % u         a vector giving the thresholds 
 % niters    the number of iterations used to calculate the expectation
-% Optional
 %--------------------------------------------------------------------------
 % OUTPUT
 % 
