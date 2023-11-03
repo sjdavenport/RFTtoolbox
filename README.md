@@ -5,6 +5,7 @@ However if you do please cite us.
 
 ## Table of contents
 * [Introduction](#introduction)
+* [Installation](#setup)
 * [Folder Structure](#folderstruct)
     * [Cluster_Size_Inference](#CLInf)
     * [Convolution_Fields](#Convfields)
@@ -12,8 +13,6 @@ However if you do please cite us.
     * [Random_Field_Generation](#RFfunctions)
     * [RFT_functions](#siggen)
     * [SPM_Functions](#power)
-* [Set Up](#setup)
-    * [Dependencies](#dependencies)
 
 ## Introduction <a name="introduction"></a>
 The RFTtoolbox currently contains code to generate smooth Gaussian, t and 
@@ -22,6 +21,24 @@ on a lattice of arbitrary size accounting for the edge effect.
 
 It will soon contain code to perform clusterwise inference and analysis and thresholding 
 using LKCS and to generate convolution fields as well as other functionalities.
+
+## Set Up <a name="setup"></a>
+In order to install either download the zip file or run
+git clone https://github.com/sjdavenport/RFTtoolbox/ from the commmand line.
+
+Then in order to use the package, once you're in matlab you'll first need to add all the functions to the matlab path. 
+If you have installed the package in the directory: dir, then to do so you need to run: addpath(genpath('dir')) within matlab.
+
+
+### Compiling C code
+In order to compile the c-code required to efficiently run the hermite projector estimator
+you will need to navigate to the folder EEC/csource/ and run
+```
+mex EulerCharCrit_c.cpp
+```
+you may need to install the MATLAB C/C++ compiler for your system in order to do this.
+MATLAB give you instructions on how to do so in an error message obtained from 
+running the above code.
 
 ## Folder Structure <a name="folderstruct"></a>
 
@@ -89,17 +106,3 @@ surf(Sig)
 ```
 
 ![alt tag](Figures/readme_signal.png)
-
-## Set Up <a name="setup"></a>
-If you have any difficulties getting this code to run or have any questions
-feel free to get in touch with me via samuel.davenport(AT)stats.ox.ac.uk.
-
-### Compiling C code
-In order to compile the c-code required to efficiently run the hermite projector estimator
-you will need to navigate to the folder EEC/csource/ and run
-```
-mex EulerCharCrit_c.cpp
-```
-you may need to install the MATLAB C/C++ compiler for your system in order to do this.
-MATLAB give you instructions on how to do so in an error message obtained from 
-running the above code.
