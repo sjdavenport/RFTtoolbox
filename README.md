@@ -1,6 +1,7 @@
 # RFTtoolbox (Beta Version): A toolbox designed for generation and analysis of random fields both continuously sampled and on a lattice.
 The RFTtoolbox currently contains code to perform image based inference using the tools of Random Field Theory. In particular it contains code to 
-perform FWER inference using the Expected Euler characteristic, generate random fields with a variety of stationary and non-stationary covariance structures and a number of further features.
+perform FWER inference using the Expected Euler characteristic, perform peak based inference using the distribution for the height of a peak in a random field,
+generate random fields with a variety of stationary and non-stationary covariance structures and a number of further features.
 
 Feel free to use the functions available in your research. However if you do please cite us.
 
