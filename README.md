@@ -1,10 +1,10 @@
 # RFTtoolbox (Beta Version): A toolbox designed for generation and analysis of random fields both continuously sampled and on a lattice.
-NOTE: This is a BETA version of this toolbox. Many more random field functions will soon be added.
-And some existing features will be tidied up. Watch this space! Feel free to use the functions available in your research.
-However if you do please cite us.
+The RFTtoolbox currently contains code to perform image based inference using the tools of Random Field Theory. In particular it contains code to 
+perform FWER inference using the Expected Euler characteristic. 
+
+Feel free to use the functions available in your research. However if you do please cite us.
 
 ## Table of contents
-* [Introduction](#introduction)
 * [Installation](#setup)
 * [Folder Structure](#folderstruct)
     * [Cluster_Size_Inference](#CLInf)
@@ -14,15 +14,7 @@ However if you do please cite us.
     * [RFT_functions](#siggen)
     * [SPM_Functions](#power)
 
-## Introduction <a name="introduction"></a>
-The RFTtoolbox currently contains code to generate smooth Gaussian, t and 
-F fields (with a zero or non-zero mean, the peaks of which can be specified) 
-on a lattice of arbitrary size accounting for the edge effect.
-
-It will soon contain code to perform clusterwise inference and analysis and thresholding 
-using LKCS and to generate convolution fields as well as other functionalities.
-
-## Set Up <a name="setup"></a>
+## Installation <a name="setup"></a>
 In order to install either download the zip file or run
 git clone https://github.com/sjdavenport/RFTtoolbox/ from the commmand line.
 
