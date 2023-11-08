@@ -1,22 +1,18 @@
-                     SJD SOFTWARE LICENSE
-                 Version 1, 08 November 2023
+                          SJD SOFTWARE LICENSE
+                       Version 1, 08 November 2023
 
-Copyright (C) 2023 - Samuel Daveport
-Everyone is permitted to copy and distribute verbatim copies
-of this license document, but changing it is not allowed.
+          Copyright (C) 2023 - Samuel Davenport, Fabian Telschow
 
-                            Preamble
-This license is designed to ensure the sharing of code and software within 
-future versions of this work so long as the work and its source code are
-made freely available. This license has the goal of ensuring that future
-versions always supply source code, approriate copyright notices and do not
-charge for the use of this software. To this end it is governed by a Commons
-clause condition. This licensing document is based on the Apache 2.0 license,
-the primary differences are in Sections 3(b), 3(c) and 7.
+                                Preamble
+This License is designed to facilitate the sharing of code and software within 
+future versions of the Work so long as these versions and their source code are
+made freely available along with approriate copyright notices. To this end it 
+is governed by a Commons clause condition. This licensing document is based on
+the Apache 2.0 license, the primary differences are in Sections 3(b), 3(c) and 7.
 
-If you wish to distribute the code under alternative licensing terms or are
-uncertain about the terms of this license please raise an issue in the
-associated repositorycontaining the software.
+If you wish to distribute the Work under alternative licensing terms or are
+uncertain about the terms of this License please raise an issue in the
+associated repository containing the software.
 
 Guidance on how to apply this license to your work is provided in the appendix, 
 which is below, under the TERMS AND CONDITIONS.
