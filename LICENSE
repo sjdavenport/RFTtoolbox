@@ -1,4 +1,4 @@
-    SJD SOFTWARE LICENSE
+                     SJD SOFTWARE LICENSE
                  Version 1, 08 November 2023
 
 Copyright (C) 2023 - Samuel Daveport
@@ -6,16 +6,20 @@ Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
 
                             Preamble
-This license is designed to ensure the sharing of code and software within future
-versions of this work so long as the work and its source code are made freely available.
-This license has the goal of ensuring that future versions always supply source code,
-approriate copyright notices and do not charge for the use of this software. To this end
-it is governed by a Commons clause condition. If you wish to distribute the code under
-alternative licensing terms or are uncertain about the terms of this license please
-raise an issue in the associated repository containing the software.
+This license is designed to ensure the sharing of code and software within 
+future versions of this work so long as the work and its source code are
+made freely available. This license has the goal of ensuring that future
+versions always supply source code, approriate copyright notices and do not
+charge for the use of this software. To this end it is governed by a Commons
+clause condition. This licensing document is based on the Apache 2.0 license,
+the primary differences are in Sections 3(b), 3(c) and 7.
 
-Guidance on how to apply this license to your work is provided in the appendix, which
-is below, under the TERMS AND CONDITIONS.
+If you wish to distribute the code under alternative licensing terms or are
+uncertain about the terms of this license please raise an issue in the
+associated repositorycontaining the software.
+
+Guidance on how to apply this license to your work is provided in the appendix, 
+whichis below, under the TERMS AND CONDITIONS.
 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -41,6 +45,10 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
       "Source" form shall mean the preferred form for making modifications,
       including but not limited to software source code, documentation
       source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical transformation 
+      or translation of a Source form, including but not limited to compiled 
+      object code, generated documentation, and conversions to other media types.
 
       "Work" shall mean the work of authorship made available under the License, 
       as indicated by a copyright notice that is included in or attached to the work
@@ -88,7 +96,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
    3. Redistribution. You may reproduce and distribute copies of the
       Work or Derivative Works thereof in any medium, with or without
-      modifications in Source form, provided that You
+      modifications, and in Source or Object form provided that You 
       meet the following conditions:
 
       (a) You must give any other recipients of the Work or
@@ -103,7 +111,10 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
           excluding those notices that do not pertain to any part of
           the Derivative Works; and
 
-      (d) If the Work includes a "NOTICE" text file as part of its
+      (d) You must provide the Source form of any file that is distributed
+          (whether modified or not) in the distribution of any Derivative Works; and
+
+      (e) If the Work includes a "NOTICE" text file as part of its
           distribution, then any Derivative Works that You distribute must
           include a readable copy of the attribution notices contained
           within such NOTICE file, excluding those notices that do not
