@@ -23,7 +23,7 @@ Then in order to use the package, once you're in matlab you'll first need to add
 If you have installed the package in the directory: dir, then to do so you need to run: addpath(genpath('dir')) within matlab.
 
 
-### Compiling C code (only need if running the hermite projection estimator)
+### Compiling C code - only need if running the hermite projection estimator
 In order to compile the c-code required to efficiently run the hermite projection estimator
 you will need to navigate to the folder EEC/csource/ and run
 ```
