@@ -16,6 +16,7 @@ Feel free to use the functions available in your research. However if you do ple
     * [SPM_Functions](#power)
 
 ## Installation <a name="setup"></a>
+### Main installation
 In order to install either download the zip file or run
 git clone https://github.com/sjdavenport/RFTtoolbox/ from the commmand line.
 
