@@ -39,13 +39,14 @@ data = smooth_noise + Sig;
 threshold_tfce = perm_tfce(data, ones(dim), H, E, connectivity_criterion);
 tstat_orig = mvtstat(data);
 tfce_tstat = tfce(tstat_orig, H, E, connectivity_criterion);
-CDT = 2.3;
+%%
+% CDT = 2.3;
+CDT = 3.1;
 threshold_cluster = perm_cluster(data, ones(dim), CDT, connectivity_criterion);
 
 [number_of_clusters, occurences, sizes, index_locations] = numOfConComps(tstat_orig, CDT, connectivity_criterion);
 surviving_cluster_im = cluster_im( dim, index_locations, threshold_cluster );
 
-%%
 subplot(2,2,1)
 imagesc(tstat_orig)
 title('Original t-stat')
@@ -56,10 +57,11 @@ imagesc(tfce_tstat)
 title('TFCE statistic')
 subplot(2,2,3)
 imagesc(surviving_cluster_im)
-title('Cluster extext inference: CDT = 2.3')
+title('Cluster extext inference: CDT = 3.1')
 subplot(2,2,4)
 imagesc(tfce_tstat > threshold_tfce)
-title('TFCE: H = 2, E = 0.5')
+% imagesc(tfce_tstat > 0)
+title('TFCE: H = 2, E = 0.5, h_0 = 0')
 % axis square
 fullscreen
 saveim('TFCEspill')

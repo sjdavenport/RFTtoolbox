@@ -11,8 +11,8 @@ close all
 %% %% 1D Examples
 %% Simple 1D example
 FWHM = 6; resadd = 11; nsubj = 50; nvox = 10;
-lat_data = wnfield(nvox, 1);
-a = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask );
+lat_data = wfield(nvox, 1);
+a = EulerCharCrit( lat_data.field, lat_data.D, lat_data.mask, "C" );
 a{1}
 plot(lat_data);
 
