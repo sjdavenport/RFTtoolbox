@@ -15,8 +15,13 @@ function sample_vec = vec_ecdf( sample_vec, dist_vec )
 % a = vec_ecdf( sample_vec, dist_vec );
 % histogram(a)
 %
+% sample_vec = rlap( 3, [1, 100000]);; dist_vec = rlap( 3, [1, 100000]);;
+% a = vec_ecdf( sample_vec, dist_vec );
+% histogram(a)
+%
 % sample_vec = [-1.96, 0, 1.64]; dist_vec = normrnd(0,1,1,100000);
 % a = vec_ecdf( sample_vec, dist_vec );
+% histogram(a)
 %
 % sample_vec = [ 1,2]; vec_ecdf( sample_vec, sample_vec+0.1 )
 %--------------------------------------------------------------------------
@@ -59,9 +64,12 @@ for I = 1:nsamples
             break
         end
     end
+    % counter
     if counter > length(dist_vec)
         %         sample_vec(I:end) = counter - 1.25;
             sample_vec(I:end) = counter - 1.5;
+            % sample_vec(I:end) = counter + 0.5;
+            % sample_vec(I:end) = counter - 1;
         break
     end
 end

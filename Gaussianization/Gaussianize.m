@@ -94,15 +94,20 @@ end
 % Calculate the mean at each voxel
 mean_dev = mean(lat_data.field, lat_data.D + 1);
 
-% Standardize without demeaning
-standard_data = lat_data.field./std_dev.field; 
+if stdsmo >= 0
+    % Standardize without demeaning
+    standard_data = lat_data.field./std_dev.field;
+    % Standardize after demeaing to get the null distribution
+    standardized_field = (lat_data.field-mean_dev)./std_dev.field;
+else
+    % Obtain orig data
+    standard_data = lat_data.field;
+    % Demean
+    standardized_field = lat_data.field-mean_dev;
+end
 
 % Obtain the locations of the data that lies within the mask
 nonnanlocs = ~isnan(standard_data);
-
-% Standardize after demeaing to get the null distribution
-standardized_field = (lat_data.field-mean_dev)./std_dev.field; 
-
 
 if usetrans == 1
     % Work in progress: this loop corrects for the fact that you have 

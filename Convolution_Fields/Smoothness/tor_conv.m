@@ -9,7 +9,7 @@ function [smoothed_data, ss] = tor_conv(data, FWHM, D)
 % smoothed_data   a vector giving the smooth data
 %--------------------------------------------------------------------------
 % EXAMPLES
-% tor_conv( 1:10, 2 ) 
+% tor_conv( 1:10, 2, 1 ) 
 % tor_conv([1,1,1,0,0,0,0,0], 2) 
 % 
 % % 2D single subject
@@ -45,7 +45,7 @@ end
 
 % Generate the fields 
 if D == 1
-    extended_data = cat(1, data(end-trunc+1:end, :), data, data(1:trunc, :));
+    extended_data = [data(end-trunc+1:end), data, data(1:trunc)];
 elseif D == 2
 % 	other_extended_data = repmat(data,3,3); Slow way to do it!
     upperleftcorner = data(1:trunc, 1:trunc, :);
@@ -71,7 +71,7 @@ end
 [smoothed_data,ss] = fconv(extended_data, FWHM, D);
 
 if D == 1
-    smoothed_data = smoothed_data((trunc+1): end - trunc, :);
+    smoothed_data = smoothed_data((trunc+1): end - trunc);
 elseif D == 2
     smoothed_data = smoothed_data((trunc+1): end - trunc, (trunc+1): end - trunc, :);
 %     other_smoothed_data = other_smoothed_data( (Dim(1) + 1):2*Dim(1), (Dim(2) + 1):2*Dim(2), :);
