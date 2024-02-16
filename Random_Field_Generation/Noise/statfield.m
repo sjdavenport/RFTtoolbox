@@ -1,4 +1,4 @@
-function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params, truncmult, do_derivs )
+function [stat_field, deriv_field, deriv2_field, ss] = statfield( Dim, nsubj, params, truncmult, do_derivs )
 % STATFIELD generates a stationary smooth noise field.
 % For resadd greater than 1 this is approximately stationary for FWHM >= 3.
 %--------------------------------------------------------------------------
@@ -22,6 +22,7 @@ function [stat_field, deriv_field, deriv2_field] = statfield( Dim, nsubj, params
 % % 2D
 % FWHM = [3,3]; resadd = 3; params = ConvFieldParams(FWHM, resadd);
 % Dim = [10,10]; nsubj = 20; f = statfield( Dim, nsubj, params )
+% imagesc(f.field(:,:,1))
 % % Note this has size 37x37 as (resadd+1)*10 - resadd = 37, i.e. 4
 % % associated with all except the final voxel point!
 % 
@@ -79,7 +80,7 @@ params.kernel.truncation = truncmult*params.kernel.truncation;
 cutoff = params.kernel.truncation(1);
 
 lat_data = wfield(Dim + 2*cutoff, nsubj);
-smooth_field = convfield(lat_data, params);
+[smooth_field, ss] = convfield(lat_data, params);
 
 bigger_masksize = smooth_field.masksize;
 

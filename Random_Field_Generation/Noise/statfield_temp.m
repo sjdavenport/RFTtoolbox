@@ -1,6 +1,5 @@
-function [ surviving_cluster_im, surviving_clusters, surviving_clusters_vec] = ...
-                             cluster_im( dim, index_locations, threshold )
-% CLUSTER_IM( dim, index_locations, threshold )
+function smoothed_data = statfield( mask, FWHM, bound_mask )
+% NEWFUN
 %--------------------------------------------------------------------------
 % ARGUMENTS
 % Mandatory
@@ -10,9 +9,10 @@ function [ surviving_cluster_im, surviving_clusters, surviving_clusters_vec] = .
 % 
 %--------------------------------------------------------------------------
 % EXAMPLES
-% 
+% MNImask = imgload('MNImask')
+% smoothed_data = statfield( MNImask, 4 )
 %--------------------------------------------------------------------------
-% AUTHOR: Samuel Davenport
+% Copyright (C) - 2023 - Samuel Davenport
 %--------------------------------------------------------------------------
 
 %%  Check mandatory input and get important constants
@@ -20,23 +20,25 @@ function [ surviving_cluster_im, surviving_clusters, surviving_clusters_vec] = .
 
 %%  Add/check optional values
 %--------------------------------------------------------------------------
-if ~exist( 'opt1', 'var' )
+if ~exist( 'bound_mask', 'var' )
    % Default value
-   opt1 = 0;
+   bound_mask = 0;
 end
 
 %%  Main Function Loop
 %--------------------------------------------------------------------------
-surviving_cluster_im = zeros(dim);
-surviving_clusters_vec = {};
-nsurvivors = 0;
-for I = 1:length(index_locations)
-  if length(index_locations{I}) > threshold
-      nsurvivors = nsurvivors + 1;
-      surviving_cluster_im(index_locations{I}) = 1;
-      surviving_clusters_vec{nsurvivors} = index_locations{I};
-  end
+if bound_mask == 1
+    [~, mask] = mask_bounds(mask);
 end
-surviving_clusters = convindall(surviving_clusters_vec);
+mask_padded = dilate_mask(mask, ceil(4*FWHM2sigma(FWHM))) > 0;
+restriction_bounds = mask_bounds(mask_padded);
+
+lat_data = normrnd(0,1,size(mask_padded));
+
+[ smoothed_data, ss ] = fconv( lat_data, FWHM, length(size(mask)), 8*FWHM2sigma(FWHM));
+
+smoothed_data = smoothed_data(restriction_bounds{:}).*mask;
+smoothed_data = smoothed_data./sqrt(ss);
+
 end
 

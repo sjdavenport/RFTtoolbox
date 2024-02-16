@@ -386,7 +386,7 @@ elseif D == 3
                         kernel_in_direction{3}' );
     ss = ( X .* Y .* Z ).^2;
     ss = sum(ss(:)) * dx(1)*dx(2)*dx(3);
-    
+    % Want to work out what the sum should be with Armin and Howon here.
 else
     error('fconv not coded for dimension > 3')
 end
